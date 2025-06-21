@@ -79,11 +79,57 @@
             display: block;
         }
 
+        /* 商品分类布局 */
+        .products-container {
+            display: flex;
+            height: 70vh;
+            border: 1px solid var(--tg-theme-hint-color, #ccc);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .category-sidebar {
+            width: 120px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-right: 1px solid var(--tg-theme-hint-color, #ccc);
+            overflow-y: auto;
+        }
+
+        .category-item {
+            padding: 15px 10px;
+            text-align: center;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #ccc);
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--tg-theme-text-color, #222);
+            transition: background-color 0.2s;
+        }
+
+        .category-item:hover {
+            background: var(--tg-theme-bg-color, #fff);
+        }
+
+        .category-item.active {
+            background: var(--tg-theme-button-color, #50a8eb);
+            color: var(--tg-theme-button-text-color, #fff);
+        }
+
+        .category-icon {
+            font-size: 20px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .products-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 15px;
-            margin-bottom: 20px;
         }
 
         .product-card {
@@ -95,27 +141,29 @@
         }
 
         .product-image {
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
             background: var(--tg-theme-secondary-bg-color, #f0f0f0);
             border-radius: 8px;
             margin: 0 auto 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 20px;
         }
 
         .product-name {
             font-weight: bold;
             margin-bottom: 5px;
             color: var(--tg-theme-text-color, #222);
+            font-size: 13px;
         }
 
         .product-price {
             color: var(--tg-theme-button-color, #50a8eb);
             font-weight: bold;
             margin-bottom: 10px;
+            font-size: 12px;
         }
 
         .product-actions {
@@ -125,12 +173,12 @@
         }
 
         .btn {
-            padding: 8px 12px;
+            padding: 6px 10px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 12px;
-            min-width: 30px;
+            font-size: 11px;
+            min-width: 25px;
         }
 
         .btn-primary {
@@ -320,8 +368,15 @@
 
         <!-- 商品页面 -->
         <div id="products" class="tab-content active">
-            <div class="product-grid" id="productGrid">
-                <!-- 商品将通过JavaScript动态加载 -->
+            <div class="products-container">
+                <div class="category-sidebar" id="categorySidebar">
+                    <!-- 分类将通过JavaScript动态加载 -->
+                </div>
+                <div class="products-content">
+                    <div class="product-grid" id="productGrid">
+                        <!-- 商品将通过JavaScript动态加载 -->
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -333,7 +388,7 @@
             <div class="cart-total" id="cartTotal">
                 总计: ¥0.00
             </div>
-            <button class="btn btn-primary btn-large" onclick="checkout()" id="checkoutBtn" style="display: none;">
+            <button class="btn btn-primary btn-large" onclick="SupermarketApp.checkout()" id="checkoutBtn" style="display: none;">
                 去结算
             </button>
         </div>
@@ -349,23 +404,44 @@
     <script>
         // 超市应用主对象
         const SupermarketApp = {
-            // 初始化数据
-            products: [
-                { id: 1, name: '苹果', price: 5.99, image: '🍎' },
-                { id: 2, name: '香蕉', price: 3.99, image: '🍌' },
-                { id: 3, name: '橙子', price: 4.99, image: '🍊' },
-                { id: 4, name: '牛奶', price: 8.99, image: '🥛' },
-                { id: 5, name: '面包', price: 6.99, image: '🍞' },
-                { id: 6, name: '鸡蛋', price: 12.99, image: '🥚' },
-                { id: 7, name: '鸡肉', price: 25.99, image: '🍗' },
-                { id: 8, name: '蔬菜', price: 9.99, image: '🥬' }
+            // 分类数据
+            categories: [
+                { id: 'fruits', name: '水果', icon: '🍎' },
+                { id: 'dairy', name: '乳制品', icon: '🥛' },
+                { id: 'bakery', name: '面包', icon: '🍞' },
+                { id: 'meat', name: '肉类', icon: '🍗' },
+                { id: 'vegetables', name: '蔬菜', icon: '🥬' },
+                { id: 'beverages', name: '饮料', icon: '🥤' }
             ],
+            
+            // 商品数据（按分类组织）
+            products: [
+                { id: 1, name: '苹果', price: 5.99, image: '🍎', category: 'fruits' },
+                { id: 2, name: '香蕉', price: 3.99, image: '🍌', category: 'fruits' },
+                { id: 3, name: '橙子', price: 4.99, image: '🍊', category: 'fruits' },
+                { id: 4, name: '葡萄', price: 8.99, image: '🍇', category: 'fruits' },
+                { id: 5, name: '牛奶', price: 8.99, image: '🥛', category: 'dairy' },
+                { id: 6, name: '酸奶', price: 6.99, image: '🥛', category: 'dairy' },
+                { id: 7, name: '奶酪', price: 12.99, image: '🧀', category: 'dairy' },
+                { id: 8, name: '面包', price: 6.99, image: '🍞', category: 'bakery' },
+                { id: 9, name: '蛋糕', price: 15.99, image: '🍰', category: 'bakery' },
+                { id: 10, name: '鸡蛋', price: 12.99, image: '🥚', category: 'dairy' },
+                { id: 11, name: '鸡肉', price: 25.99, image: '🍗', category: 'meat' },
+                { id: 12, name: '猪肉', price: 22.99, image: '🥩', category: 'meat' },
+                { id: 13, name: '蔬菜', price: 9.99, image: '🥬', category: 'vegetables' },
+                { id: 14, name: '胡萝卜', price: 4.99, image: '🥕', category: 'vegetables' },
+                { id: 15, name: '可乐', price: 3.99, image: '🥤', category: 'beverages' },
+                { id: 16, name: '矿泉水', price: 2.99, image: '💧', category: 'beverages' }
+            ],
+            
             cart: {},
             orders: [],
+            currentCategory: 'fruits', // 当前选中的分类
 
             // 初始化应用
             init() {
                 this.loadData();
+                this.renderCategories();
                 this.renderProducts();
                 this.renderCart();
                 this.renderOrders();
@@ -430,10 +506,31 @@
                 Telegram.WebApp.CloudStorage.setItem('orders', JSON.stringify(this.orders));
             },
 
+            // 渲染分类
+            renderCategories() {
+                const sidebar = document.getElementById('categorySidebar');
+                sidebar.innerHTML = this.categories.map(category => `
+                    <div class="category-item ${category.id === this.currentCategory ? 'active' : ''}" 
+                         onclick="SupermarketApp.selectCategory('${category.id}')">
+                        <span class="category-icon">${category.icon}</span>
+                        <div>${category.name}</div>
+                    </div>
+                `).join('');
+            },
+
+            // 选择分类
+            selectCategory(categoryId) {
+                this.currentCategory = categoryId;
+                this.renderCategories();
+                this.renderProducts();
+            },
+
             // 渲染商品
             renderProducts() {
                 const grid = document.getElementById('productGrid');
-                grid.innerHTML = this.products.map(product => `
+                const categoryProducts = this.products.filter(product => product.category === this.currentCategory);
+                
+                grid.innerHTML = categoryProducts.map(product => `
                     <div class="product-card">
                         <div class="product-image">${product.image}</div>
                         <div class="product-name">${product.name}</div>
@@ -490,6 +587,7 @@
                         </div>
                     `;
                     checkoutBtn.style.display = 'none';
+                    document.getElementById('cartTotal').textContent = '总计: ¥0.00';
                     return;
                 }
 
