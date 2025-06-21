@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="MobileOptimized" content="176" />
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="robots" content="noindex,nofollow" />
+    <script src="https://telegram.org/js/telegram-web-app.js?2"></script>
+    <script>
+        function setThemeClass() {
+            document.documentElement.className = Telegram.WebApp.colorScheme;
+        }
+
+        Telegram.WebApp.onEvent('themeChanged', setThemeClass);
+        setThemeClass();
+    </script>
+    <title>超市下单系统</title>
+    <style>
+        body {
+            --bg-color: var(--tg-theme-bg-color, #fff);
+            font-family: sans-serif;
+            background-color: var(--bg-color);
+            color: var(--tg-theme-text-color, #222);
+            font-size: 14px;
+            margin: 0;
+            padding: 0;
+            color-scheme: var(--tg-color-scheme);
+        }
+
+        .main-container {
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #ccc);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: var(--tg-theme-text-color, #222);
+            font-size: 24px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #ccc);
+            margin-bottom: 20px;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            background: none;
+            border: none;
+            color: var(--tg-theme-hint-color, #ccc);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-tab.active {
+            color: var(--tg-theme-button-color, #50a8eb);
+            border-bottom-color: var(--tg-theme-button-color, #50a8eb);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .product-card {
+            border: 1px solid var(--tg-theme-hint-color, #ccc);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            background: var(--tg-theme-bg-color, #fff);
+        }
+
+        .product-image {
+            width: 80px;
+            height: 80px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 8px;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .product-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--tg-theme-text-color, #222);
+        }
+
+        .product-price {
+            color: var(--tg-theme-button-color, #50a8eb);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            min-width: 30px;
+        }
+
+        .btn-primary {
+            background-color: var(--tg-theme-button-color, #50a8eb);
+            color: var(--tg-theme-button-text-color, #fff);
+        }
+
+        .btn-secondary {
+            background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #222);
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #ccc);
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: bold;
+            color: var(--tg-theme-text-color, #222);
+        }
+
+        .cart-item-price {
+            color: var(--tg-theme-hint-color, #ccc);
+            font-size: 12px;
+        }
+
+        .cart-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cart-total {
+            text-align: right;
+            padding: 15px 0;
+            border-top: 2px solid var(--tg-theme-button-color, #50a8eb);
+            font-weight: bold;
+            font-size: 18px;
+            color: var(--tg-theme-text-color, #222);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--tg-theme-text-color, #222);
+            font-weight: bold;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--tg-theme-hint-color, #ccc);
+            border-radius: 4px;
+            background-color: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #222);
+            box-sizing: border-box;
+        }
+
+        .order-item {
+            border: 1px solid var(--tg-theme-hint-color, #ccc);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: var(--tg-theme-bg-color, #fff);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .order-id {
+            font-weight: bold;
+            color: var(--tg-theme-button-color, #50a8eb);
+        }
+
+        .order-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .order-details {
+            color: var(--tg-theme-hint-color, #ccc);
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .order-products {
+            margin-bottom: 10px;
+        }
+
+        .order-product {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .order-total {
+            font-weight: bold;
+            color: var(--tg-theme-text-color, #222);
+            text-align: right;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--tg-theme-hint-color, #ccc);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .btn-large {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 50%;
+            background: var(--tg-theme-button-color, #50a8eb);
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantity-display {
+            min-width: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>🛒 超市下单系统</h1>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('products')">商品</button>
+            <button class="nav-tab" onclick="showTab('cart')">购物车</button>
+            <button class="nav-tab" onclick="showTab('orders')">订单</button>
+        </div>
+
+        <!-- 商品页面 -->
+        <div id="products" class="tab-content active">
+            <div class="product-grid" id="productGrid">
+                <!-- 商品将通过JavaScript动态加载 -->
+            </div>
+        </div>
+
+        <!-- 购物车页面 -->
+        <div id="cart" class="tab-content">
+            <div id="cartItems">
+                <!-- 购物车商品将通过JavaScript动态加载 -->
+            </div>
+            <div class="cart-total" id="cartTotal">
+                总计: ¥0.00
+            </div>
+            <button class="btn btn-primary btn-large" onclick="checkout()" id="checkoutBtn" style="display: none;">
+                去结算
+            </button>
+        </div>
+
+        <!-- 订单页面 -->
+        <div id="orders" class="tab-content">
+            <div id="orderList">
+                <!-- 订单将通过JavaScript动态加载 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 超市应用主对象
+        const SupermarketApp = {
+            // 初始化数据
+            products: [
+                { id: 1, name: '苹果', price: 5.99, image: '🍎' },
+                { id: 2, name: '香蕉', price: 3.99, image: '🍌' },
+                { id: 3, name: '橙子', price: 4.99, image: '🍊' },
+                { id: 4, name: '牛奶', price: 8.99, image: '🥛' },
+                { id: 5, name: '面包', price: 6.99, image: '🍞' },
+                { id: 6, name: '鸡蛋', price: 12.99, image: '🥚' },
+                { id: 7, name: '鸡肉', price: 25.99, image: '🍗' },
+                { id: 8, name: '蔬菜', price: 9.99, image: '🥬' }
+            ],
+            cart: {},
+            orders: [],
+
+            // 初始化应用
+            init() {
+                this.loadData();
+                this.renderProducts();
+                this.renderCart();
+                this.renderOrders();
+                this.setupTelegramWebApp();
+            },
+
+            // 设置Telegram WebApp
+            setupTelegramWebApp() {
+                Telegram.WebApp.ready();
+                
+                // 设置主按钮
+                Telegram.WebApp.MainButton.setParams({
+                    text: '查看购物车',
+                    is_visible: true
+                }).onClick(() => {
+                    showTab('cart');
+                });
+
+                // 设置次要按钮
+                Telegram.WebApp.SecondaryButton.setParams({
+                    text: '查看订单',
+                    is_visible: true
+                }).onClick(() => {
+                    showTab('orders');
+                });
+
+                // 监听主题变化
+                Telegram.WebApp.onEvent('themeChanged', () => {
+                    this.updateTheme();
+                });
+            },
+
+            // 更新主题
+            updateTheme() {
+                document.body.style.setProperty('--bg-color', Telegram.WebApp.backgroundColor);
+            },
+
+            // 加载数据
+            loadData() {
+                // 从Telegram CloudStorage加载购物车和订单数据
+                Telegram.WebApp.CloudStorage.getKeys((err, keys) => {
+                    if (!err && keys.length > 0) {
+                        Telegram.WebApp.CloudStorage.getItems(keys, (err, items) => {
+                            if (!err) {
+                                if (items.cart) {
+                                    this.cart = JSON.parse(items.cart);
+                                }
+                                if (items.orders) {
+                                    this.orders = JSON.parse(items.orders);
+                                }
+                                this.renderCart();
+                                this.renderOrders();
+                            }
+                        });
+                    }
+                });
+            },
+
+            // 保存数据
+            saveData() {
+                Telegram.WebApp.CloudStorage.setItem('cart', JSON.stringify(this.cart));
+                Telegram.WebApp.CloudStorage.setItem('orders', JSON.stringify(this.orders));
+            },
+
+            // 渲染商品
+            renderProducts() {
+                const grid = document.getElementById('productGrid');
+                grid.innerHTML = this.products.map(product => `
+                    <div class="product-card">
+                        <div class="product-image">${product.image}</div>
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price">¥${product.price.toFixed(2)}</div>
+                        <div class="product-actions">
+                            <button class="btn btn-secondary" onclick="SupermarketApp.removeFromCart(${product.id})" ${!this.cart[product.id] ? 'style="display:none"' : ''}>
+                                -
+                            </button>
+                            <span class="quantity-display" ${!this.cart[product.id] ? 'style="display:none"' : ''}>
+                                ${this.cart[product.id] || 0}
+                            </span>
+                            <button class="btn btn-primary" onclick="SupermarketApp.addToCart(${product.id})">
+                                +
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            // 添加到购物车
+            addToCart(productId) {
+                this.cart[productId] = (this.cart[productId] || 0) + 1;
+                this.saveData();
+                this.renderProducts();
+                this.renderCart();
+                this.updateMainButton();
+            },
+
+            // 从购物车移除
+            removeFromCart(productId) {
+                if (this.cart[productId]) {
+                    this.cart[productId]--;
+                    if (this.cart[productId] <= 0) {
+                        delete this.cart[productId];
+                    }
+                    this.saveData();
+                    this.renderProducts();
+                    this.renderCart();
+                    this.updateMainButton();
+                }
+            },
+
+            // 渲染购物车
+            renderCart() {
+                const cartContainer = document.getElementById('cartItems');
+                const checkoutBtn = document.getElementById('checkoutBtn');
+                
+                if (Object.keys(this.cart).length === 0) {
+                    cartContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🛒</div>
+                            <p>购物车是空的</p>
+                            <p>快去添加一些商品吧！</p>
+                        </div>
+                    `;
+                    checkoutBtn.style.display = 'none';
+                    return;
+                }
+
+                let total = 0;
+                const cartItems = Object.keys(this.cart).map(productId => {
+                    const product = this.products.find(p => p.id == productId);
+                    const quantity = this.cart[productId];
+                    const itemTotal = product.price * quantity;
+                    total += itemTotal;
+
+                    return `
+                        <div class="cart-item">
+                            <div class="cart-item-info">
+                                <div class="cart-item-name">${product.name}</div>
+                                <div class="cart-item-price">¥${product.price.toFixed(2)} × ${quantity}</div>
+                            </div>
+                            <div class="cart-item-actions">
+                                <div class="quantity-control">
+                                    <button class="quantity-btn" onclick="SupermarketApp.removeFromCart(${product.id})">-</button>
+                                    <span class="quantity-display">${quantity}</span>
+                                    <button class="quantity-btn" onclick="SupermarketApp.addToCart(${product.id})">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                cartContainer.innerHTML = cartItems;
+                document.getElementById('cartTotal').textContent = `总计: ¥${total.toFixed(2)}`;
+                checkoutBtn.style.display = 'block';
+            },
+
+            // 渲染订单
+            renderOrders() {
+                const orderContainer = document.getElementById('orderList');
+                
+                if (this.orders.length === 0) {
+                    orderContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <p>还没有订单</p>
+                            <p>快去下单吧！</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                orderContainer.innerHTML = this.orders.map(order => `
+                    <div class="order-item">
+                        <div class="order-header">
+                            <span class="order-id">订单 #${order.id}</span>
+                            <span class="order-status status-${order.status}">${this.getStatusText(order.status)}</span>
+                        </div>
+                        <div class="order-details">
+                            <div>收货人: ${order.customerName}</div>
+                            <div>电话: ${order.phone}</div>
+                            <div>地址: ${order.address}</div>
+                            <div>下单时间: ${new Date(order.timestamp).toLocaleString()}</div>
+                        </div>
+                        <div class="order-products">
+                            ${order.items.map(item => `
+                                <div class="order-product">
+                                    <span>${item.name} × ${item.quantity}</span>
+                                    <span>¥${(item.price * item.quantity).toFixed(2)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="order-total">
+                            总计: ¥${order.total.toFixed(2)}
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            // 获取状态文本
+            getStatusText(status) {
+                const statusMap = {
+                    'pending': '待处理',
+                    'completed': '已完成'
+                };
+                return statusMap[status] || status;
+            },
+
+            // 更新主按钮
+            updateMainButton() {
+                const cartCount = Object.values(this.cart).reduce((sum, qty) => sum + qty, 0);
+                if (cartCount > 0) {
+                    Telegram.WebApp.MainButton.setParams({
+                        text: `购物车 (${cartCount})`,
+                        is_visible: true
+                    });
+                } else {
+                    Telegram.WebApp.MainButton.setParams({
+                        text: '查看购物车',
+                        is_visible: true
+                    });
+                }
+            },
+
+            // 计算购物车总计
+            getCartTotal() {
+                return Object.keys(this.cart).reduce((total, productId) => {
+                    const product = this.products.find(p => p.id == productId);
+                    return total + (product.price * this.cart[productId]);
+                }, 0);
+            },
+
+            // 结算
+            checkout() {
+                if (Object.keys(this.cart).length === 0) {
+                    Telegram.WebApp.showAlert('购物车是空的！');
+                    return;
+                }
+
+                this.showCheckoutForm();
+            },
+
+            // 显示结算表单
+            showCheckoutForm() {
+                const total = this.getCartTotal();
+                
+                Telegram.WebApp.showPopup({
+                    title: '填写收货信息',
+                    message: `订单总计: ¥${total.toFixed(2)}\n\n请填写以下信息：`,
+                    buttons: [
+                        {id: 'confirm', type: 'default', text: '确认下单'},
+                        {type: 'cancel'}
+                    ]
+                }, (buttonId) => {
+                    if (buttonId === 'confirm') {
+                        this.showCustomerInfoForm();
+                    }
+                });
+            },
+
+            // 显示客户信息表单
+            showCustomerInfoForm() {
+                // 使用Telegram的确认对话框来模拟表单
+                Telegram.WebApp.showConfirm(
+                    '请确认您的收货信息：\n\n' +
+                    '姓名: [请在下方输入]\n' +
+                    '电话: [请在下方输入]\n' +
+                    '地址: [请在下方输入]\n\n' +
+                    '确认下单吗？',
+                    (confirmed) => {
+                        if (confirmed) {
+                            this.createOrder();
+                        }
+                    }
+                );
+            },
+
+            // 创建订单
+            createOrder() {
+                const orderItems = Object.keys(this.cart).map(productId => {
+                    const product = this.products.find(p => p.id == productId);
+                    return {
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        quantity: this.cart[productId]
+                    };
+                });
+
+                const order = {
+                    id: Date.now(),
+                    items: orderItems,
+                    total: this.getCartTotal(),
+                    customerName: '用户', // 实际应用中应该从表单获取
+                    phone: '138****8888', // 实际应用中应该从表单获取
+                    address: '用户地址', // 实际应用中应该从表单获取
+                    status: 'pending',
+                    timestamp: Date.now()
+                };
+
+                this.orders.unshift(order);
+                this.cart = {};
+                this.saveData();
+                this.renderCart();
+                this.renderOrders();
+                this.updateMainButton();
+
+                Telegram.WebApp.showAlert(
+                    `订单创建成功！\n\n订单号: #${order.id}\n总计: ¥${order.total.toFixed(2)}\n\n我们会在24小时内处理您的订单。`,
+                    () => {
+                        showTab('orders');
+                    }
+                );
+            }
+        };
+
+        // 显示标签页
+        function showTab(tabName) {
+            // 隐藏所有标签页
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // 显示选中的标签页
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // 更新按钮状态
+            if (tabName === 'cart') {
+                Telegram.WebApp.MainButton.setParams({
+                    text: '继续购物',
+                    is_visible: true
+                }).onClick(() => {
+                    showTab('products');
+                });
+            } else if (tabName === 'orders') {
+                Telegram.WebApp.MainButton.setParams({
+                    text: '继续购物',
+                    is_visible: true
+                }).onClick(() => {
+                    showTab('products');
+                });
+            } else {
+                SupermarketApp.updateMainButton();
+            }
+        }
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            SupermarketApp.init();
+        });
+    </script>
+</body>
+</html> 
