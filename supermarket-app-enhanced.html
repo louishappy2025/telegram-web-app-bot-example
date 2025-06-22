@@ -351,6 +351,127 @@
             text-align: center;
             font-weight: bold;
         }
+
+        /* 支付方式选择样式 */
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .payment-method {
+            padding: 15px;
+            border: 2px solid var(--tg-theme-hint-color, #ccc);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            background: var(--tg-theme-bg-color, #fff);
+            transition: all 0.2s;
+        }
+
+        .payment-method:hover {
+            border-color: var(--tg-theme-button-color, #50a8eb);
+        }
+
+        .payment-method.selected {
+            border-color: var(--tg-theme-button-color, #50a8eb);
+            background: var(--tg-theme-button-color, #50a8eb);
+            color: var(--tg-theme-button-text-color, #fff);
+        }
+
+        .payment-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .payment-name {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .payment-desc {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 3px;
+        }
+
+        .order-summary {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .order-summary-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--tg-theme-text-color, #222);
+        }
+
+        .order-item-summary {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        .order-total-summary {
+            border-top: 1px solid var(--tg-theme-hint-color, #ccc);
+            padding-top: 10px;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 16px;
+            text-align: right;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 10px;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--tg-theme-hint-color, #ccc);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .step.active .step-number {
+            background: var(--tg-theme-button-color, #50a8eb);
+        }
+
+        .step.completed .step-number {
+            background: #28a745;
+        }
+
+        .step-text {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #ccc);
+        }
+
+        .step.active .step-text {
+            color: var(--tg-theme-button-color, #50a8eb);
+            font-weight: bold;
+        }
+
+        .step.completed .step-text {
+            color: #28a745;
+        }
     </style>
 </head>
 
@@ -388,8 +509,51 @@
             <div class="cart-total" id="cartTotal">
                 总计: ¥0.00
             </div>
-            <button class="btn btn-primary btn-large" onclick="SupermarketApp.checkout()" id="checkoutBtn" style="display: none;">
-                去结算
+            <button class="btn btn-primary btn-large" onclick="SupermarketApp.goToCheckout()" id="checkoutBtn" style="display: none;">
+                去下单
+            </button>
+        </div>
+
+        <!-- 下单页面 -->
+        <div id="checkout" class="tab-content">
+            <div class="step-indicator">
+                <div class="step completed">
+                    <div class="step-number">1</div>
+                    <div class="step-text">购物车</div>
+                </div>
+                <div class="step active">
+                    <div class="step-number">2</div>
+                    <div class="step-text">选择支付</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">填写信息</div>
+                </div>
+            </div>
+
+            <!-- 订单摘要 -->
+            <div class="order-summary">
+                <div class="order-summary-title">订单摘要</div>
+                <div id="orderSummaryItems">
+                    <!-- 订单商品摘要将通过JavaScript动态加载 -->
+                </div>
+                <div class="order-total-summary" id="orderSummaryTotal">
+                    总计: ¥0.00
+                </div>
+            </div>
+
+            <!-- 支付方式选择 -->
+            <div>
+                <div style="font-weight: bold; margin-bottom: 10px; color: var(--tg-theme-text-color, #222);">
+                    选择支付方式
+                </div>
+                <div class="payment-methods" id="paymentMethods">
+                    <!-- 支付方式将通过JavaScript动态加载 -->
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-large" onclick="SupermarketApp.proceedToCustomerInfo()" id="proceedBtn" style="display: none;">
+                继续填写收货信息
             </button>
         </div>
 
@@ -437,6 +601,15 @@
             cart: {},
             orders: [],
             currentCategory: 'fruits', // 当前选中的分类
+            selectedPayment: null, // 选中的支付方式
+
+            // 支付方式数据
+            paymentMethods: [
+                { id: 'aba', name: 'ABA银行', icon: '🏦', desc: 'ABA Pay转账' },
+                { id: 'huione', name: '汇旺', icon: '💰', desc: '汇旺支付' },
+                { id: 'usdt', name: 'USDT', icon: '₮', desc: 'USDT支付' },
+                { id: 'cod', name: '货到付款', icon: '💵', desc: '现金支付' }
+            ],
 
             // 初始化应用
             init() {
@@ -645,6 +818,7 @@
                             <div>收货人: ${order.customerName}</div>
                             <div>电话: ${order.phone}</div>
                             <div>地址: ${order.address}</div>
+                            <div>支付方式: ${order.paymentMethod || '未指定'}</div>
                             <div>下单时间: ${new Date(order.timestamp).toLocaleString()}</div>
                         </div>
                         <div class="order-products">
@@ -695,49 +869,100 @@
                 }, 0);
             },
 
-            // 结算
-            checkout() {
+            // 显示下单页面
+            goToCheckout() {
                 if (Object.keys(this.cart).length === 0) {
                     Telegram.WebApp.showAlert('购物车是空的！');
                     return;
                 }
-
-                this.showCheckoutForm();
+                
+                this.renderOrderSummary();
+                this.renderPaymentMethods();
+                showTab('checkout');
             },
 
-            // 显示结算表单
-            showCheckoutForm() {
+            // 渲染订单摘要
+            renderOrderSummary() {
+                const summaryContainer = document.getElementById('orderSummaryItems');
+                const totalElement = document.getElementById('orderSummaryTotal');
+                
+                let total = 0;
+                const summaryItems = Object.keys(this.cart).map(productId => {
+                    const product = this.products.find(p => p.id == productId);
+                    const quantity = this.cart[productId];
+                    const itemTotal = product.price * quantity;
+                    total += itemTotal;
+
+                    return `
+                        <div class="order-item-summary">
+                            <span>${product.name} × ${quantity}</span>
+                            <span>¥${itemTotal.toFixed(2)}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                summaryContainer.innerHTML = summaryItems;
+                totalElement.textContent = `总计: ¥${total.toFixed(2)}`;
+            },
+
+            // 渲染支付方式
+            renderPaymentMethods() {
+                const methodsContainer = document.getElementById('paymentMethods');
+                methodsContainer.innerHTML = this.paymentMethods.map(method => `
+                    <div class="payment-method" onclick="SupermarketApp.selectPayment('${method.id}')">
+                        <span class="payment-icon">${method.icon}</span>
+                        <div class="payment-name">${method.name}</div>
+                        <div class="payment-desc">${method.desc}</div>
+                    </div>
+                `).join('');
+            },
+
+            // 选择支付方式
+            selectPayment(paymentId) {
+                // 移除所有选中状态
+                document.querySelectorAll('.payment-method').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                
+                // 添加选中状态
+                const selectedElement = document.querySelector(`[onclick="SupermarketApp.selectPayment('${paymentId}')"]`);
+                if (selectedElement) {
+                    selectedElement.classList.add('selected');
+                }
+                
+                this.selectedPayment = paymentId;
+                
+                // 显示继续按钮
+                document.getElementById('proceedBtn').style.display = 'block';
+            },
+
+            // 继续填写收货信息
+            proceedToCustomerInfo() {
+                if (!this.selectedPayment) {
+                    Telegram.WebApp.showAlert('请先选择支付方式！');
+                    return;
+                }
+
+                this.showCustomerInfoForm();
+            },
+
+            // 显示客户信息表单
+            showCustomerInfoForm() {
                 const total = this.getCartTotal();
+                const paymentMethod = this.paymentMethods.find(p => p.id === this.selectedPayment);
                 
                 Telegram.WebApp.showPopup({
                     title: '填写收货信息',
-                    message: `订单总计: ¥${total.toFixed(2)}\n\n请填写以下信息：`,
+                    message: `订单总计: ¥${total.toFixed(2)}\n支付方式: ${paymentMethod.name}\n\n请确认收货信息：`,
                     buttons: [
                         {id: 'confirm', type: 'default', text: '确认下单'},
                         {type: 'cancel'}
                     ]
                 }, (buttonId) => {
                     if (buttonId === 'confirm') {
-                        this.showCustomerInfoForm();
+                        this.createOrder();
                     }
                 });
-            },
-
-            // 显示客户信息表单
-            showCustomerInfoForm() {
-                // 使用Telegram的确认对话框来模拟表单
-                Telegram.WebApp.showConfirm(
-                    '请确认您的收货信息：\n\n' +
-                    '姓名: [请在下方输入]\n' +
-                    '电话: [请在下方输入]\n' +
-                    '地址: [请在下方输入]\n\n' +
-                    '确认下单吗？',
-                    (confirmed) => {
-                        if (confirmed) {
-                            this.createOrder();
-                        }
-                    }
-                );
             },
 
             // 创建订单
@@ -752,6 +977,8 @@
                     };
                 });
 
+                const paymentMethod = this.paymentMethods.find(p => p.id === this.selectedPayment);
+
                 const order = {
                     id: Date.now(),
                     items: orderItems,
@@ -759,19 +986,21 @@
                     customerName: '用户', // 实际应用中应该从表单获取
                     phone: '138****8888', // 实际应用中应该从表单获取
                     address: '用户地址', // 实际应用中应该从表单获取
+                    paymentMethod: paymentMethod.name,
                     status: 'pending',
                     timestamp: Date.now()
                 };
 
                 this.orders.unshift(order);
                 this.cart = {};
+                this.selectedPayment = null;
                 this.saveData();
                 this.renderCart();
                 this.renderOrders();
                 this.updateMainButton();
 
                 Telegram.WebApp.showAlert(
-                    `订单创建成功！\n\n订单号: #${order.id}\n总计: ¥${order.total.toFixed(2)}\n\n我们会在24小时内处理您的订单。`,
+                    `订单创建成功！\n\n订单号: #${order.id}\n总计: ¥${order.total.toFixed(2)}\n支付方式: ${order.paymentMethod}\n\n我们会在24小时内处理您的订单。`,
                     () => {
                         showTab('orders');
                     }
@@ -800,6 +1029,13 @@
                     is_visible: true
                 }).onClick(() => {
                     showTab('products');
+                });
+            } else if (tabName === 'checkout') {
+                Telegram.WebApp.MainButton.setParams({
+                    text: '返回购物车',
+                    is_visible: true
+                }).onClick(() => {
+                    showTab('cart');
                 });
             } else if (tabName === 'orders') {
                 Telegram.WebApp.MainButton.setParams({
