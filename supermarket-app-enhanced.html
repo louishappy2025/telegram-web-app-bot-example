@@ -11,11 +11,28 @@
     <script src="https://telegram.org/js/telegram-web-app.js?2"></script>
     <script>
         function setThemeClass() {
-            document.documentElement.className = Telegram.WebApp.colorScheme;
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                document.documentElement.className = Telegram.WebApp.colorScheme;
+            }
         }
 
-        Telegram.WebApp.onEvent('themeChanged', setThemeClass);
-        setThemeClass();
+        // 等待Telegram WebApp API加载完成
+        function initTelegramWebApp() {
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                Telegram.WebApp.onEvent('themeChanged', setThemeClass);
+                setThemeClass();
+            } else {
+                // 如果API还没加载，延迟重试
+                setTimeout(initTelegramWebApp, 100);
+            }
+        }
+
+        // 页面加载时初始化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initTelegramWebApp);
+        } else {
+            initTelegramWebApp();
+        }
     </script>
     <title>超市下单系统</title>
     <style>
@@ -505,11 +522,17 @@
             cursor: not-allowed;
         }
 
+        /* 确保按钮可以正常点击 */
+        .btn, .nav-tab, .category-item, .payment-method {
+            position: relative;
+            z-index: 1;
+            pointer-events: auto;
+        }
+
         /* 商品卡片悬停效果 */
         .product-card:hover {
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-            transition: all 0.2s ease;
+            transition: box-shadow 0.2s ease;
         }
     </style>
 </head>
@@ -642,6 +665,7 @@
             currentCategory: 'fruits', // 当前选中的分类
             selectedPayment: null, // 选中的支付方式
             isProcessing: false, // 防止重复操作
+            initialized: false, // 添加初始化标志
 
             // 支付方式数据
             paymentMethods: [
@@ -653,7 +677,13 @@
 
             // 初始化应用
             init() {
+                if (this.initialized) {
+                    console.log('应用已经初始化过了');
+                    return;
+                }
+                
                 try {
+                    console.log('开始初始化超市应用...');
                     this.loadData();
                     this.renderCategories();
                     this.renderProducts();
@@ -664,10 +694,13 @@
                     // 初始化步骤指示器
                     this.updateStepIndicator(1);
                     
+                    this.initialized = true;
                     console.log('超市应用初始化完成');
                 } catch (error) {
                     console.error('应用初始化失败:', error);
-                    Telegram.WebApp.showAlert('应用初始化失败，请刷新页面重试');
+                    if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                        Telegram.WebApp.showAlert('应用初始化失败，请刷新页面重试');
+                    }
                 }
             },
 
@@ -803,6 +836,9 @@
 
             // 添加到购物车
             addToCart(productId) {
+                if (this.isProcessing) return;
+                
+                this.isProcessing = true;
                 try {
                     this.cart[productId] = (this.cart[productId] || 0) + 1;
                     this.saveData();
@@ -812,11 +848,16 @@
                 } catch (error) {
                     console.error('添加到购物车失败:', error);
                     Telegram.WebApp.showAlert('添加到购物车失败，请重试');
+                } finally {
+                    this.isProcessing = false;
                 }
             },
 
             // 从购物车移除
             removeFromCart(productId) {
+                if (this.isProcessing) return;
+                
+                this.isProcessing = true;
                 try {
                     if (this.cart[productId]) {
                         this.cart[productId]--;
@@ -831,6 +872,8 @@
                 } catch (error) {
                     console.error('从购物车移除失败:', error);
                     Telegram.WebApp.showAlert('从购物车移除失败，请重试');
+                } finally {
+                    this.isProcessing = false;
                 }
             },
 
@@ -1144,6 +1187,12 @@
         // 显示标签页
         function showTab(tabName, button) {
             try {
+                // 阻止事件冒泡
+                if (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                
                 // 隐藏所有标签页
                 document.querySelectorAll('.tab-content').forEach(tab => {
                     tab.classList.remove('active');
@@ -1165,10 +1214,13 @@
                     button.classList.add('active');
                 } else {
                     // 如果没有传入button参数，手动找到对应的导航标签
-                    const navButton = document.querySelector(`[onclick*="showTab('${tabName}'"]`);
-                    if (navButton) {
-                        navButton.classList.add('active');
-                    }
+                    const navButtons = document.querySelectorAll('.nav-tab');
+                    navButtons.forEach(navButton => {
+                        const onclickAttr = navButton.getAttribute('onclick');
+                        if (onclickAttr && onclickAttr.includes(`showTab('${tabName}'`)) {
+                            navButton.classList.add('active');
+                        }
+                    });
                 }
 
                 // 根据当前页面更新主按钮状态
@@ -1217,7 +1269,19 @@
 
         // 初始化应用
         document.addEventListener('DOMContentLoaded', () => {
-            SupermarketApp.init();
+            try {
+                console.log('DOM加载完成，开始初始化应用...');
+                SupermarketApp.init();
+                console.log('应用初始化完成');
+            } catch (error) {
+                console.error('应用初始化失败:', error);
+                // 显示错误信息给用户
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                    Telegram.WebApp.showAlert('应用初始化失败，请刷新页面重试');
+                } else {
+                    alert('应用初始化失败，请刷新页面重试');
+                }
+            }
         });
     </script>
 </body>
