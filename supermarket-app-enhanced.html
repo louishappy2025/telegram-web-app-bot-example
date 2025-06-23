@@ -628,146 +628,180 @@
     </div>
 
     <script>
-        // 超市应用主对象
-        const SupermarketApp = {
-            // 数据
-            cart: {},
-            orders: [],
-            currentCategory: 'fruits',
-            selectedPayment: null,
-            isProcessing: false,
-            initialized: false,
+        // 超市应用 - 全新版本
+        class SupermarketApp {
+            constructor() {
+                this.cart = {};
+                this.orders = [];
+                this.currentCategory = 'fruits';
+                this.selectedPayment = null;
+                this.currentTab = 'products';
+                
+                // 分类数据
+                this.categories = [
+                    { id: 'fruits', name: '水果', icon: '🍎' },
+                    { id: 'dairy', name: '乳制品', icon: '🥛' },
+                    { id: 'bakery', name: '面包', icon: '🍞' },
+                    { id: 'meat', name: '肉类', icon: '🍗' },
+                    { id: 'vegetables', name: '蔬菜', icon: '🥬' },
+                    { id: 'beverages', name: '饮料', icon: '🥤' }
+                ];
+                
+                // 商品数据
+                this.products = [
+                    { id: 1, name: '苹果', price: 5.99, image: '🍎', category: 'fruits' },
+                    { id: 2, name: '香蕉', price: 3.99, image: '🍌', category: 'fruits' },
+                    { id: 3, name: '橙子', price: 4.99, image: '🍊', category: 'fruits' },
+                    { id: 4, name: '葡萄', price: 8.99, image: '🍇', category: 'fruits' },
+                    { id: 5, name: '牛奶', price: 8.99, image: '🥛', category: 'dairy' },
+                    { id: 6, name: '酸奶', price: 6.99, image: '🥛', category: 'dairy' },
+                    { id: 7, name: '奶酪', price: 12.99, image: '🧀', category: 'dairy' },
+                    { id: 8, name: '面包', price: 6.99, image: '🍞', category: 'bakery' },
+                    { id: 9, name: '蛋糕', price: 15.99, image: '🍰', category: 'bakery' },
+                    { id: 10, name: '鸡蛋', price: 12.99, image: '🥚', category: 'dairy' },
+                    { id: 11, name: '鸡肉', price: 25.99, image: '🍗', category: 'meat' },
+                    { id: 12, name: '猪肉', price: 22.99, image: '🥩', category: 'meat' },
+                    { id: 13, name: '蔬菜', price: 9.99, image: '🥬', category: 'vegetables' },
+                    { id: 14, name: '胡萝卜', price: 4.99, image: '🥕', category: 'vegetables' },
+                    { id: 15, name: '可乐', price: 3.99, image: '🥤', category: 'beverages' },
+                    { id: 16, name: '矿泉水', price: 2.99, image: '💧', category: 'beverages' }
+                ];
 
-            // 分类数据
-            categories: [
-                { id: 'fruits', name: '水果', icon: '🍎' },
-                { id: 'dairy', name: '乳制品', icon: '🥛' },
-                { id: 'bakery', name: '面包', icon: '🍞' },
-                { id: 'meat', name: '肉类', icon: '🍗' },
-                { id: 'vegetables', name: '蔬菜', icon: '🥬' },
-                { id: 'beverages', name: '饮料', icon: '🥤' }
-            ],
-            
-            // 商品数据
-            products: [
-                { id: 1, name: '苹果', price: 5.99, image: '🍎', category: 'fruits' },
-                { id: 2, name: '香蕉', price: 3.99, image: '🍌', category: 'fruits' },
-                { id: 3, name: '橙子', price: 4.99, image: '🍊', category: 'fruits' },
-                { id: 4, name: '葡萄', price: 8.99, image: '🍇', category: 'fruits' },
-                { id: 5, name: '牛奶', price: 8.99, image: '🥛', category: 'dairy' },
-                { id: 6, name: '酸奶', price: 6.99, image: '🥛', category: 'dairy' },
-                { id: 7, name: '奶酪', price: 12.99, image: '🧀', category: 'dairy' },
-                { id: 8, name: '面包', price: 6.99, image: '🍞', category: 'bakery' },
-                { id: 9, name: '蛋糕', price: 15.99, image: '🍰', category: 'bakery' },
-                { id: 10, name: '鸡蛋', price: 12.99, image: '🥚', category: 'dairy' },
-                { id: 11, name: '鸡肉', price: 25.99, image: '🍗', category: 'meat' },
-                { id: 12, name: '猪肉', price: 22.99, image: '🥩', category: 'meat' },
-                { id: 13, name: '蔬菜', price: 9.99, image: '🥬', category: 'vegetables' },
-                { id: 14, name: '胡萝卜', price: 4.99, image: '🥕', category: 'vegetables' },
-                { id: 15, name: '可乐', price: 3.99, image: '🥤', category: 'beverages' },
-                { id: 16, name: '矿泉水', price: 2.99, image: '💧', category: 'beverages' }
-            ],
-
-            // 支付方式数据
-            paymentMethods: [
-                { id: 'aba', name: 'ABA银行', icon: '🏦', desc: 'ABA Pay转账' },
-                { id: 'huione', name: '汇旺', icon: '💰', desc: '汇旺支付' },
-                { id: 'usdt', name: 'USDT', icon: '₮', desc: 'USDT支付' },
-                { id: 'cod', name: '货到付款', icon: '💵', desc: '现金支付' }
-            ],
+                // 支付方式数据
+                this.paymentMethods = [
+                    { id: 'aba', name: 'ABA银行', icon: '🏦', desc: 'ABA Pay转账' },
+                    { id: 'huione', name: '汇旺', icon: '💰', desc: '汇旺支付' },
+                    { id: 'usdt', name: 'USDT', icon: '₮', desc: 'USDT支付' },
+                    { id: 'cod', name: '货到付款', icon: '💵', desc: '现金支付' }
+                ];
+            }
 
             // 初始化应用
             init() {
-                if (this.initialized) return;
-                
                 console.log('初始化超市应用...');
                 
-                // 设置Telegram WebApp
-                if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-                    Telegram.WebApp.ready();
-                    
-                    // 设置主按钮
-                    this.updateMainButton();
-                    
-                    // 设置次要按钮
-                    Telegram.WebApp.SecondaryButton.setParams({
-                        text: '查看订单',
-                        is_visible: true
-                    }).onClick(() => {
-                        this.showTab('orders');
-                    });
-                }
+                // 初始化Telegram WebApp
+                this.initTelegramWebApp();
                 
                 // 加载数据
                 this.loadData();
                 
                 // 渲染页面
+                this.renderAll();
+                
+                console.log('超市应用初始化完成');
+            }
+
+            // 初始化Telegram WebApp
+            initTelegramWebApp() {
+                if (typeof Telegram === 'undefined' || !Telegram.WebApp) {
+                    console.log('Telegram WebApp API 不可用');
+                    return;
+                }
+
+                Telegram.WebApp.ready();
+                
+                // 设置主按钮
+                this.updateMainButton();
+                
+                // 设置次要按钮
+                Telegram.WebApp.SecondaryButton.setParams({
+                    text: '查看订单',
+                    is_visible: true
+                }).onClick(() => {
+                    this.switchTab('orders');
+                });
+            }
+
+            // 加载数据
+            loadData() {
+                if (typeof Telegram === 'undefined' || !Telegram.WebApp) {
+                    console.log('无法加载数据：Telegram API 不可用');
+                    return;
+                }
+
+                Telegram.WebApp.CloudStorage.getKeys((err, keys) => {
+                    if (err) {
+                        console.log('获取数据键失败:', err);
+                        return;
+                    }
+
+                    if (!keys || keys.length === 0) {
+                        console.log('没有保存的数据');
+                        return;
+                    }
+
+                    Telegram.WebApp.CloudStorage.getItems(keys, (err, items) => {
+                        if (err) {
+                            console.log('获取数据失败:', err);
+                            return;
+                        }
+
+                        if (items.cart) {
+                            try {
+                                this.cart = JSON.parse(items.cart);
+                            } catch (e) {
+                                console.log('解析购物车数据失败:', e);
+                                this.cart = {};
+                            }
+                        }
+
+                        if (items.orders) {
+                            try {
+                                this.orders = JSON.parse(items.orders);
+                            } catch (e) {
+                                console.log('解析订单数据失败:', e);
+                                this.orders = [];
+                            }
+                        }
+
+                        this.renderAll();
+                        this.updateMainButton();
+                    });
+                });
+            }
+
+            // 保存数据
+            saveData() {
+                if (typeof Telegram === 'undefined' || !Telegram.WebApp) {
+                    console.log('无法保存数据：Telegram API 不可用');
+                    return;
+                }
+
+                Telegram.WebApp.CloudStorage.setItem('cart', JSON.stringify(this.cart));
+                Telegram.WebApp.CloudStorage.setItem('orders', JSON.stringify(this.orders));
+            }
+
+            // 渲染所有页面
+            renderAll() {
                 this.renderCategories();
                 this.renderProducts();
                 this.renderCart();
                 this.renderOrders();
-                
-                this.initialized = true;
-                console.log('超市应用初始化完成');
-            },
+            }
 
-            // 加载数据
-            loadData() {
-                if (typeof Telegram === 'undefined' || !Telegram.WebApp) return;
+            // 切换标签页
+            switchTab(tabName) {
+                console.log('切换到标签页:', tabName);
                 
-                Telegram.WebApp.CloudStorage.getKeys((err, keys) => {
-                    if (!err && keys && keys.length > 0) {
-                        Telegram.WebApp.CloudStorage.getItems(keys, (err, items) => {
-                            if (!err && items) {
-                                if (items.cart) {
-                                    try {
-                                        this.cart = JSON.parse(items.cart);
-                                    } catch (e) {
-                                        this.cart = {};
-                                    }
-                                }
-                                if (items.orders) {
-                                    try {
-                                        this.orders = JSON.parse(items.orders);
-                                    } catch (e) {
-                                        this.orders = [];
-                                    }
-                                }
-                                this.renderCart();
-                                this.renderProducts();
-                                this.renderOrders();
-                                this.updateMainButton();
-                            }
-                        });
-                    }
-                });
-            },
-
-            // 保存数据
-            saveData() {
-                if (typeof Telegram === 'undefined' || !Telegram.WebApp) return;
+                this.currentTab = tabName;
                 
-                Telegram.WebApp.CloudStorage.setItem('cart', JSON.stringify(this.cart));
-                Telegram.WebApp.CloudStorage.setItem('orders', JSON.stringify(this.orders));
-            },
-
-            // 显示标签页
-            showTab(tabName) {
                 // 隐藏所有标签页
                 document.querySelectorAll('.tab-content').forEach(tab => {
                     tab.classList.remove('active');
                 });
-                document.querySelectorAll('.nav-tab').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-
-                // 显示选中的标签页
+                
+                // 显示目标标签页
                 const targetTab = document.getElementById(tabName);
                 if (targetTab) {
                     targetTab.classList.add('active');
                 }
 
                 // 更新导航标签
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                
                 const navButton = document.querySelector(`[onclick*="showTab('${tabName}'"]`);
                 if (navButton) {
                     navButton.classList.add('active');
@@ -775,79 +809,86 @@
 
                 // 更新主按钮
                 this.updateMainButton();
-            },
+            }
 
             // 更新主按钮
             updateMainButton() {
-                if (typeof Telegram === 'undefined' || !Telegram.WebApp) return;
+                if (typeof Telegram === 'undefined' || !Telegram.WebApp) {
+                    return;
+                }
+
+                const cartCount = this.getCartCount();
                 
-                const currentTab = document.querySelector('.tab-content.active');
-                const tabName = currentTab ? currentTab.id : 'products';
-                
-                const cartCount = Object.values(this.cart).reduce((sum, qty) => sum + qty, 0);
-                
-                switch (tabName) {
+                switch (this.currentTab) {
                     case 'products':
                         Telegram.WebApp.MainButton.setParams({
                             text: cartCount > 0 ? `购物车 (${cartCount})` : '查看购物车',
                             is_visible: true
                         }).onClick(() => {
-                            this.showTab('cart');
+                            this.switchTab('cart');
                         });
                         break;
+                        
                     case 'cart':
                         Telegram.WebApp.MainButton.setParams({
                             text: '继续购物',
                             is_visible: true
                         }).onClick(() => {
-                            this.showTab('products');
+                            this.switchTab('products');
                         });
                         break;
+                        
                     case 'checkout':
                         Telegram.WebApp.MainButton.setParams({
                             text: '返回购物车',
                             is_visible: true
                         }).onClick(() => {
-                            this.showTab('cart');
+                            this.switchTab('cart');
                         });
                         break;
+                        
                     case 'orders':
                         Telegram.WebApp.MainButton.setParams({
                             text: '继续购物',
                             is_visible: true
                         }).onClick(() => {
-                            this.showTab('products');
+                            this.switchTab('products');
                         });
                         break;
                 }
-            },
+            }
+
+            // 获取购物车商品数量
+            getCartCount() {
+                return Object.values(this.cart).reduce((sum, qty) => sum + qty, 0);
+            }
 
             // 渲染分类
             renderCategories() {
                 const sidebar = document.getElementById('categorySidebar');
                 if (!sidebar) return;
-                
+
                 sidebar.innerHTML = this.categories.map(category => `
                     <div class="category-item ${category.id === this.currentCategory ? 'active' : ''}" 
-                         onclick="SupermarketApp.selectCategory('${category.id}')">
+                         onclick="app.selectCategory('${category.id}')">
                         <span class="category-icon">${category.icon}</span>
                         <div>${category.name}</div>
                     </div>
                 `).join('');
-            },
+            }
 
             // 选择分类
             selectCategory(categoryId) {
                 this.currentCategory = categoryId;
                 this.renderCategories();
                 this.renderProducts();
-            },
+            }
 
             // 渲染商品
             renderProducts() {
                 const grid = document.getElementById('productGrid');
                 if (!grid) return;
-                
+
                 const categoryProducts = this.products.filter(product => product.category === this.currentCategory);
                 
                 grid.innerHTML = categoryProducts.map(product => {
@@ -858,20 +899,20 @@
                             <div class="product-name">${product.name}</div>
                             <div class="product-price">¥${product.price.toFixed(2)}</div>
                             <div class="product-actions">
-                                <button class="btn btn-secondary" onclick="SupermarketApp.removeFromCart(${product.id})" ${quantity === 0 ? 'style="display:none"' : ''}>
+                                <button class="btn btn-secondary" onclick="app.removeFromCart(${product.id})" ${quantity === 0 ? 'style="display:none"' : ''}>
                                     -
                                 </button>
                                 <span class="quantity-display" ${quantity === 0 ? 'style="display:none"' : ''}>
                                     ${quantity}
                                 </span>
-                                <button class="btn btn-primary" onclick="SupermarketApp.addToCart(${product.id})">
+                                <button class="btn btn-primary" onclick="app.addToCart(${product.id})">
                                     +
                                 </button>
                             </div>
                         </div>
                     `;
                 }).join('');
-            },
+            }
 
             // 添加到购物车
             addToCart(productId) {
@@ -880,7 +921,7 @@
                 this.renderProducts();
                 this.renderCart();
                 this.updateMainButton();
-            },
+            }
 
             // 从购物车移除
             removeFromCart(productId) {
@@ -894,7 +935,7 @@
                     this.renderCart();
                     this.updateMainButton();
                 }
-            },
+            }
 
             // 渲染购物车
             renderCart() {
@@ -902,7 +943,7 @@
                 const checkoutBtn = document.getElementById('checkoutBtn');
                 
                 if (!cartContainer) return;
-                
+
                 if (Object.keys(this.cart).length === 0) {
                     cartContainer.innerHTML = `
                         <div class="empty-state">
@@ -932,9 +973,9 @@
                             </div>
                             <div class="cart-item-actions">
                                 <div class="quantity-control">
-                                    <button class="quantity-btn" onclick="SupermarketApp.removeFromCart(${product.id})">-</button>
+                                    <button class="quantity-btn" onclick="app.removeFromCart(${product.id})">-</button>
                                     <span class="quantity-display">${quantity}</span>
-                                    <button class="quantity-btn" onclick="SupermarketApp.addToCart(${product.id})">+</button>
+                                    <button class="quantity-btn" onclick="app.addToCart(${product.id})">+</button>
                                 </div>
                             </div>
                         </div>
@@ -945,13 +986,13 @@
                 const cartTotal = document.getElementById('cartTotal');
                 if (cartTotal) cartTotal.textContent = `总计: ¥${total.toFixed(2)}`;
                 if (checkoutBtn) checkoutBtn.style.display = 'block';
-            },
+            }
 
             // 渲染订单
             renderOrders() {
                 const orderContainer = document.getElementById('orderList');
                 if (!orderContainer) return;
-                
+
                 if (this.orders.length === 0) {
                     orderContainer.innerHTML = `
                         <div class="empty-state">
@@ -989,7 +1030,7 @@
                         </div>
                     </div>
                 `).join('');
-            },
+            }
 
             // 获取状态文本
             getStatusText(status) {
@@ -998,7 +1039,7 @@
                     'completed': '已完成'
                 };
                 return statusMap[status] || status;
-            },
+            }
 
             // 计算购物车总计
             getCartTotal() {
@@ -1006,7 +1047,7 @@
                     const product = this.products.find(p => p.id == productId);
                     return total + (product.price * this.cart[productId]);
                 }, 0);
-            },
+            }
 
             // 去下单
             goToCheckout() {
@@ -1016,11 +1057,11 @@
                     }
                     return;
                 }
-                
+
                 this.renderOrderSummary();
                 this.renderPaymentMethods();
-                this.showTab('checkout');
-            },
+                this.switchTab('checkout');
+            }
 
             // 渲染订单摘要
             renderOrderSummary() {
@@ -1028,7 +1069,7 @@
                 const totalElement = document.getElementById('orderSummaryTotal');
                 
                 if (!summaryContainer || !totalElement) return;
-                
+
                 let total = 0;
                 const summaryItems = Object.keys(this.cart).map(productId => {
                     const product = this.products.find(p => p.id == productId);
@@ -1046,28 +1087,28 @@
 
                 summaryContainer.innerHTML = summaryItems;
                 totalElement.textContent = `总计: ¥${total.toFixed(2)}`;
-            },
+            }
 
             // 渲染支付方式
             renderPaymentMethods() {
                 const methodsContainer = document.getElementById('paymentMethods');
                 if (!methodsContainer) return;
-                
+
                 methodsContainer.innerHTML = this.paymentMethods.map(method => `
-                    <div class="payment-method" onclick="SupermarketApp.selectPayment('${method.id}')">
+                    <div class="payment-method" onclick="app.selectPayment('${method.id}')">
                         <span class="payment-icon">${method.icon}</span>
                         <div class="payment-name">${method.name}</div>
                         <div class="payment-desc">${method.desc}</div>
                     </div>
                 `).join('');
-            },
+            }
 
             // 选择支付方式
             selectPayment(paymentId) {
                 document.querySelectorAll('.payment-method').forEach(el => {
                     el.classList.remove('selected');
                 });
-                
+
                 const methodsContainer = document.getElementById('paymentMethods');
                 if (methodsContainer) {
                     const selectedElement = methodsContainer.querySelector(`[onclick*="selectPayment('${paymentId}')"]`);
@@ -1075,14 +1116,14 @@
                         selectedElement.classList.add('selected');
                     }
                 }
-                
+
                 this.selectedPayment = paymentId;
-                
+
                 const proceedBtn = document.getElementById('proceedBtn');
                 if (proceedBtn) {
                     proceedBtn.style.display = 'block';
                 }
-            },
+            }
 
             // 继续填写收货信息
             proceedToCustomerInfo() {
@@ -1094,13 +1135,13 @@
                 }
 
                 this.showCustomerInfoForm();
-            },
+            }
 
             // 显示客户信息表单
             showCustomerInfoForm() {
                 const total = this.getCartTotal();
                 const paymentMethod = this.paymentMethods.find(p => p.id === this.selectedPayment);
-                
+
                 if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
                     Telegram.WebApp.showPopup({
                         title: '填写收货信息',
@@ -1115,7 +1156,7 @@
                         }
                     });
                 }
-            },
+            }
 
             // 创建订单
             createOrder() {
@@ -1147,30 +1188,31 @@
                 this.cart = {};
                 this.selectedPayment = null;
                 this.saveData();
-                this.renderCart();
-                this.renderProducts();
-                this.renderOrders();
+                this.renderAll();
                 this.updateMainButton();
 
                 if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
                     Telegram.WebApp.showAlert(
                         `订单创建成功！\n\n订单号: #${order.id}\n总计: ¥${order.total.toFixed(2)}\n支付方式: ${order.paymentMethod}\n\n我们会在24小时内处理您的订单。`,
                         () => {
-                            this.showTab('orders');
+                            this.switchTab('orders');
                         }
                     );
                 }
             }
-        };
+        }
 
         // 全局函数
         function showTab(tabName) {
-            SupermarketApp.showTab(tabName);
+            app.switchTab(tabName);
         }
+
+        // 创建应用实例
+        const app = new SupermarketApp();
 
         // 初始化应用
         document.addEventListener('DOMContentLoaded', () => {
-            SupermarketApp.init();
+            app.init();
         });
     </script>
 </body>
