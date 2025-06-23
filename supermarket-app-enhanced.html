@@ -727,6 +727,7 @@
                                         this.orders = JSON.parse(items.orders);
                                     }
                                     this.renderCart();
+                                    this.renderProducts();
                                     this.renderOrders();
                                 } catch (parseError) {
                                     console.error('解析数据失败:', parseError);
@@ -1117,6 +1118,7 @@
                 this.selectedPayment = null;
                 this.saveData();
                 this.renderCart();
+                this.renderProducts(); // 重新渲染商品页面，更新数量显示
                 this.renderOrders();
                 this.updateMainButton();
 
@@ -1141,7 +1143,17 @@
 
             // 显示选中的标签页
             document.getElementById(tabName).classList.add('active');
-            button.classList.add('active');
+            
+            // 更新导航标签状态
+            if (button) {
+                button.classList.add('active');
+            } else {
+                // 如果没有传入button参数，手动找到对应的导航标签
+                const navButton = document.querySelector(`[onclick*="showTab('${tabName}'"]`);
+                if (navButton) {
+                    navButton.classList.add('active');
+                }
+            }
 
             // 更新按钮状态
             if (tabName === 'cart') {
@@ -1149,24 +1161,29 @@
                     text: '继续购物',
                     is_visible: true
                 }).onClick(() => {
-                    showTab('products', button);
+                    showTab('products');
                 });
             } else if (tabName === 'checkout') {
                 Telegram.WebApp.MainButton.setParams({
                     text: '返回购物车',
                     is_visible: true
                 }).onClick(() => {
-                    showTab('cart', button);
+                    showTab('cart');
                 });
             } else if (tabName === 'orders') {
                 Telegram.WebApp.MainButton.setParams({
                     text: '继续购物',
                     is_visible: true
                 }).onClick(() => {
-                    showTab('products', button);
+                    showTab('products');
                 });
             } else {
                 SupermarketApp.updateMainButton();
+            }
+            
+            // 如果切换到商品页面，确保商品状态是最新的
+            if (tabName === 'products') {
+                SupermarketApp.renderProducts();
             }
         }
 
