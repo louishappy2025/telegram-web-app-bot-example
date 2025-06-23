@@ -368,16 +368,20 @@
             cursor: pointer;
             background: var(--tg-theme-bg-color, #fff);
             transition: all 0.2s;
+            position: relative;
         }
 
         .payment-method:hover {
             border-color: var(--tg-theme-button-color, #50a8eb);
+            transform: translateY(-1px);
         }
 
         .payment-method.selected {
             border-color: var(--tg-theme-button-color, #50a8eb);
             background: var(--tg-theme-button-color, #50a8eb);
             color: var(--tg-theme-button-text-color, #fff);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(80, 168, 235, 0.3);
         }
 
         .payment-icon {
@@ -472,6 +476,41 @@
         .step.completed .step-text {
             color: #28a745;
         }
+
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--tg-theme-hint-color, #ccc);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--tg-theme-hint-color, #ccc);
+            border-top: 4px solid var(--tg-theme-button-color, #50a8eb);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 按钮禁用状态 */
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* 商品卡片悬停效果 */
+        .product-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+            transition: all 0.2s ease;
+        }
     </style>
 </head>
 
@@ -482,9 +521,9 @@
         </div>
 
         <div class="nav-tabs">
-            <button class="nav-tab active" onclick="showTab('products')">商品</button>
-            <button class="nav-tab" onclick="showTab('cart')">购物车</button>
-            <button class="nav-tab" onclick="showTab('orders')">订单</button>
+            <button class="nav-tab active" onclick="showTab('products', this)">商品</button>
+            <button class="nav-tab" onclick="showTab('cart', this)">购物车</button>
+            <button class="nav-tab" onclick="showTab('orders', this)">订单</button>
         </div>
 
         <!-- 商品页面 -->
@@ -602,6 +641,7 @@
             orders: [],
             currentCategory: 'fruits', // 当前选中的分类
             selectedPayment: null, // 选中的支付方式
+            isProcessing: false, // 防止重复操作
 
             // 支付方式数据
             paymentMethods: [
@@ -613,12 +653,22 @@
 
             // 初始化应用
             init() {
-                this.loadData();
-                this.renderCategories();
-                this.renderProducts();
-                this.renderCart();
-                this.renderOrders();
-                this.setupTelegramWebApp();
+                try {
+                    this.loadData();
+                    this.renderCategories();
+                    this.renderProducts();
+                    this.renderCart();
+                    this.renderOrders();
+                    this.setupTelegramWebApp();
+                    
+                    // 初始化步骤指示器
+                    this.updateStepIndicator(1);
+                    
+                    console.log('超市应用初始化完成');
+                } catch (error) {
+                    console.error('应用初始化失败:', error);
+                    Telegram.WebApp.showAlert('应用初始化失败，请刷新页面重试');
+                }
             },
 
             // 设置Telegram WebApp
@@ -654,23 +704,42 @@
 
             // 加载数据
             loadData() {
-                // 从Telegram CloudStorage加载购物车和订单数据
-                Telegram.WebApp.CloudStorage.getKeys((err, keys) => {
-                    if (!err && keys.length > 0) {
-                        Telegram.WebApp.CloudStorage.getItems(keys, (err, items) => {
-                            if (!err) {
-                                if (items.cart) {
-                                    this.cart = JSON.parse(items.cart);
+                try {
+                    // 从Telegram CloudStorage加载购物车和订单数据
+                    Telegram.WebApp.CloudStorage.getKeys((err, keys) => {
+                        if (err) {
+                            console.error('加载数据失败:', err);
+                            return;
+                        }
+                        
+                        if (keys && keys.length > 0) {
+                            Telegram.WebApp.CloudStorage.getItems(keys, (err, items) => {
+                                if (err) {
+                                    console.error('获取数据失败:', err);
+                                    return;
                                 }
-                                if (items.orders) {
-                                    this.orders = JSON.parse(items.orders);
+                                
+                                try {
+                                    if (items.cart) {
+                                        this.cart = JSON.parse(items.cart);
+                                    }
+                                    if (items.orders) {
+                                        this.orders = JSON.parse(items.orders);
+                                    }
+                                    this.renderCart();
+                                    this.renderOrders();
+                                } catch (parseError) {
+                                    console.error('解析数据失败:', parseError);
+                                    // 重置为默认值
+                                    this.cart = {};
+                                    this.orders = [];
                                 }
-                                this.renderCart();
-                                this.renderOrders();
-                            }
-                        });
-                    }
-                });
+                            });
+                        }
+                    });
+                } catch (error) {
+                    console.error('初始化数据加载失败:', error);
+                }
             },
 
             // 保存数据
@@ -703,46 +772,59 @@
                 const grid = document.getElementById('productGrid');
                 const categoryProducts = this.products.filter(product => product.category === this.currentCategory);
                 
-                grid.innerHTML = categoryProducts.map(product => `
-                    <div class="product-card">
-                        <div class="product-image">${product.image}</div>
-                        <div class="product-name">${product.name}</div>
-                        <div class="product-price">¥${product.price.toFixed(2)}</div>
-                        <div class="product-actions">
-                            <button class="btn btn-secondary" onclick="SupermarketApp.removeFromCart(${product.id})" ${!this.cart[product.id] ? 'style="display:none"' : ''}>
-                                -
-                            </button>
-                            <span class="quantity-display" ${!this.cart[product.id] ? 'style="display:none"' : ''}>
-                                ${this.cart[product.id] || 0}
-                            </span>
-                            <button class="btn btn-primary" onclick="SupermarketApp.addToCart(${product.id})">
-                                +
-                            </button>
+                grid.innerHTML = categoryProducts.map(product => {
+                    const quantity = this.cart[product.id] || 0;
+                    return `
+                        <div class="product-card">
+                            <div class="product-image">${product.image}</div>
+                            <div class="product-name">${product.name}</div>
+                            <div class="product-price">¥${product.price.toFixed(2)}</div>
+                            <div class="product-actions">
+                                <button class="btn btn-secondary" onclick="SupermarketApp.removeFromCart(${product.id})" ${quantity === 0 ? 'style="display:none"' : ''}>
+                                    -
+                                </button>
+                                <span class="quantity-display" ${quantity === 0 ? 'style="display:none"' : ''}>
+                                    ${quantity}
+                                </span>
+                                <button class="btn btn-primary" onclick="SupermarketApp.addToCart(${product.id})">
+                                    +
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             },
 
             // 添加到购物车
             addToCart(productId) {
-                this.cart[productId] = (this.cart[productId] || 0) + 1;
-                this.saveData();
-                this.renderProducts();
-                this.renderCart();
-                this.updateMainButton();
-            },
-
-            // 从购物车移除
-            removeFromCart(productId) {
-                if (this.cart[productId]) {
-                    this.cart[productId]--;
-                    if (this.cart[productId] <= 0) {
-                        delete this.cart[productId];
-                    }
+                try {
+                    this.cart[productId] = (this.cart[productId] || 0) + 1;
                     this.saveData();
                     this.renderProducts();
                     this.renderCart();
                     this.updateMainButton();
+                } catch (error) {
+                    console.error('添加到购物车失败:', error);
+                    Telegram.WebApp.showAlert('添加到购物车失败，请重试');
+                }
+            },
+
+            // 从购物车移除
+            removeFromCart(productId) {
+                try {
+                    if (this.cart[productId]) {
+                        this.cart[productId]--;
+                        if (this.cart[productId] <= 0) {
+                            delete this.cart[productId];
+                        }
+                        this.saveData();
+                        this.renderProducts();
+                        this.renderCart();
+                        this.updateMainButton();
+                    }
+                } catch (error) {
+                    console.error('从购物车移除失败:', error);
+                    Telegram.WebApp.showAlert('从购物车移除失败，请重试');
                 }
             },
 
@@ -869,16 +951,47 @@
                 }, 0);
             },
 
+            // 更新步骤指示器状态
+            updateStepIndicator(currentStep) {
+                const steps = document.querySelectorAll('.step');
+                steps.forEach((step, index) => {
+                    step.classList.remove('active', 'completed');
+                    if (index + 1 < currentStep) {
+                        step.classList.add('completed');
+                    } else if (index + 1 === currentStep) {
+                        step.classList.add('active');
+                    }
+                });
+            },
+
+            // 重置支付方式选择状态
+            resetPaymentSelection() {
+                this.selectedPayment = null;
+                document.querySelectorAll('.payment-method').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                document.getElementById('proceedBtn').style.display = 'none';
+            },
+
             // 显示下单页面
             goToCheckout() {
+                if (this.isProcessing) return;
+                
                 if (Object.keys(this.cart).length === 0) {
                     Telegram.WebApp.showAlert('购物车是空的！');
                     return;
                 }
                 
-                this.renderOrderSummary();
-                this.renderPaymentMethods();
-                showTab('checkout');
+                this.isProcessing = true;
+                try {
+                    this.resetPaymentSelection();
+                    this.renderOrderSummary();
+                    this.renderPaymentMethods();
+                    this.updateStepIndicator(2);
+                    showTab('checkout');
+                } finally {
+                    this.isProcessing = false;
+                }
             },
 
             // 渲染订单摘要
@@ -938,12 +1051,20 @@
 
             // 继续填写收货信息
             proceedToCustomerInfo() {
+                if (this.isProcessing) return;
+                
                 if (!this.selectedPayment) {
                     Telegram.WebApp.showAlert('请先选择支付方式！');
                     return;
                 }
 
-                this.showCustomerInfoForm();
+                this.isProcessing = true;
+                try {
+                    this.updateStepIndicator(3);
+                    this.showCustomerInfoForm();
+                } finally {
+                    this.isProcessing = false;
+                }
             },
 
             // 显示客户信息表单
@@ -1009,7 +1130,7 @@
         };
 
         // 显示标签页
-        function showTab(tabName) {
+        function showTab(tabName, button) {
             // 隐藏所有标签页
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -1020,7 +1141,7 @@
 
             // 显示选中的标签页
             document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
+            button.classList.add('active');
 
             // 更新按钮状态
             if (tabName === 'cart') {
@@ -1028,21 +1149,21 @@
                     text: '继续购物',
                     is_visible: true
                 }).onClick(() => {
-                    showTab('products');
+                    showTab('products', button);
                 });
             } else if (tabName === 'checkout') {
                 Telegram.WebApp.MainButton.setParams({
                     text: '返回购物车',
                     is_visible: true
                 }).onClick(() => {
-                    showTab('cart');
+                    showTab('cart', button);
                 });
             } else if (tabName === 'orders') {
                 Telegram.WebApp.MainButton.setParams({
                     text: '继续购物',
                     is_visible: true
                 }).onClick(() => {
-                    showTab('products');
+                    showTab('products', button);
                 });
             } else {
                 SupermarketApp.updateMainButton();
