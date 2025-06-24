@@ -594,8 +594,6 @@
 
             // 初始化应用
             init() {
-                console.log('初始化超市应用...');
-                
                 // 初始化Telegram WebApp
                 this.initTelegramWebApp();
                 
@@ -604,14 +602,11 @@
                 
                 // 渲染页面
                 this.renderAll();
-                
-                console.log('超市应用初始化完成');
             }
 
             // 初始化Telegram WebApp
             initTelegramWebApp() {
                 if (typeof Telegram === 'undefined' || !Telegram.WebApp) {
-                    console.log('Telegram WebApp API 不可用');
                     return;
                 }
 
@@ -632,24 +627,20 @@
             // 加载数据
             loadData() {
                 if (typeof Telegram === 'undefined' || !Telegram.WebApp) {
-                    console.log('无法加载数据：Telegram API 不可用');
                     return;
                 }
 
                 Telegram.WebApp.CloudStorage.getKeys((err, keys) => {
                     if (err) {
-                        console.log('获取数据键失败:', err);
                         return;
                     }
 
                     if (!keys || keys.length === 0) {
-                        console.log('没有保存的数据');
                         return;
                     }
 
                     Telegram.WebApp.CloudStorage.getItems(keys, (err, items) => {
                         if (err) {
-                            console.log('获取数据失败:', err);
                             return;
                         }
 
@@ -657,7 +648,6 @@
                             try {
                                 this.cart = JSON.parse(items.cart);
                             } catch (e) {
-                                console.log('解析购物车数据失败:', e);
                                 this.cart = {};
                             }
                         }
@@ -666,7 +656,6 @@
                             try {
                                 this.orders = JSON.parse(items.orders);
                             } catch (e) {
-                                console.log('解析订单数据失败:', e);
                                 this.orders = [];
                             }
                         }
@@ -680,7 +669,6 @@
             // 保存数据
             saveData() {
                 if (typeof Telegram === 'undefined' || !Telegram.WebApp) {
-                    console.log('无法保存数据：Telegram API 不可用');
                     return;
                 }
 
@@ -698,8 +686,6 @@
 
             // 切换标签页
             switchTab(tabName) {
-                console.log('切换到标签页:', tabName);
-                
                 this.currentTab = tabName;
                 
                 // 隐藏所有标签页
@@ -718,13 +704,25 @@
                     tab.classList.remove('active');
                 });
                 
-                const navButton = document.querySelector(`[onclick*="switchTab('${tabName}'"]`);
-                if (navButton) {
-                    navButton.classList.add('active');
-                }
+                // 更可靠的方式查找对应的导航按钮
+                const navButtons = document.querySelectorAll('.tab');
+                navButtons.forEach((button, index) => {
+                    if (index === 0 && tabName === 'products') {
+                        button.classList.add('active');
+                    } else if (index === 1 && tabName === 'cart') {
+                        button.classList.add('active');
+                    } else if (index === 2 && tabName === 'orders') {
+                        button.classList.add('active');
+                    }
+                });
 
                 // 更新主按钮
                 this.updateMainButton();
+                
+                // 确保购物车页面被正确渲染
+                if (tabName === 'cart') {
+                    this.renderCart();
+                }
             }
 
             // 更新主按钮
@@ -746,12 +744,21 @@
                         break;
                         
                     case 'cart':
-                        Telegram.WebApp.MainButton.setParams({
-                            text: '继续购物',
-                            is_visible: true
-                        }).onClick(() => {
-                            this.switchTab('products');
-                        });
+                        if (cartCount > 0) {
+                            Telegram.WebApp.MainButton.setParams({
+                                text: '去下单',
+                                is_visible: true
+                            }).onClick(() => {
+                                this.goToCheckout();
+                            });
+                        } else {
+                            Telegram.WebApp.MainButton.setParams({
+                                text: '继续购物',
+                                is_visible: true
+                            }).onClick(() => {
+                                this.switchTab('products');
+                            });
+                        }
                         break;
                         
                     case 'checkout':
