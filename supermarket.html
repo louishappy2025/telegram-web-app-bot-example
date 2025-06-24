@@ -1115,21 +1115,24 @@
             // 显示设置
             showSettings() {
                 if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-                    Telegram.WebApp.showPopup({
-                        title: '设置',
-                        message: '超市应用设置\n\n版本: 1.0.0\n开发者: Telegram Mini App',
-                        buttons: [
-                            {id: 'clear_data', type: 'destructive', text: '清除数据'},
-                            {id: 'about', type: 'default', text: '关于'},
-                            {type: 'cancel'}
-                        ]
-                    }, (buttonId) => {
-                        if (buttonId === 'clear_data') {
-                            this.clearAllData();
-                        } else if (buttonId === 'about') {
-                            this.showAbout();
+                    // 使用简单的确认对话框来选择操作
+                    Telegram.WebApp.showConfirm(
+                        '超市应用设置\n\n版本: 1.0.0\n开发者: Telegram Mini App\n\n是否要清除所有数据？',
+                        (confirmed) => {
+                            if (confirmed) {
+                                this.clearAllData();
+                            } else {
+                                this.showAbout();
+                            }
                         }
-                    });
+                    );
+                } else {
+                    // 回退到浏览器原生确认
+                    if (confirm('超市应用设置\n\n版本: 1.0.0\n开发者: Telegram Mini App\n\n是否要清除所有数据？')) {
+                        this.clearAllData();
+                    } else {
+                        this.showAbout();
+                    }
                 }
             }
 
@@ -1151,6 +1154,16 @@
                             Telegram.WebApp.showAlert('数据已清除');
                         }
                     });
+                } else {
+                    // 回退到浏览器原生确认
+                    if (confirm('确定要清除所有数据吗？这将删除购物车和订单历史。')) {
+                        this.cart = {};
+                        this.orders = [];
+                        this.saveData();
+                        this.renderAll();
+                        this.updateBottomButton();
+                        alert('数据已清除');
+                    }
                 }
             }
 
@@ -1158,6 +1171,8 @@
             showAbout() {
                 if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
                     Telegram.WebApp.showAlert('超市下单系统\n\n基于 Telegram Mini Apps 开发\n支持深色主题和触觉反馈\n\n版本: 1.0.0');
+                } else {
+                    alert('超市下单系统\n\n基于 Telegram Mini Apps 开发\n支持深色主题和触觉反馈\n\n版本: 1.0.0');
                 }
             }
 
@@ -1454,6 +1469,8 @@
                             Telegram.WebApp.HapticFeedback.notificationOccurred('error');
                         }
                         Telegram.WebApp.showAlert('购物车是空的！');
+                    } else {
+                        alert('购物车是空的！');
                     }
                     return;
                 }
@@ -1534,6 +1551,8 @@
                             Telegram.WebApp.HapticFeedback.notificationOccurred('error');
                         }
                         Telegram.WebApp.showAlert('请先选择支付方式！');
+                    } else {
+                        alert('请先选择支付方式！');
                     }
                     return;
                 }
@@ -1547,18 +1566,20 @@
                 const paymentMethod = this.paymentMethods.find(p => p.id === this.selectedPayment);
 
                 if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-                    Telegram.WebApp.showPopup({
-                        title: '填写收货信息',
-                        message: `订单总计: ¥${total.toFixed(2)}\n支付方式: ${paymentMethod.name}\n\n请确认收货信息：`,
-                        buttons: [
-                            {id: 'confirm', type: 'default', text: '确认下单'},
-                            {type: 'cancel'}
-                        ]
-                    }, (buttonId) => {
-                        if (buttonId === 'confirm') {
-                            this.createOrder();
+                    // 使用更简单的确认对话框
+                    Telegram.WebApp.showConfirm(
+                        `确认下单信息：\n\n订单总计: ¥${total.toFixed(2)}\n支付方式: ${paymentMethod.name}\n\n是否确认下单？`,
+                        (confirmed) => {
+                            if (confirmed) {
+                                this.createOrder();
+                            }
                         }
-                    });
+                    );
+                } else {
+                    // 回退到浏览器原生确认
+                    if (confirm(`确认下单信息：\n\n订单总计: ¥${total.toFixed(2)}\n支付方式: ${paymentMethod.name}\n\n是否确认下单？`)) {
+                        this.createOrder();
+                    }
                 }
             }
 
@@ -1600,13 +1621,20 @@
                     Telegram.WebApp.HapticFeedback.notificationOccurred('success');
                 }
 
+                // 显示成功消息
                 if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
                     Telegram.WebApp.showAlert(
-                        `订单创建成功！\n\n订单号: #${order.id}\n总计: ¥${order.total.toFixed(2)}\n支付方式: ${order.paymentMethod}\n\n我们会在24小时内处理您的订单。`,
-                        () => {
-                            this.switchTab('orders');
-                        }
+                        `订单创建成功！\n\n订单号: #${order.id}\n总计: ¥${order.total.toFixed(2)}\n支付方式: ${order.paymentMethod}\n\n我们会在24小时内处理您的订单。`
                     );
+                    
+                    // 延迟切换到订单页面，避免在showAlert回调中切换页面
+                    setTimeout(() => {
+                        this.switchTab('orders');
+                    }, 500);
+                } else {
+                    // 回退到浏览器原生alert
+                    alert(`订单创建成功！\n\n订单号: #${order.id}\n总计: ¥${order.total.toFixed(2)}\n支付方式: ${order.paymentMethod}\n\n我们会在24小时内处理您的订单。`);
+                    this.switchTab('orders');
                 }
             }
         }
