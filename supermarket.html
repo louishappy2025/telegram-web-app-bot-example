@@ -771,8 +771,11 @@
             // 初始化Telegram WebApp
             initTelegramWebApp() {
                 if (typeof Telegram === 'undefined' || !Telegram.WebApp) {
+                    console.log('🔧 [DEBUG] Telegram WebApp API 不可用，使用浏览器模式');
                     return;
                 }
+
+                console.log('🔧 [DEBUG] 初始化 Telegram WebApp...');
 
                 // 设置主题
                 document.body.style.visibility = '';
@@ -828,13 +831,6 @@
                     });
                 }
 
-                // 监听弹出窗口关闭
-                Telegram.WebApp.onEvent('popupClosed', (event) => {
-                    if (event.button_id === 'confirm') {
-                        this.createOrder();
-                    }
-                });
-
                 // 监听激活/停用事件
                 Telegram.WebApp.onEvent('activated', () => {
                     this.onAppActivated();
@@ -866,6 +862,8 @@
                 this.updateViewport();
                 this.updateSafeArea();
                 this.updateContentSafeArea();
+
+                console.log('✅ [DEBUG] Telegram WebApp 初始化完成');
             }
 
             // 更新主题
@@ -1642,9 +1640,29 @@
         // 创建应用实例
         const app = new SupermarketApp();
 
+        // 确保app对象在全局作用域中可用
+        window.app = app;
+
         // 初始化应用
         document.addEventListener('DOMContentLoaded', () => {
-            app.init();
+            console.log('🔧 [DEBUG] DOM加载完成，开始初始化应用...');
+            try {
+                app.init();
+                console.log('✅ [DEBUG] 应用初始化完成');
+                console.log('🔧 [DEBUG] app对象状态:', {
+                    products: app.products.length,
+                    categories: app.categories.length,
+                    cart: Object.keys(app.cart).length,
+                    orders: app.orders.length
+                });
+            } catch (error) {
+                console.error('❌ [DEBUG] 应用初始化失败:', error);
+            }
+        });
+
+        // 添加全局错误处理
+        window.addEventListener('error', (event) => {
+            console.error('❌ [DEBUG] 全局错误:', event.error);
         });
     </script>
 </body>
