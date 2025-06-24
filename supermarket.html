@@ -44,17 +44,11 @@
             max-width: 600px;
             margin: 0 auto;
             padding: 16px;
-            padding-top: calc(16px + var(--safe-area-top, 0px));
-            padding-bottom: calc(16px + var(--safe-area-bottom, 0px));
-            padding-left: calc(16px + var(--safe-area-left, 0px));
-            padding-right: calc(16px + var(--safe-area-right, 0px));
         }
 
         .header {
             text-align: center;
-            padding: 20px 0;
-            border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-            margin-bottom: 20px;
+            padding: 20px 0 10px 0;
         }
 
         .header h1 {
@@ -95,59 +89,36 @@
             display: block;
         }
 
-        /* 商品分类布局 */
-        .products-layout {
-            display: flex;
-            height: 70vh;
-            border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
+        /* 商品分类样式 */
         .categories {
-            width: 100px;
-            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
-            border-right: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-            overflow-y: auto;
+            display: flex;
+            overflow-x: auto;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            gap: 8px;
         }
 
-        .category {
-            padding: 16px 8px;
-            text-align: center;
+        .category-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+            border-radius: 20px;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #333);
             cursor: pointer;
-            border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-            transition: background-color 0.2s;
+            white-space: nowrap;
+            transition: all 0.2s;
         }
 
-        .category:hover {
-            background: var(--tg-theme-bg-color, #ffffff);
-        }
-
-        .category.active {
+        .category-btn.active {
             background: var(--tg-theme-button-color, #0088cc);
-            color: var(--tg-theme-button-text-color, #ffffff);
+            color: white;
+            border-color: var(--tg-theme-button-color, #0088cc);
         }
 
-        .category-icon {
-            font-size: 24px;
-            margin-bottom: 4px;
-            display: block;
-        }
-
-        .category-name {
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .products-area {
-            flex: 1;
-            padding: 16px;
-            overflow-y: auto;
-        }
-
+        /* 商品网格样式 */
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 16px;
         }
 
@@ -156,24 +127,24 @@
             border-radius: 12px;
             padding: 16px;
             text-align: center;
-            background: var(--tg-theme-bg-color, #ffffff);
-            transition: box-shadow 0.2s;
+            background: var(--tg-theme-bg-color, #fff);
+            transition: all 0.2s;
         }
 
         .product-card:hover {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .product-image {
             width: 60px;
             height: 60px;
-            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
-            border-radius: 8px;
             margin: 0 auto 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 40px;
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 8px;
         }
 
         .product-name {
@@ -196,53 +167,23 @@
             gap: 8px;
         }
 
-        .product-actions .btn {
-            display: inline-block;
-            width: auto;
-            margin: 0;
-            padding: 8px 12px;
-            min-width: 32px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .btn {
-            display: block;
-            width: 100%;
-            font-size: 14px;
-            margin: 15px 0;
-            padding: 12px 20px;
+        .product-actions button {
+            width: 32px;
+            height: 32px;
             border: none;
-            border-radius: 4px;
-            background-color: var(--tg-theme-button-color, #50a8eb);
-            color: var(--tg-theme-button-text-color, #ffffff);
+            border-radius: 50%;
+            background: var(--tg-theme-button-color, #0088cc);
+            color: white;
             cursor: pointer;
-            transition: all 0.2s;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .btn-primary {
-            background-color: var(--tg-theme-button-color, #50a8eb);
-            color: var(--tg-theme-button-text-color, #fff);
-            border: none;
-        }
-
-        .btn-primary:hover {
-            opacity: 0.9;
-        }
-
-        .btn-secondary {
-            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
-            color: var(--tg-theme-text-color, #000000);
-        }
-
-        .btn-secondary:hover {
-            background: var(--tg-theme-hint-color, #e0e0e0);
-        }
-
-        button[disabled] {
-            opacity: 0.6;
-            cursor: auto;
-            pointer-events: none;
+        .product-actions button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .quantity {
@@ -251,11 +192,11 @@
             text-align: center;
         }
 
-        /* 购物车 */
+        /* 购物车样式优化 */
         .cart-item {
             display: flex;
             align-items: center;
-            padding: 16px 0;
+            padding: 12px 0;
             border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
         }
 
@@ -269,39 +210,73 @@
         }
 
         .cart-item-price {
-            color: var(--tg-theme-hint-color, #999999);
+            color: var(--tg-theme-hint-color, #999);
             font-size: 12px;
         }
 
         .cart-item-actions {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
 
-        .cart-item-actions .btn {
-            display: inline-block;
-            width: auto;
-            margin: 0;
-            padding: 8px 12px;
-            min-width: 32px;
+        .cart-item-actions button {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 50%;
+            background: var(--tg-theme-button-color, #0088cc);
+            color: white;
+            cursor: pointer;
             font-size: 14px;
-            font-weight: 500;
         }
 
         .cart-total {
             text-align: right;
-            padding: 20px 0;
+            padding: 16px 0;
             border-top: 2px solid var(--tg-theme-button-color, #0088cc);
             font-weight: 600;
             font-size: 18px;
         }
 
-        .btn-large {
+        /* 表单样式优化 */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #333);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+            border-radius: 8px;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #333);
+            font-size: 14px;
+        }
+
+        .submit-btn {
             width: 100%;
             padding: 16px;
+            background: var(--tg-theme-button-color, #0088cc);
+            color: white;
+            border: none;
+            border-radius: 8px;
             font-size: 16px;
-            margin: 16px 0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .submit-btn:hover {
+            opacity: 0.9;
         }
 
         /* 下单页面 */
@@ -579,29 +554,34 @@
 
         <!-- 商品页面 -->
         <div id="products" class="tab-content active">
-            <div id="product-list"></div>
+            <div class="categories" id="categories">
+                <!-- 分类按钮将通过JavaScript加载 -->
+            </div>
+            <div class="products-grid" id="product-list">
+                <!-- 商品将通过JavaScript加载 -->
+            </div>
         </div>
 
         <!-- 购物车页面 -->
         <div id="cart" class="tab-content">
             <div id="cart-list"></div>
-            <div id="cart-total" style="text-align:right;margin-top:10px;"></div>
+            <div id="cart-total" class="cart-total"></div>
         </div>
 
         <!-- 下单页面 -->
         <div id="checkout" class="tab-content">
             <form id="order-form" style="max-width:400px;margin:0 auto;">
-                <div style="margin-bottom:12px;">
-                    <label>手机号：</label><br>
-                    <input type="tel" id="user-phone" required pattern="[0-9]{6,}" placeholder="请输入手机号" style="width:100%;padding:8px;">
+                <div class="form-group">
+                    <label>手机号：</label>
+                    <input type="tel" id="user-phone" required pattern="[0-9]{6,}" placeholder="请输入手机号">
                 </div>
-                <div style="margin-bottom:12px;">
-                    <label>收货地址：</label><br>
-                    <input type="text" id="user-address" required placeholder="请输入收货地址" style="width:100%;padding:8px;">
+                <div class="form-group">
+                    <label>收货地址：</label>
+                    <input type="text" id="user-address" required placeholder="请输入收货地址">
                 </div>
-                <div style="margin-bottom:12px;">
-                    <label>支付方式：</label><br>
-                    <select id="pay-method" required style="width:100%;padding:8px;">
+                <div class="form-group">
+                    <label>支付方式：</label>
+                    <select id="pay-method" required>
                         <option value="">请选择</option>
                         <option value="aba">ABA银行</option>
                         <option value="huione">汇旺</option>
@@ -609,8 +589,8 @@
                         <option value="cod">货到付款</option>
                     </select>
                 </div>
-                <div id="checkout-summary" style="margin-bottom:12px;"></div>
-                <button type="submit" style="width:100%;padding:12px;background:#0088cc;color:#fff;border:none;border-radius:4px;font-size:16px;">提交订单</button>
+                <div id="checkout-summary" style="margin-bottom:16px;padding:12px;background:var(--tg-theme-secondary-bg-color,#f8f9fa);border-radius:8px;"></div>
+                <button type="submit" class="submit-btn">提交订单</button>
             </form>
             <div id="order-success" style="display:none;text-align:center;padding:30px 0;color:green;font-weight:bold;"></div>
         </div>
@@ -624,29 +604,76 @@
     <script>
         // 商品数据
         const PRODUCTS = [
-            {id: 1, name: '苹果', price: 5.9},
-            {id: 2, name: '香蕉', price: 3.5},
-            {id: 3, name: '牛奶', price: 8.8},
-            {id: 4, name: '面包', price: 6.0},
-            {id: 5, name: '鸡蛋', price: 9.9},
-            {id: 6, name: '可乐', price: 4.5}
+            {id: 1, name: '苹果', price: 5.9, image: '🍎', category: 'fruits'},
+            {id: 2, name: '香蕉', price: 3.5, image: '🍌', category: 'fruits'},
+            {id: 3, name: '橙子', price: 4.8, image: '🍊', category: 'fruits'},
+            {id: 4, name: '葡萄', price: 8.9, image: '🍇', category: 'fruits'},
+            {id: 5, name: '牛奶', price: 8.8, image: '🥛', category: 'dairy'},
+            {id: 6, name: '酸奶', price: 6.5, image: '🥛', category: 'dairy'},
+            {id: 7, name: '奶酪', price: 12.9, image: '🧀', category: 'dairy'},
+            {id: 8, name: '面包', price: 6.0, image: '🍞', category: 'bakery'},
+            {id: 9, name: '蛋糕', price: 15.9, image: '🍰', category: 'bakery'},
+            {id: 10, name: '鸡蛋', price: 9.9, image: '🥚', category: 'dairy'},
+            {id: 11, name: '鸡肉', price: 25.9, image: '🍗', category: 'meat'},
+            {id: 12, name: '猪肉', price: 22.9, image: '🥩', category: 'meat'},
+            {id: 13, name: '蔬菜', price: 9.9, image: '🥬', category: 'vegetables'},
+            {id: 14, name: '胡萝卜', price: 4.9, image: '🥕', category: 'vegetables'},
+            {id: 15, name: '可乐', price: 4.5, image: '🥤', category: 'beverages'},
+            {id: 16, name: '矿泉水', price: 2.9, image: '💧', category: 'beverages'}
         ];
+
+        // 分类数据
+        const CATEGORIES = [
+            {id: 'all', name: '全部'},
+            {id: 'fruits', name: '水果'},
+            {id: 'dairy', name: '乳制品'},
+            {id: 'bakery', name: '面包'},
+            {id: 'meat', name: '肉类'},
+            {id: 'vegetables', name: '蔬菜'},
+            {id: 'beverages', name: '饮料'}
+        ];
+
         // 购物车对象 {商品id: 数量}
         let cart = {};
+        let currentCategory = 'all';
+
+        // 渲染分类
+        function renderCategories() {
+            const categoriesHtml = CATEGORIES.map(cat => 
+                `<button class="category-btn ${cat.id === currentCategory ? 'active' : ''}" onclick="selectCategory('${cat.id}')">${cat.name}</button>`
+            ).join('');
+            document.getElementById('categories').innerHTML = categoriesHtml;
+        }
+
+        // 选择分类
+        function selectCategory(categoryId) {
+            currentCategory = categoryId;
+            renderCategories();
+            renderProducts();
+        }
 
         // 渲染商品列表
         function renderProducts() {
-            console.log('[renderProducts] 当前购物车', cart);
-            const list = PRODUCTS.map(p => {
+            console.log('[renderProducts] 当前购物车', cart, '当前分类', currentCategory);
+            
+            const filteredProducts = currentCategory === 'all' 
+                ? PRODUCTS 
+                : PRODUCTS.filter(p => p.category === currentCategory);
+            
+            const list = filteredProducts.map(p => {
                 const qty = cart[p.id] || 0;
-                return `<div style='display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;'>
-                    <span>${p.name} <small>¥${p.price.toFixed(2)}</small></span>
-                    <span>
-                        <button onclick='changeQty(${p.id},-1)' ${qty===0?'disabled':''}>-</button>
-                        <span style='margin:0 8px;'>${qty}</span>
-                        <button onclick='changeQty(${p.id},1)'>+</button>
-                    </span>
-                </div>`;
+                return `
+                    <div class="product-card">
+                        <div class="product-image">${p.image}</div>
+                        <div class="product-name">${p.name}</div>
+                        <div class="product-price">¥${p.price.toFixed(2)}</div>
+                        <div class="product-actions">
+                            <button onclick='changeQty(${p.id},-1)' ${qty===0?'disabled':''}>-</button>
+                            <span class="quantity" ${qty===0?'style="display:none"':''}>${qty}</span>
+                            <button onclick='changeQty(${p.id},1)'>+</button>
+                        </div>
+                    </div>
+                `;
             }).join('');
             document.getElementById('product-list').innerHTML = list;
         }
@@ -659,7 +686,7 @@
             console.log('[changeQty] 购物车变更后', cart);
             renderProducts();
             renderCart();
-            updateMainButton();
+            updateMainButton(); // 更新MainButton状态
         }
 
         // 渲染购物车
@@ -667,14 +694,19 @@
             console.log('[renderCart] 渲染购物车', cart);
             const items = Object.keys(cart).map(id => {
                 const p = PRODUCTS.find(x=>x.id==id);
-                return `<div style='display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;'>
-                    <span>${p.name} <small>¥${p.price.toFixed(2)}</small></span>
-                    <span>
-                        <button onclick='changeQty(${p.id},-1)'>-</button>
-                        <span style='margin:0 8px;'>${cart[id]}</span>
-                        <button onclick='changeQty(${p.id},1)'>+</button>
-                    </span>
-                </div>`;
+                return `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${p.name}</div>
+                            <div class="cart-item-price">¥${p.price.toFixed(2)} × ${cart[id]}</div>
+                        </div>
+                        <div class="cart-item-actions">
+                            <button onclick='changeQty(${p.id},-1)'>-</button>
+                            <span class="quantity">${cart[id]}</span>
+                            <button onclick='changeQty(${p.id},1)'>+</button>
+                        </div>
+                    </div>
+                `;
             }).join('');
             document.getElementById('cart-list').innerHTML = items || '<div style="text-align:center;color:#aaa;padding:30px 0;">购物车为空</div>';
             let total = 0;
@@ -774,7 +806,10 @@
                     (tabName === 'orders' && idx === 3)
                 );
             });
-            if(tabName==='products') renderProducts();
+            if(tabName==='products') {
+                renderCategories();
+                renderProducts();
+            }
             if(tabName==='cart') renderCart();
             if(tabName==='checkout') {
                 renderCheckoutSummary();
@@ -791,7 +826,7 @@
                 console.log('✅ [DEBUG] 应用初始化完成');
                 console.log('🔧 [DEBUG] app对象状态:', {
                     products: PRODUCTS.length,
-                    categories: 0,
+                    categories: CATEGORIES.length,
                     cart: Object.keys(cart).length,
                     orders: orders.length
                 });
@@ -905,6 +940,7 @@
         };
 
         // 页面初始化
+        renderCategories();
         renderProducts();
         initTelegramWebApp();
     </script>
