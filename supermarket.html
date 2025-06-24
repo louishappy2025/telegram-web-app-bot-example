@@ -761,6 +761,25 @@
             const address = document.getElementById('user-address').value.trim();
             const pay = document.getElementById('pay-method').value;
             if(!phone||!address||!pay) return;
+            
+            // 获取Telegram用户信息
+            let telegramUser = null;
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+                telegramUser = Telegram.WebApp.initDataUnsafe.user;
+                console.log('📱 [Telegram用户信息]', {
+                    id: telegramUser.id,
+                    username: telegramUser.username,
+                    first_name: telegramUser.first_name,
+                    last_name: telegramUser.last_name,
+                    language_code: telegramUser.language_code,
+                    is_premium: telegramUser.is_premium,
+                    added_to_attachment_menu: telegramUser.added_to_attachment_menu,
+                    allows_write_to_pm: telegramUser.allows_write_to_pm
+                });
+            } else {
+                console.log('📱 [Telegram用户信息] 无法获取用户信息，可能不在Telegram环境中');
+            }
+            
             const payMap = {aba:'ABA银行',huione:'汇旺',usdt:'USDT',cod:'货到付款'};
             let total = 0;
             const items = Object.keys(cart).map(id=>{
@@ -775,10 +794,22 @@
                 payMethod: pay,
                 payMethodName: payMap[pay],
                 items,
-                total
+                total,
+                telegramUser: telegramUser, // 保存Telegram用户信息
+                timestamp: new Date().toISOString()
             };
             orders.unshift(order);
             console.log('[onsubmit] 新订单', order);
+            console.log('📞 [客服联系信息]', {
+                '用户ID': telegramUser ? telegramUser.id : '未知',
+                '用户名': telegramUser ? telegramUser.username : '未知',
+                '姓名': telegramUser ? `${telegramUser.first_name || ''} ${telegramUser.last_name || ''}`.trim() : '未知',
+                '手机号': phone,
+                '地址': address,
+                '订单号': order.id,
+                '订单金额': `¥${order.total.toFixed(2)}`,
+                '支付方式': order.payMethodName
+            });
             cart = {};
             renderProducts();
             renderCart();
@@ -997,6 +1028,21 @@
         renderCategories();
         renderProducts();
         initTelegramWebApp();
+        
+        // 打印Telegram用户信息（如果可用）
+        if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+            const user = Telegram.WebApp.initDataUnsafe.user;
+            console.log('👤 [页面初始化] Telegram用户信息', {
+                id: user.id,
+                username: user.username,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                language_code: user.language_code,
+                is_premium: user.is_premium
+            });
+        } else {
+            console.log('👤 [页面初始化] 未在Telegram环境中运行，无法获取用户信息');
+        }
     </script>
 </body>
 </html> 
