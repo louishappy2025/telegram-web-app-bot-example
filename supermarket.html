@@ -44,6 +44,10 @@
             max-width: 600px;
             margin: 0 auto;
             padding: 16px;
+            padding-top: calc(16px + var(--safe-area-top, 0px));
+            padding-bottom: calc(16px + var(--safe-area-bottom, 0px));
+            padding-left: calc(16px + var(--safe-area-left, 0px));
+            padding-right: calc(16px + var(--safe-area-right, 0px));
         }
 
         .header {
@@ -529,6 +533,31 @@
         body.dark .order-item {
             border-color: var(--tg-theme-hint-color, #333);
         }
+
+        /* 全屏模式支持 */
+        body.fullscreen .container {
+            max-width: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        body.fullscreen .products-layout {
+            height: 100vh;
+            border: none;
+            border-radius: 0;
+        }
+
+        /* 底部栏颜色支持 */
+        .bottom-bar {
+            background-color: var(--tg-theme-bottom-bar-bg-color, var(--tg-theme-bg-color));
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px;
+            padding-bottom: calc(16px + var(--safe-area-bottom, 0px));
+            border-top: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+        }
     </style>
 </head>
 
@@ -536,6 +565,9 @@
     <div class="container">
         <div class="header">
             <h1>🛒 超市下单系统</h1>
+            <button class="btn btn-secondary" onclick="app.toggleFullscreen()" style="width: auto; margin: 8px 0; padding: 8px 16px; font-size: 12px;">
+                <span id="fullscreen-text">全屏模式</span>
+            </button>
         </div>
 
         <div class="tabs">
@@ -669,6 +701,9 @@
 
             // 初始化应用
             init() {
+                // 检查Telegram WebApp API版本
+                this.checkApiVersion();
+                
                 // 初始化Telegram WebApp
                 this.initTelegramWebApp();
                 
@@ -677,6 +712,30 @@
                 
                 // 渲染页面
                 this.renderAll();
+            }
+
+            // 检查API版本
+            checkApiVersion() {
+                if (typeof Telegram === 'undefined' || !Telegram.WebApp) {
+                    console.warn('Telegram WebApp API 不可用');
+                    return;
+                }
+
+                const version = Telegram.WebApp.version;
+                console.log(`Telegram WebApp 版本: ${version}`);
+
+                // 检查是否支持新功能
+                if (Telegram.WebApp.isVersionAtLeast('9.0')) {
+                    console.log('支持设备存储功能');
+                }
+
+                if (Telegram.WebApp.isVersionAtLeast('8.0')) {
+                    console.log('支持全屏模式功能');
+                }
+
+                if (Telegram.WebApp.isVersionAtLeast('7.10')) {
+                    console.log('支持次要按钮功能');
+                }
             }
 
             // 初始化Telegram WebApp
@@ -689,8 +748,8 @@
                 document.body.style.visibility = '';
                 Telegram.WebApp.ready();
 
-                // 设置主按钮
-                this.updateMainButton();
+                // 设置底部按钮 (原MainButton)
+                this.updateBottomButton();
 
                 // 设置次要按钮
                 Telegram.WebApp.SecondaryButton.setParams({
@@ -711,6 +770,11 @@
                     }
                 });
 
+                // 设置设置按钮
+                Telegram.WebApp.SettingsButton.onClick(() => {
+                    this.showSettings();
+                });
+
                 // 监听主题变化
                 Telegram.WebApp.onEvent('themeChanged', () => {
                     this.updateTheme();
@@ -721,9 +785,47 @@
                     this.updateViewport();
                 });
 
+                // 监听次要按钮点击
+                Telegram.WebApp.onEvent('secondaryButtonClicked', () => {
+                    this.switchTab('orders');
+                });
+
+                // 监听弹出窗口关闭
+                Telegram.WebApp.onEvent('popupClosed', (event) => {
+                    if (event.button_id === 'confirm') {
+                        this.createOrder();
+                    }
+                });
+
+                // 监听激活/停用事件
+                Telegram.WebApp.onEvent('activated', () => {
+                    this.onAppActivated();
+                });
+
+                Telegram.WebApp.onEvent('deactivated', () => {
+                    this.onAppDeactivated();
+                });
+
+                // 监听全屏模式变化
+                Telegram.WebApp.onEvent('fullscreenChanged', () => {
+                    this.onFullscreenChanged();
+                });
+
+                // 监听安全区域变化
+                Telegram.WebApp.onEvent('safeAreaChanged', () => {
+                    this.updateSafeArea();
+                });
+
+                // 监听内容安全区域变化
+                Telegram.WebApp.onEvent('contentSafeAreaChanged', () => {
+                    this.updateContentSafeArea();
+                });
+
                 // 初始化主题
                 this.updateTheme();
                 this.updateViewport();
+                this.updateSafeArea();
+                this.updateContentSafeArea();
             }
 
             // 更新主题
@@ -742,6 +844,42 @@
                     return;
                 }
 
+                // 优先使用设备存储 (Bot API 9.0+)
+                if (Telegram.WebApp.DeviceStorage) {
+                    this.loadFromDeviceStorage();
+                } else {
+                    // 回退到云存储
+                    this.loadFromCloudStorage();
+                }
+            }
+
+            // 从设备存储加载数据
+            loadFromDeviceStorage() {
+                const cartData = Telegram.WebApp.DeviceStorage.getItem('cart');
+                const ordersData = Telegram.WebApp.DeviceStorage.getItem('orders');
+
+                if (cartData) {
+                    try {
+                        this.cart = JSON.parse(cartData);
+                    } catch (e) {
+                        this.cart = {};
+                    }
+                }
+
+                if (ordersData) {
+                    try {
+                        this.orders = JSON.parse(ordersData);
+                    } catch (e) {
+                        this.orders = [];
+                    }
+                }
+
+                this.renderAll();
+                this.updateBottomButton();
+            }
+
+            // 从云存储加载数据
+            loadFromCloudStorage() {
                 Telegram.WebApp.CloudStorage.getKeys((err, keys) => {
                     if (err) {
                         return;
@@ -773,7 +911,7 @@
                         }
 
                         this.renderAll();
-                        this.updateMainButton();
+                        this.updateBottomButton();
                     });
                 });
             }
@@ -784,8 +922,15 @@
                     return;
                 }
 
-                Telegram.WebApp.CloudStorage.setItem('cart', JSON.stringify(this.cart));
-                Telegram.WebApp.CloudStorage.setItem('orders', JSON.stringify(this.orders));
+                // 优先使用设备存储 (Bot API 9.0+)
+                if (Telegram.WebApp.DeviceStorage) {
+                    Telegram.WebApp.DeviceStorage.setItem('cart', JSON.stringify(this.cart));
+                    Telegram.WebApp.DeviceStorage.setItem('orders', JSON.stringify(this.orders));
+                } else {
+                    // 回退到云存储
+                    Telegram.WebApp.CloudStorage.setItem('cart', JSON.stringify(this.cart));
+                    Telegram.WebApp.CloudStorage.setItem('orders', JSON.stringify(this.orders));
+                }
             }
 
             // 渲染所有页面
@@ -828,8 +973,8 @@
                     }
                 });
 
-                // 更新主按钮
-                this.updateMainButton();
+                // 更新底部按钮
+                this.updateBottomButton();
                 
                 // 确保购物车页面被正确渲染
                 if (tabName === 'cart') {
@@ -837,8 +982,8 @@
                 }
             }
 
-            // 更新主按钮
-            updateMainButton() {
+            // 更新底部按钮 (原MainButton)
+            updateBottomButton() {
                 if (typeof Telegram === 'undefined' || !Telegram.WebApp) {
                     return;
                 }
@@ -847,7 +992,7 @@
                 
                 switch (this.currentTab) {
                     case 'products':
-                        Telegram.WebApp.MainButton.setParams({
+                        Telegram.WebApp.BottomButton.setParams({
                             text: cartCount > 0 ? `购物车 (${cartCount})` : '查看购物车',
                             is_visible: true
                         }).onClick(() => {
@@ -858,14 +1003,14 @@
                         
                     case 'cart':
                         if (cartCount > 0) {
-                            Telegram.WebApp.MainButton.setParams({
+                            Telegram.WebApp.BottomButton.setParams({
                                 text: '去下单',
                                 is_visible: true
                             }).onClick(() => {
                                 this.goToCheckout();
                             });
                         } else {
-                            Telegram.WebApp.MainButton.setParams({
+                            Telegram.WebApp.BottomButton.setParams({
                                 text: '继续购物',
                                 is_visible: true
                             }).onClick(() => {
@@ -876,7 +1021,7 @@
                         break;
                         
                     case 'checkout':
-                        Telegram.WebApp.MainButton.setParams({
+                        Telegram.WebApp.BottomButton.setParams({
                             text: '返回购物车',
                             is_visible: true
                         }).onClick(() => {
@@ -886,7 +1031,7 @@
                         break;
                         
                     case 'orders':
-                        Telegram.WebApp.MainButton.setParams({
+                        Telegram.WebApp.BottomButton.setParams({
                             text: '继续购物',
                             is_visible: true
                         }).onClick(() => {
@@ -894,6 +1039,131 @@
                         });
                         Telegram.WebApp.BackButton.show();
                         break;
+                }
+            }
+
+            // 显示设置
+            showSettings() {
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                    Telegram.WebApp.showPopup({
+                        title: '设置',
+                        message: '超市应用设置\n\n版本: 1.0.0\n开发者: Telegram Mini App',
+                        buttons: [
+                            {id: 'clear_data', type: 'destructive', text: '清除数据'},
+                            {id: 'about', type: 'default', text: '关于'},
+                            {type: 'cancel'}
+                        ]
+                    }, (buttonId) => {
+                        if (buttonId === 'clear_data') {
+                            this.clearAllData();
+                        } else if (buttonId === 'about') {
+                            this.showAbout();
+                        }
+                    });
+                }
+            }
+
+            // 清除所有数据
+            clearAllData() {
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                    Telegram.WebApp.showConfirm('确定要清除所有数据吗？这将删除购物车和订单历史。', (confirmed) => {
+                        if (confirmed) {
+                            this.cart = {};
+                            this.orders = [];
+                            this.saveData();
+                            this.renderAll();
+                            this.updateBottomButton();
+                            
+                            if (Telegram.WebApp.HapticFeedback) {
+                                Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                            }
+                            
+                            Telegram.WebApp.showAlert('数据已清除');
+                        }
+                    });
+                }
+            }
+
+            // 显示关于信息
+            showAbout() {
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                    Telegram.WebApp.showAlert('超市下单系统\n\n基于 Telegram Mini Apps 开发\n支持深色主题和触觉反馈\n\n版本: 1.0.0');
+                }
+            }
+
+            // 应用激活时
+            onAppActivated() {
+                // 可以在这里刷新数据或更新UI
+            }
+
+            // 应用停用时
+            onAppDeactivated() {
+                // 可以在这里保存数据
+                this.saveData();
+            }
+
+            // 全屏模式变化
+            onFullscreenChanged() {
+                const fullscreenText = document.getElementById('fullscreen-text');
+                if (Telegram.WebApp.isFullscreen) {
+                    // 进入全屏模式时的处理
+                    document.body.classList.add('fullscreen');
+                    if (fullscreenText) {
+                        fullscreenText.textContent = '退出全屏';
+                    }
+                } else {
+                    // 退出全屏模式时的处理
+                    document.body.classList.remove('fullscreen');
+                    if (fullscreenText) {
+                        fullscreenText.textContent = '全屏模式';
+                    }
+                }
+            }
+
+            // 更新安全区域
+            updateSafeArea() {
+                const safeArea = Telegram.WebApp.safeAreaInset;
+                if (safeArea) {
+                    document.documentElement.style.setProperty('--safe-area-top', `${safeArea.top}px`);
+                    document.documentElement.style.setProperty('--safe-area-bottom', `${safeArea.bottom}px`);
+                    document.documentElement.style.setProperty('--safe-area-left', `${safeArea.left}px`);
+                    document.documentElement.style.setProperty('--safe-area-right', `${safeArea.right}px`);
+                }
+            }
+
+            // 更新内容安全区域
+            updateContentSafeArea() {
+                const contentSafeArea = Telegram.WebApp.contentSafeAreaInset;
+                if (contentSafeArea) {
+                    document.documentElement.style.setProperty('--content-safe-area-top', `${contentSafeArea.top}px`);
+                    document.documentElement.style.setProperty('--content-safe-area-bottom', `${contentSafeArea.bottom}px`);
+                    document.documentElement.style.setProperty('--content-safe-area-left', `${contentSafeArea.left}px`);
+                    document.documentElement.style.setProperty('--content-safe-area-right', `${contentSafeArea.right}px`);
+                }
+            }
+
+            // 请求全屏模式
+            requestFullscreen() {
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                    Telegram.WebApp.requestFullscreen();
+                }
+            }
+
+            // 退出全屏模式
+            exitFullscreen() {
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                    Telegram.WebApp.exitFullscreen();
+                }
+            }
+
+            // 切换全屏模式
+            toggleFullscreen() {
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                    if (Telegram.WebApp.isFullscreen) {
+                        Telegram.WebApp.exitFullscreen();
+                    } else {
+                        Telegram.WebApp.requestFullscreen();
+                    }
                 }
             }
 
@@ -959,7 +1229,7 @@
                 this.saveData();
                 this.renderProducts();
                 this.renderCart();
-                this.updateMainButton();
+                this.updateBottomButton();
                 
                 // 触觉反馈
                 if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
@@ -977,7 +1247,7 @@
                     this.saveData();
                     this.renderProducts();
                     this.renderCart();
-                    this.updateMainButton();
+                    this.updateBottomButton();
                     
                     // 触觉反馈
                     if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
@@ -1244,7 +1514,7 @@
                 this.selectedPayment = null;
                 this.saveData();
                 this.renderAll();
-                this.updateMainButton();
+                this.updateBottomButton();
 
                 // 成功触觉反馈
                 if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
