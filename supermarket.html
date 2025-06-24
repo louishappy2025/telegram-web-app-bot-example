@@ -540,7 +540,7 @@
     <div class="container">
         <div class="header">
             <h1>🛒 超市下单系统</h1>
-            <button class="btn btn-secondary" onclick="app.toggleFullscreen()" style="width: auto; margin: 8px 0; padding: 8px 16px; font-size: 12px;">
+            <button class="btn btn-secondary" onclick="toggleFullscreen()" style="width: auto; margin: 8px 0; padding: 8px 16px; font-size: 12px;">
                 <span id="fullscreen-text">全屏模式</span>
             </button>
         </div>
@@ -548,7 +548,6 @@
         <div class="tabs">
             <button class="tab active" onclick="switchTab('products')">商品</button>
             <button class="tab" onclick="switchTab('cart')">购物车</button>
-            <button class="tab" onclick="switchTab('checkout')">下单</button>
             <button class="tab" onclick="switchTab('orders')">订单</button>
         </div>
 
@@ -568,8 +567,11 @@
             <div id="cart-total" class="cart-total"></div>
         </div>
 
-        <!-- 下单页面 -->
-        <div id="checkout" class="tab-content">
+        <!-- 下单页面 (独立页面，不是tab) -->
+        <div id="checkout" class="tab-content" style="display:none;">
+            <div style="margin-bottom:20px;">
+                <button onclick="backToCart()" style="padding:8px 16px;background:var(--tg-theme-secondary-bg-color,#f8f9fa);border:1px solid var(--tg-theme-hint-color,#e0e0e0);border-radius:6px;cursor:pointer;">← 返回购物车</button>
+            </div>
             <form id="order-form" style="max-width:400px;margin:0 auto;">
                 <div class="form-group">
                     <label>手机号：</label>
@@ -793,30 +795,75 @@
             }, 1800);
         };
 
+        // 返回购物车
+        function backToCart() {
+            switchTab('cart');
+        }
+
+        // 去下单
+        function goToCheckout() {
+            if(Object.keys(cart).length === 0) {
+                alert('购物车为空！');
+                return;
+            }
+            // 隐藏所有tab内容
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+                tab.style.display = 'none';
+            });
+            // 显示下单页面
+            document.getElementById('checkout').style.display = 'block';
+            // 隐藏tab导航
+            document.querySelector('.tabs').style.display = 'none';
+            // 渲染下单摘要
+            renderCheckoutSummary();
+            // 重置表单
+            document.getElementById('order-form').reset();
+            document.getElementById('order-form').style.display = '';
+            document.getElementById('order-success').style.display = 'none';
+            // 更新MainButton
+            updateMainButton();
+        }
+
         // tab切换时自动刷新
         function switchTab(tabName) {
             console.log('[switchTab] 切换到', tabName);
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
+            
+            // 显示tab导航
+            document.querySelector('.tabs').style.display = 'flex';
+            
+            // 隐藏所有tab内容
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+                tab.style.display = 'none';
+            });
+            
+            // 显示目标tab内容
+            const targetTab = document.getElementById(tabName);
+            if (targetTab) {
+                targetTab.classList.add('active');
+                targetTab.style.display = 'block';
+            }
+            
+            // 更新tab按钮状态
             document.querySelectorAll('.tab').forEach((btn, idx) => {
                 btn.classList.toggle('active',
                     (tabName === 'products' && idx === 0) ||
                     (tabName === 'cart' && idx === 1) ||
-                    (tabName === 'checkout' && idx === 2) ||
-                    (tabName === 'orders' && idx === 3)
+                    (tabName === 'orders' && idx === 2)
                 );
             });
+            
+            // 渲染对应内容
             if(tabName==='products') {
                 renderCategories();
                 renderProducts();
             }
             if(tabName==='cart') renderCart();
-            if(tabName==='checkout') {
-                renderCheckoutSummary();
-                document.getElementById('order-form').style.display = '';
-                document.getElementById('order-success').style.display = 'none';
-            }
             if(tabName==='orders') renderOrders();
+            
+            // 更新MainButton
+            updateMainButton();
         }
 
         // 初始化应用
@@ -863,12 +910,12 @@
                         switchTab('cart');
                     } else if (currentTab === 'cart') {
                         if (Object.keys(cart).length > 0) {
-                            switchTab('checkout');
+                            goToCheckout();
                         } else {
                             switchTab('products');
                         }
                     } else if (currentTab === 'checkout') {
-                        switchTab('cart');
+                        backToCart();
                     } else if (currentTab === 'orders') {
                         switchTab('products');
                     }
@@ -928,16 +975,23 @@
             if (activeTab) {
                 return activeTab.id;
             }
+            // 检查是否在下单页面
+            if (document.getElementById('checkout').style.display === 'block') {
+                return 'checkout';
+            }
             return 'products';
         }
 
-        // 重写switchTab函数，添加MainButton更新
-        const originalSwitchTab = switchTab;
-        switchTab = function(tabName) {
-            console.log('[switchTab] 切换到', tabName);
-            originalSwitchTab(tabName);
-            updateMainButton();
-        };
+        // 全屏功能
+        function toggleFullscreen() {
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                if (Telegram.WebApp.isFullscreen) {
+                    Telegram.WebApp.exitFullscreen();
+                } else {
+                    Telegram.WebApp.requestFullscreen();
+                }
+            }
+        }
 
         // 页面初始化
         renderCategories();
