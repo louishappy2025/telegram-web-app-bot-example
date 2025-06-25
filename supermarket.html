@@ -51,7 +51,17 @@
             padding: 20px 0 10px 0;
         }
 
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 16px;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
         .header h1 {
+            margin: 0;
             font-size: 24px;
             font-weight: 600;
         }
@@ -539,6 +549,7 @@
 <body>
     <div class="container">
         <div class="header">
+            <img src="image.jpg" alt="超市Logo" class="logo">
             <h1>🛒 超市下单系统</h1>
             <button class="btn btn-secondary" onclick="toggleFullscreen()" style="width: auto; margin: 8px 0; padding: 8px 16px; font-size: 12px;">
                 <span id="fullscreen-text">全屏模式</span>
