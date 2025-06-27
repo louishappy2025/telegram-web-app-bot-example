@@ -657,6 +657,45 @@
         let cart = {};
         let currentCategory = 'all';
 
+        // 购物车本地存储相关函数
+        const CART_STORAGE_KEY = 'supermarket_cart';
+
+        // 保存购物车到本地存储
+        function saveCartToStorage() {
+            try {
+                localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+                console.log('💾 [saveCartToStorage] 购物车已保存到本地存储:', cart);
+            } catch (error) {
+                console.error('❌ [saveCartToStorage] 保存购物车失败:', error);
+            }
+        }
+
+        // 从本地存储加载购物车
+        function loadCartFromStorage() {
+            try {
+                const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+                if (savedCart) {
+                    cart = JSON.parse(savedCart);
+                    console.log('📂 [loadCartFromStorage] 从本地存储加载购物车:', cart);
+                } else {
+                    console.log('📂 [loadCartFromStorage] 本地存储中没有购物车数据');
+                }
+            } catch (error) {
+                console.error('❌ [loadCartFromStorage] 加载购物车失败:', error);
+                cart = {};
+            }
+        }
+
+        // 清除购物车本地存储
+        function clearCartStorage() {
+            try {
+                localStorage.removeItem(CART_STORAGE_KEY);
+                console.log('🗑️ [clearCartStorage] 购物车本地存储已清除');
+            } catch (error) {
+                console.error('❌ [clearCartStorage] 清除购物车存储失败:', error);
+            }
+        }
+
         // 获取商品数据
         async function fetchProducts() {
             try {
@@ -808,6 +847,10 @@
             cart[id] = (cart[id]||0) + delta;
             if(cart[id]<=0) delete cart[id];
             console.log('[changeQty] 购物车变更后', cart);
+            
+            // 自动保存购物车到本地存储
+            saveCartToStorage();
+            
             renderProducts();
             renderCart();
             updateMainButton(); // 更新MainButton状态
@@ -932,7 +975,11 @@
                 '订单金额': `¥${order.total.toFixed(2)}`,
                 '支付方式': order.payMethodName
             });
+            
+            // 清空购物车并清除本地存储
             cart = {};
+            clearCartStorage();
+            
             renderProducts();
             renderCart();
             renderCheckoutSummary();
@@ -1029,8 +1076,12 @@
             // 再获取商品数据
             await fetchProducts();
             
+            // 从本地存储恢复购物车数据
+            loadCartFromStorage();
+            
             // 渲染页面内容
             renderProducts();
+            renderCart(); // 确保购物车也重新渲染
             initTelegramWebApp();
             
             // 打印Telegram用户信息（如果可用）
