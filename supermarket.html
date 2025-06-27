@@ -615,28 +615,35 @@
     </div>
 
     <script>
-        // 商品数据
-        const PRODUCTS = [
-            {id: 1, name: '苹果', price: 5.9, image: '🍎', category: 'fruits'},
-            {id: 2, name: '香蕉', price: 3.5, image: '🍌', category: 'fruits'},
-            {id: 3, name: '橙子', price: 4.8, image: '🍊', category: 'fruits'},
-            {id: 4, name: '葡萄', price: 8.9, image: '🍇', category: 'fruits'},
-            {id: 5, name: '牛奶', price: 8.8, image: '🥛', category: 'dairy'},
-            {id: 6, name: '酸奶', price: 6.5, image: '🥛', category: 'dairy'},
-            {id: 7, name: '奶酪', price: 12.9, image: '🧀', category: 'dairy'},
-            {id: 8, name: '面包', price: 6.0, image: '🍞', category: 'bakery'},
-            {id: 9, name: '蛋糕', price: 15.9, image: '🍰', category: 'bakery'},
-            {id: 10, name: '鸡蛋', price: 9.9, image: '🥚', category: 'dairy'},
-            {id: 11, name: '鸡肉', price: 25.9, image: '🍗', category: 'meat'},
-            {id: 12, name: '猪肉', price: 22.9, image: '🥩', category: 'meat'},
-            {id: 13, name: '蔬菜', price: 9.9, image: '🥬', category: 'vegetables'},
-            {id: 14, name: '胡萝卜', price: 4.9, image: '🥕', category: 'vegetables'},
-            {id: 15, name: '可乐', price: 4.5, image: '🥤', category: 'beverages'},
-            {id: 16, name: '矿泉水', price: 2.9, image: '💧', category: 'beverages'}
-        ];
+        // API基础URL配置
+        const API_BASE_URL = 'https://www.supermarket.com/sapi';
+        
+        // 默认商品图标映射
+        const DEFAULT_ICONS = {
+            'apple': '🍎',
+            'banana': '🍌', 
+            'orange': '🍊',
+            'grape': '🍇',
+            'milk': '🥛',
+            'yogurt': '🥛',
+            'cheese': '🧀',
+            'bread': '🍞',
+            'cake': '🍰',
+            'egg': '🥚',
+            'chicken': '🍗',
+            'pork': '🥩',
+            'vegetable': '🥬',
+            'carrot': '🥕',
+            'cola': '🥤',
+            'water': '💧',
+            'default': '🛍️' // 默认图标
+        };
 
+        // 动态商品数据（从接口获取）
+        let PRODUCTS = [];
+        
         // 分类数据
-        const CATEGORIES = [
+        let CATEGORIES = [
             {id: 'all', name: '全部'},
             {id: 'fruits', name: '水果'},
             {id: 'dairy', name: '乳制品'},
@@ -650,14 +657,68 @@
         let cart = {};
         let currentCategory = 'all';
 
+        // 获取商品数据
+        async function fetchProducts() {
+            try {
+                console.log('🔄 [fetchProducts] 开始获取商品数据...');
+                
+                const apiUrl = `${API_BASE_URL}/goods/list`;
+                console.log('🌐 [fetchProducts] 请求URL:', apiUrl);
+                
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const products = await response.json();
+                console.log('✅ [fetchProducts] 商品数据获取成功:', products);
+                
+                // 处理商品数据，添加默认图标
+                PRODUCTS = products.map(product => ({
+                    ...product,
+                    image: getProductIcon(product.icon),
+                    category: `category_${product.categoryId}` // 转换为分类ID格式
+                }));
+                
+                return PRODUCTS;
+            } catch (error) {
+                console.error('❌ [fetchProducts] 获取商品数据失败:', error);
+                // 如果接口失败，使用默认商品数据
+                PRODUCTS = [
+                    {id: 1, name: '苹果', price: 5.9, image: '🍎', category: 'category_1'},
+                    {id: 2, name: '香蕉', price: 3.5, image: '🍌', category: 'category_1'},
+                    {id: 3, name: '橙子', price: 4.8, image: '🍊', category: 'category_1'},
+                    {id: 4, name: '葡萄', price: 8.9, image: '🍇', category: 'category_1'},
+                    {id: 5, name: '牛奶', price: 8.8, image: '🥛', category: 'category_2'},
+                    {id: 6, name: '酸奶', price: 6.5, image: '🥛', category: 'category_2'},
+                    {id: 7, name: '奶酪', price: 12.9, image: '🧀', category: 'category_2'}
+                ];
+                return PRODUCTS;
+            }
+        }
+
+        // 获取商品图标
+        function getProductIcon(iconName) {
+            if (!iconName) return DEFAULT_ICONS.default;
+            
+            // 尝试直接匹配
+            if (DEFAULT_ICONS[iconName]) {
+                return DEFAULT_ICONS[iconName];
+            }
+            
+            // 尝试模糊匹配
+            const iconKey = Object.keys(DEFAULT_ICONS).find(key => 
+                iconName.toLowerCase().includes(key.toLowerCase())
+            );
+            
+            return iconKey ? DEFAULT_ICONS[iconKey] : DEFAULT_ICONS.default;
+        }
+
         // 获取商品分类数据
         async function fetchCategories() {
             try {
                 console.log('🔄 [fetchCategories] 开始获取分类数据...');
                 
-                // 使用Nginx代理的域名地址
-                const apiUrl = 'https://www.supermarket.com/sapi/goodscategory/list';
-                
+                const apiUrl = `${API_BASE_URL}/goodscategory/list`;
                 console.log('🌐 [fetchCategories] 请求URL:', apiUrl);
                 
                 const response = await fetch(apiUrl);
@@ -670,11 +731,14 @@
                 // 添加"全部"选项到分类列表开头
                 const allCategories = [
                     {id: 'all', name: '全部'},
-                    ...categories
+                    ...categories.map(cat => ({
+                        ...cat,
+                        id: `category_${cat.id}` // 转换为分类ID格式
+                    }))
                 ];
                 
                 // 更新全局分类数据
-                window.CATEGORIES = allCategories;
+                CATEGORIES = allCategories;
                 
                 // 重新渲染分类
                 renderCategories();
@@ -683,25 +747,23 @@
             } catch (error) {
                 console.error('❌ [fetchCategories] 获取分类数据失败:', error);
                 // 如果接口失败，使用默认分类
-                const defaultCategories = [
+                CATEGORIES = [
                     {id: 'all', name: '全部'},
-                    {id: 'fruits', name: '水果'},
-                    {id: 'dairy', name: '乳制品'},
-                    {id: 'bakery', name: '面包'},
-                    {id: 'meat', name: '肉类'},
-                    {id: 'vegetables', name: '蔬菜'},
-                    {id: 'beverages', name: '饮料'}
+                    {id: 'category_1', name: '水果'},
+                    {id: 'category_2', name: '乳制品'},
+                    {id: 'category_3', name: '面包'},
+                    {id: 'category_4', name: '肉类'},
+                    {id: 'category_5', name: '蔬菜'},
+                    {id: 'category_6', name: '饮料'}
                 ];
-                window.CATEGORIES = defaultCategories;
                 renderCategories();
-                return defaultCategories;
+                return CATEGORIES;
             }
         }
 
         // 渲染分类
         function renderCategories() {
-            const categories = window.CATEGORIES || CATEGORIES;
-            const categoriesHtml = categories.map(cat => 
+            const categoriesHtml = CATEGORIES.map(cat => 
                 `<button class="category-btn ${cat.id === currentCategory ? 'active' : ''}" onclick="selectCategory('${cat.id}')">${cat.name}</button>`
             ).join('');
             document.getElementById('categories').innerHTML = categoriesHtml;
@@ -963,6 +1025,9 @@
             
             // 先获取分类数据
             await fetchCategories();
+            
+            // 再获取商品数据
+            await fetchProducts();
             
             // 渲染页面内容
             renderProducts();
