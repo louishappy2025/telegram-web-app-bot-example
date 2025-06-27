@@ -654,7 +654,13 @@
         async function fetchCategories() {
             try {
                 console.log('🔄 [fetchCategories] 开始获取分类数据...');
-                const response = await fetch('http://localhost:9595/goodscategory/list');
+                
+                // 使用Nginx代理的域名地址
+                const apiUrl = 'https://www.supermarket.com/sapi/goodscategory/list';
+                
+                console.log('🌐 [fetchCategories] 请求URL:', apiUrl);
+                
+                const response = await fetch(apiUrl);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
