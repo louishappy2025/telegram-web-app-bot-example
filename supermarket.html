@@ -602,6 +602,10 @@
                         <option value="cod">货到付款</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label>订单备注：</label>
+                    <textarea id="user-remark" placeholder="请输入订单备注（可选）" rows="3" style="width: 100%; padding: 12px; border: 1px solid var(--tg-theme-hint-color, #e0e0e0); border-radius: 8px; background: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #333); font-size: 14px; resize: vertical;"></textarea>
+                </div>
                 <div id="checkout-summary" style="margin-bottom:16px;padding:12px;background:var(--tg-theme-secondary-bg-color,#f8f9fa);border-radius:8px;"></div>
                 <button type="submit" class="submit-btn">提交订单</button>
             </form>
@@ -905,18 +909,68 @@
         function renderOrders() {
             console.log('[renderOrders] 当前订单', orders);
             const list = orders.map((o,i) => {
+                const orderStatusText = getOrderStatusText(o.orderStatus || 0);
+                const payStatusText = getPayStatusText(o.payStatus || 0);
+                const statusColor = getOrderStatusColor(o.orderStatus || 0);
+                
                 return `<div style='border:1px solid #eee;border-radius:6px;padding:12px;margin-bottom:12px;'>
-                    <div style='font-weight:bold;'>订单#${o.id} <span style='float:right;color:#0088cc;'>${o.payMethodName}</span></div>
-                    <div style='color:#888;font-size:13px;'>${o.phone} | ${o.address}</div>
-                    <div style='margin:8px 0;'>${o.items.map(it=>`${it.name} × ${it.qty}`).join('，')}</div>
-                    <div style='font-weight:bold;text-align:right;'>总计：¥${o.total.toFixed(2)}</div>
+                    <div style='font-weight:bold;margin-bottom:8px;'>
+                        <span style='color:#0088cc;'>${o.orderNo || `订单#${o.id}`}</span>
+                        <span style='float:right;color:${statusColor};font-size:12px;'>${orderStatusText}</span>
+                    </div>
+                    <div style='color:#888;font-size:13px;margin-bottom:8px;'>
+                        <div>📱 ${o.phone}</div>
+                        <div>📍 ${o.address}</div>
+                        <div>💳 ${o.payMethodName} (${payStatusText})</div>
+                        <div>🕒 ${o.createTime ? new Date(o.createTime).toLocaleString() : '未知时间'}</div>
+                    </div>
+                    <div style='margin:8px 0;padding:8px;background:#f8f9fa;border-radius:4px;'>
+                        ${o.items.map(it=>`${it.name} × ${it.qty} = ¥${(it.price*it.qty).toFixed(2)}`).join('<br>')}
+                    </div>
+                    <div style='font-weight:bold;text-align:right;color:#0088cc;font-size:16px;'>
+                        总计：¥${o.total.toFixed(2)}
+                    </div>
                 </div>`;
             }).join('');
             document.getElementById('orders-list').innerHTML = list || '<div style="text-align:center;color:#aaa;padding:30px 0;">暂无订单</div>';
         }
 
+        // 获取订单状态文本
+        function getOrderStatusText(status) {
+            const statusMap = {
+                0: '待确认',
+                1: '已确认', 
+                2: '配送中',
+                3: '已完成',
+                4: '已取消'
+            };
+            return statusMap[status] || '未知状态';
+        }
+
+        // 获取支付状态文本
+        function getPayStatusText(status) {
+            const statusMap = {
+                0: '未支付',
+                1: '已支付',
+                2: '已退款'
+            };
+            return statusMap[status] || '未知状态';
+        }
+
+        // 获取订单状态颜色
+        function getOrderStatusColor(status) {
+            const colorMap = {
+                0: '#ffc107', // 待确认 - 黄色
+                1: '#17a2b8', // 已确认 - 青色
+                2: '#007bff', // 配送中 - 蓝色
+                3: '#28a745', // 已完成 - 绿色
+                4: '#dc3545'  // 已取消 - 红色
+            };
+            return colorMap[status] || '#6c757d';
+        }
+
         // 下单表单提交
-        document.getElementById('order-form').onsubmit = function(e) {
+        document.getElementById('order-form').onsubmit = async function(e) {
             e.preventDefault();
             if(Object.keys(cart).length===0) {
                 alert('购物车为空！');
@@ -925,6 +979,7 @@
             const phone = document.getElementById('user-phone').value.trim();
             const address = document.getElementById('user-address').value.trim();
             const pay = document.getElementById('pay-method').value;
+            const remark = document.getElementById('user-remark')?.value?.trim() || '';
             if(!phone||!address||!pay) return;
             
             // 获取Telegram用户信息
@@ -945,54 +1000,131 @@
                 console.log('📱 [Telegram用户信息] 无法获取用户信息，可能不在Telegram环境中');
             }
             
-            const payMap = {aba:'ABA银行',huione:'汇旺',usdt:'USDT',cod:'货到付款'};
-            let total = 0;
-            const items = Object.keys(cart).map(id=>{
-                const p = PRODUCTS.find(x=>x.id==id);
-                total += p.price*cart[id];
-                return {id:p.id, name:p.name, qty:cart[id], price:p.price};
-            });
-            const order = {
-                id: Date.now(),
-                phone,
-                address,
-                payMethod: pay,
-                payMethodName: payMap[pay],
-                items,
-                total,
-                telegramUser: telegramUser, // 保存Telegram用户信息
-                timestamp: new Date().toISOString()
-            };
-            orders.unshift(order);
-            console.log('[onsubmit] 新订单', order);
-            console.log('📞 [客服联系信息]', {
-                '用户ID': telegramUser ? telegramUser.id : '未知',
-                '用户名': telegramUser ? telegramUser.username : '未知',
-                '姓名': telegramUser ? `${telegramUser.first_name || ''} ${telegramUser.last_name || ''}`.trim() : '未知',
-                '手机号': phone,
-                '地址': address,
-                '订单号': order.id,
-                '订单金额': `¥${order.total.toFixed(2)}`,
-                '支付方式': order.payMethodName
-            });
-            
-            // 清空购物车并清除本地存储
-            cart = {};
-            clearCartStorage();
-            
-            renderProducts();
-            renderCart();
-            renderCheckoutSummary();
-            renderOrders();
-            document.getElementById('order-form').style.display = 'none';
-            document.getElementById('order-success').style.display = 'block';
-            document.getElementById('order-success').innerHTML = `订单提交成功！<br>订单号：#${order.id}<br>总计：¥${order.total.toFixed(2)}<br>支付方式：${order.payMethodName}`;
-            setTimeout(()=>{
-                document.getElementById('order-form').reset();
-                document.getElementById('order-form').style.display = '';
-                document.getElementById('order-success').style.display = 'none';
-                switchTab('orders');
-            }, 1800);
+            try {
+                console.log('🔄 [submitOrder] 开始提交订单...');
+                
+                // 构建订单项数据
+                const orderItems = Object.keys(cart).map(id => {
+                    const p = PRODUCTS.find(x => x.id == id);
+                    return {
+                        goodsId: p.id,
+                        goodsName: p.name,
+                        goodsIcon: p.icon || p.image,
+                        price: p.price,
+                        quantity: cart[id]
+                    };
+                });
+                
+                // 构建请求数据
+                const requestData = {
+                    order: {
+                        userId: null, // 暂时不传用户ID
+                        telegramId: telegramUser ? telegramUser.id : null,
+                        payMethod: pay,
+                        phone: phone,
+                        address: address,
+                        remark: remark
+                    },
+                    orderItems: orderItems
+                };
+                
+                console.log('📤 [submitOrder] 请求数据:', requestData);
+                
+                // 调用下单API
+                const response = await fetch(`${API_BASE_URL}/order`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [submitOrder] 订单提交成功:', result);
+                
+                // 处理成功响应
+                const order = result.order;
+                const payMap = {aba:'ABA银行',huione:'汇旺',usdt:'USDT',cod:'货到付款'};
+                
+                // 将新订单添加到本地订单列表
+                const localOrder = {
+                    id: order.id,
+                    orderNo: order.orderNo,
+                    phone: order.phone,
+                    address: order.address,
+                    payMethod: order.payMethod,
+                    payMethodName: payMap[order.payMethod],
+                    total: order.totalAmount,
+                    items: result.orderItems.map(item => ({
+                        id: item.goodsId,
+                        name: item.goodsName,
+                        qty: item.quantity,
+                        price: item.price
+                    })),
+                    orderStatus: order.orderStatus,
+                    payStatus: order.payStatus,
+                    createTime: order.createTime,
+                    telegramUser: telegramUser
+                };
+                
+                orders.unshift(localOrder);
+                
+                // 打印客服联系信息
+                console.log('📞 [客服联系信息]', {
+                    '用户ID': telegramUser ? telegramUser.id : '未知',
+                    '用户名': telegramUser ? telegramUser.username : '未知',
+                    '姓名': telegramUser ? `${telegramUser.first_name || ''} ${telegramUser.last_name || ''}`.trim() : '未知',
+                    '手机号': phone,
+                    '地址': address,
+                    '订单号': order.orderNo,
+                    '订单ID': order.id,
+                    '订单金额': `¥${order.totalAmount.toFixed(2)}`,
+                    '支付方式': payMap[order.payMethod],
+                    '订单状态': order.orderStatus,
+                    '支付状态': order.payStatus
+                });
+                
+                // 清空购物车并清除本地存储
+                cart = {};
+                clearCartStorage();
+                
+                renderProducts();
+                renderCart();
+                renderCheckoutSummary();
+                renderOrders();
+                
+                // 显示成功信息
+                document.getElementById('order-form').style.display = 'none';
+                document.getElementById('order-success').style.display = 'block';
+                document.getElementById('order-success').innerHTML = `
+                    <div style="color: green; font-weight: bold; margin-bottom: 16px;">
+                        ✅ 订单提交成功！
+                    </div>
+                    <div style="text-align: left; background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                        <div><strong>订单号：</strong>${order.orderNo}</div>
+                        <div><strong>订单ID：</strong>${order.id}</div>
+                        <div><strong>总计：</strong>¥${order.totalAmount.toFixed(2)}</div>
+                        <div><strong>支付方式：</strong>${payMap[order.payMethod]}</div>
+                        <div><strong>订单状态：</strong>${getOrderStatusText(order.orderStatus)}</div>
+                        <div><strong>支付状态：</strong>${getPayStatusText(order.payStatus)}</div>
+                    </div>
+                `;
+                
+                setTimeout(()=>{
+                    document.getElementById('order-form').reset();
+                    document.getElementById('order-form').style.display = '';
+                    document.getElementById('order-success').style.display = 'none';
+                    switchTab('orders');
+                }, 3000);
+                
+            } catch (error) {
+                console.error('❌ [submitOrder] 订单提交失败:', error);
+                alert('订单提交失败，请重试！');
+            }
         };
 
         // 返回购物车
