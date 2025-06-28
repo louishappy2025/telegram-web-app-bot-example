@@ -622,6 +622,38 @@
         // API基础URL配置
         const API_BASE_URL = 'https://www.supermarket.com/sapi';
         
+        // 获取Telegram用户信息
+        function getTelegramUserInfo() {
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+                const user = Telegram.WebApp.initDataUnsafe.user;
+                return {
+                    id: user.id,
+                    username: user.username,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    language_code: user.language_code,
+                    is_premium: user.is_premium,
+                    allows_write_to_pm: user.allows_write_to_pm
+                };
+            }
+            return null;
+        }
+
+        // 获取通用请求头
+        function getRequestHeaders() {
+            const headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            };
+            
+            const telegramUser = getTelegramUserInfo();
+            if (telegramUser) {
+                headers['X-Telegram-User'] = JSON.stringify(telegramUser);
+            }
+            
+            return headers;
+        }
+
         // 默认商品图标映射
         const DEFAULT_ICONS = {
             'apple': '🍎',
@@ -708,7 +740,10 @@
                 const apiUrl = `${API_BASE_URL}/goods/list`;
                 console.log('🌐 [fetchProducts] 请求URL:', apiUrl);
                 
-                const response = await fetch(apiUrl);
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: getRequestHeaders()
+                });
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -764,7 +799,10 @@
                 const apiUrl = `${API_BASE_URL}/goodscategory/list`;
                 console.log('🌐 [fetchCategories] 请求URL:', apiUrl);
                 
-                const response = await fetch(apiUrl);
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: getRequestHeaders()
+                });
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -1033,9 +1071,7 @@
                 // 调用下单API
                 const response = await fetch(`${API_BASE_URL}/order`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: getRequestHeaders(),
                     body: JSON.stringify(requestData)
                 });
                 
@@ -1202,6 +1238,15 @@
         async function initPage() {
             console.log('🚀 [initPage] 开始初始化页面...');
             
+            // 检查并打印Telegram用户信息
+            const telegramUser = getTelegramUserInfo();
+            if (telegramUser) {
+                console.log('👤 [initPage] Telegram用户信息:', telegramUser);
+                console.log('📋 [initPage] X-Telegram-User请求头:', JSON.stringify(telegramUser));
+            } else {
+                console.log('👤 [initPage] 未在Telegram环境中运行，无法获取用户信息');
+            }
+            
             // 先获取分类数据
             await fetchCategories();
             
@@ -1215,21 +1260,6 @@
             renderProducts();
             renderCart(); // 确保购物车也重新渲染
             initTelegramWebApp();
-            
-            // 打印Telegram用户信息（如果可用）
-            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
-                const user = Telegram.WebApp.initDataUnsafe.user;
-                console.log('👤 [页面初始化] Telegram用户信息', {
-                    id: user.id,
-                    username: user.username,
-                    first_name: user.first_name,
-                    last_name: user.last_name,
-                    language_code: user.language_code,
-                    is_premium: user.is_premium
-                });
-            } else {
-                console.log('👤 [页面初始化] 未在Telegram环境中运行，无法获取用户信息');
-            }
             
             console.log('✅ [initPage] 页面初始化完成');
         }
