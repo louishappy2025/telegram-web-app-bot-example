@@ -614,7 +614,17 @@
 
         <!-- 订单页面 -->
         <div id="orders" class="tab-content">
+            <div style="margin-bottom: 16px; text-align: center;">
+                <button onclick="refreshOrders()" style="padding: 8px 16px; background: var(--tg-theme-button-color, #0088cc); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    🔄 刷新订单
+                </button>
+            </div>
             <div id="orders-list"></div>
+            <div id="orders-load-more" style="text-align: center; padding: 16px; display: none;">
+                <button onclick="loadMoreOrders()" style="padding: 8px 16px; background: var(--tg-theme-secondary-bg-color, #f8f9fa); color: var(--tg-theme-text-color, #333); border: 1px solid var(--tg-theme-hint-color, #e0e0e0); border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    加载更多订单
+                </button>
+            </div>
         </div>
     </div>
 
@@ -929,6 +939,132 @@
 
         // 订单数据
         let orders = [];
+        let orderLastId = null;
+        let orderHasMore = true;
+        let orderLoading = false;
+
+        // 获取订单数据
+        async function fetchOrders(isRefresh = false) {
+            if (orderLoading) {
+                console.log('🔄 [fetchOrders] 正在加载中，跳过重复请求');
+                return;
+            }
+
+            try {
+                orderLoading = true;
+                console.log('🔄 [fetchOrders] 开始获取订单数据...');
+                
+                // 如果是刷新，重置分页参数
+                if (isRefresh) {
+                    orderLastId = null;
+                    orderHasMore = true;
+                    orders = [];
+                }
+                
+                // 如果没有更多数据，直接返回
+                if (!orderHasMore && !isRefresh) {
+                    console.log('📋 [fetchOrders] 没有更多订单数据');
+                    return;
+                }
+                
+                const telegramUser = getTelegramUserInfo();
+                if (!telegramUser) {
+                    console.log('❌ [fetchOrders] 无法获取Telegram用户信息');
+                    return;
+                }
+                
+                // 构建请求参数
+                const requestData = {
+                    telegramId: telegramUser.id,
+                    pageSize: 10
+                };
+                
+                // 如果不是第一次请求，添加lastId
+                if (orderLastId !== null) {
+                    requestData.lastId = orderLastId;
+                }
+                
+                console.log('📤 [fetchOrders] 请求参数:', requestData);
+                
+                const response = await fetch(`${API_BASE_URL}/order/query`, {
+                    method: 'POST',
+                    headers: getRequestHeaders(),
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [fetchOrders] 订单数据获取成功:', result);
+                
+                // 处理返回的订单数据
+                const payMap = {aba:'ABA银行',huione:'汇旺',usdt:'USDT',cod:'货到付款'};
+                
+                const newOrders = result.orders.map(orderData => {
+                    const order = orderData.order;
+                    return {
+                        id: order.id,
+                        orderNo: order.orderNo,
+                        phone: order.phone,
+                        address: order.address,
+                        payMethod: order.payMethod,
+                        payMethodName: payMap[order.payMethod] || order.payMethod,
+                        total: order.totalAmount,
+                        items: orderData.orderItems.map(item => ({
+                            id: item.goodsId,
+                            name: item.goodsName,
+                            qty: item.quantity,
+                            price: item.price,
+                            imageUrl: item.goodsImageUrl || item.goodsIcon
+                        })),
+                        orderStatus: order.orderStatus,
+                        payStatus: order.payStatus,
+                        createTime: order.createTime,
+                        updateTime: order.updateTime,
+                        payTime: order.payTime,
+                        completeTime: order.completeTime
+                    };
+                });
+                
+                // 更新订单列表
+                if (isRefresh) {
+                    orders = newOrders;
+                } else {
+                    orders = orders.concat(newOrders);
+                }
+                
+                // 更新分页参数
+                orderLastId = result.lastId;
+                orderHasMore = result.hasMore;
+                
+                console.log(`📊 [fetchOrders] 订单数据更新完成，当前共${orders.length}条订单，还有更多：${orderHasMore}`);
+                
+                // 渲染订单列表
+                renderOrders();
+                
+            } catch (error) {
+                console.error('❌ [fetchOrders] 获取订单数据失败:', error);
+                if (isRefresh) {
+                    document.getElementById('orders-list').innerHTML = '<div style="text-align:center;color:#dc3545;padding:30px 0;">加载订单失败，请重试</div>';
+                }
+            } finally {
+                orderLoading = false;
+            }
+        }
+
+        // 刷新订单数据
+        function refreshOrders() {
+            console.log('🔄 [refreshOrders] 刷新订单数据');
+            fetchOrders(true);
+        }
+
+        // 加载更多订单数据
+        function loadMoreOrders() {
+            console.log('🔄 [loadMoreOrders] 加载更多订单数据');
+            fetchOrders(false);
+        }
 
         // 渲染下单页摘要
         function renderCheckoutSummary() {
@@ -971,6 +1107,12 @@
                 </div>`;
             }).join('');
             document.getElementById('orders-list').innerHTML = list || '<div style="text-align:center;color:#aaa;padding:30px 0;">暂无订单</div>';
+            
+            // 显示或隐藏加载更多按钮
+            const loadMoreBtn = document.getElementById('orders-load-more');
+            if (loadMoreBtn) {
+                loadMoreBtn.style.display = orderHasMore && orders.length > 0 ? 'block' : 'none';
+            }
         }
 
         // 获取订单状态文本
@@ -1099,15 +1241,20 @@
                         id: item.goodsId,
                         name: item.goodsName,
                         qty: item.quantity,
-                        price: item.price
+                        price: item.price,
+                        imageUrl: item.goodsImageUrl || item.goodsIcon
                     })),
                     orderStatus: order.orderStatus,
                     payStatus: order.payStatus,
                     createTime: order.createTime,
-                    telegramUser: telegramUser
+                    updateTime: order.updateTime,
+                    payTime: order.payTime,
+                    completeTime: order.completeTime
                 };
                 
+                // 将新订单添加到列表开头，并重置分页参数
                 orders.unshift(localOrder);
+                orderLastId = null; // 重置分页参数，下次刷新时会重新获取
                 
                 // 打印客服联系信息
                 console.log('📞 [客服联系信息]', {
@@ -1228,7 +1375,14 @@
                 renderProducts();
             }
             if(tabName==='cart') renderCart();
-            if(tabName==='orders') renderOrders();
+            if(tabName==='orders') {
+                // 如果订单列表为空，则加载订单数据
+                if (orders.length === 0) {
+                    fetchOrders(true);
+                } else {
+                    renderOrders();
+                }
+            }
             
             // 更新MainButton
             updateMainButton();
