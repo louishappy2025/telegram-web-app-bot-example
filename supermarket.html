@@ -629,8 +629,18 @@
     </div>
 
     <script>
+        console.log('📋 [SCRIPT] JavaScript开始执行');
+        console.log('📋 [SCRIPT] 浏览器信息:', navigator.userAgent);
+        
         // API基础URL配置
         const API_BASE_URL = 'https://dhcs.cc';
+        console.log('📋 [SCRIPT] API_BASE_URL 已设置:', API_BASE_URL);
+        
+        // 调试信息：显示当前访问环境
+        console.log('🌐 [DEBUG] 当前页面URL:', window.location.href);
+        console.log('🌐 [DEBUG] 当前域名:', window.location.hostname);
+        console.log('🌐 [DEBUG] User Agent:', navigator.userAgent);
+        console.log('🌐 [DEBUG] API基础URL:', API_BASE_URL);
         
         // 获取Telegram用户信息
         function getTelegramUserInfo() {
@@ -649,6 +659,13 @@
             return null;
         }
 
+        // 检查是否在 Telegram Mini App 环境中
+        function isTelegramMiniApp() {
+            return typeof Telegram !== 'undefined' && 
+                   Telegram.WebApp && 
+                   Telegram.WebApp.initData;
+        }
+
         // 获取通用请求头
         function getRequestHeaders() {
             const headers = {
@@ -656,10 +673,20 @@
                 'Accept': 'application/json'
             };
             
+            // 添加 Telegram Mini App 标识
+            if (isTelegramMiniApp()) {
+                headers['X-Telegram-Mini-App'] = 'true';
+                headers['X-Telegram-Init-Data'] = Telegram.WebApp.initData;
+            }
+            
             const telegramUser = getTelegramUserInfo();
             if (telegramUser) {
                 headers['X-Telegram-User'] = JSON.stringify(telegramUser);
             }
+            
+            // 添加环境信息用于调试
+            headers['X-Environment'] = isTelegramMiniApp() ? 'telegram-miniapp' : 'browser';
+            headers['X-User-Agent'] = navigator.userAgent;
             
             return headers;
         }
@@ -744,21 +771,88 @@
 
         // 获取商品数据
         async function fetchProducts() {
+            console.log('🔄 [fetchProducts] 函数被调用');
+            
+            // 检查 fetch 是否可用
+            if (!isFetchAvailable()) {
+                console.error('❌ [fetchProducts] fetch API 不可用，可能被Telegram限制');
+                throw new Error('fetch API 不可用 - Telegram Mini App 限制');
+            }
+            
             try {
                 console.log('🔄 [fetchProducts] 开始获取商品数据...');
+                console.log('✅ [fetchProducts] fetch API 可用，继续执行...');
+                console.log('🌐 [fetchProducts] 是否在Telegram Mini App:', isTelegramMiniApp());
+                console.log('🌐 [fetchProducts] 用户信息:', getTelegramUserInfo());
+                console.log('🌐 [fetchProducts] 请求头:', getRequestHeaders());
                 
                 const apiUrl = `${API_BASE_URL}/goods/list`;
                 console.log('🌐 [fetchProducts] 请求URL:', apiUrl);
+                console.log('🌐 [fetchProducts] 准备发起fetch请求...');
                 
-                const response = await fetch(apiUrl, {
+                // 第一次尝试：标准请求
+                console.log('🌐 [fetchProducts] 开始执行fetch...');
+                console.log('🌐 [fetchProducts] 请求参数:', {
+                    url: apiUrl,
                     method: 'GET',
                     headers: getRequestHeaders()
                 });
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                
+                let response;
+                try {
+                    response = await fetch(apiUrl, {
+                        method: 'GET',
+                        headers: getRequestHeaders()
+                    });
+                    console.log('🌐 [fetchProducts] fetch请求已发出，等待响应...');
+                } catch (fetchError) {
+                    console.error('❌ [fetchProducts] fetch调用直接失败:', fetchError);
+                    console.error('❌ [fetchProducts] 这可能是Telegram Mini App的网络限制');
+                    throw new Error(`Fetch 被阻止: ${fetchError.message}`);
                 }
-                const products = await response.json();
+                
+                console.log('📡 [fetchProducts] 响应状态:', response.status, response.statusText);
+                console.log('📡 [fetchProducts] 响应头:', [...response.headers.entries()]);
+                
+                // 如果在 Telegram Mini App 中请求失败，尝试简化请求头
+                if (!response.ok && isTelegramMiniApp()) {
+                    console.log('🔄 [fetchProducts] Telegram Mini App 请求失败，尝试简化请求...');
+                    
+                    response = await fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    console.log('📡 [fetchProducts] 简化请求响应状态:', response.status, response.statusText);
+                }
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ [fetchProducts] 响应错误内容:', errorText);
+                    console.error('🔍 [fetchProducts] 可能的权限问题 - 当前用户ID:', getTelegramUserInfo()?.id);
+                    console.error('🔍 [fetchProducts] 请检查后端是否对用户ID进行了权限限制');
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                // 获取响应文本用于调试
+                const responseText = await response.text();
+                console.log('📄 [fetchProducts] 原始响应内容:', responseText);
+                
+                // 尝试解析JSON
+                let products;
+                try {
+                    products = JSON.parse(responseText);
+                    console.log('✅ [fetchProducts] JSON解析成功:', products);
+                } catch (parseError) {
+                    console.error('❌ [fetchProducts] JSON解析失败:', parseError);
+                    console.error('📄 [fetchProducts] 无法解析的响应内容:', responseText);
+                    throw new Error(`JSON解析失败: ${parseError.message}, 响应内容: ${responseText}`);
+                }
                 console.log('✅ [fetchProducts] 商品数据获取成功:', products);
+                console.log('✅ [fetchProducts] 成功获取数据的用户ID:', getTelegramUserInfo()?.id);
+                console.log('✅ [fetchProducts] 成功获取数据的用户名:', getTelegramUserInfo()?.username);
                 
                 // 处理商品数据，保留 imageUrl 和默认图标
                 PRODUCTS = products.map(product => ({
@@ -771,6 +865,20 @@
                 return PRODUCTS;
             } catch (error) {
                 console.error('❌ [fetchProducts] 获取商品数据失败:', error);
+                console.error('❌ [fetchProducts] 错误详情:', {
+                    message: error.message,
+                    stack: error.stack,
+                    name: error.name
+                });
+                
+                // 如果是网络限制错误，显示友好提示
+                if (error.message.includes('Fetch 被阻止') || error.message.includes('Type error')) {
+                    console.log('ℹ️ [fetchProducts] 检测到Telegram网络限制，显示用户提示');
+                    showNetworkLimitationMessage();
+                } else {
+                    console.error('🔧 [fetchProducts] 商品数据加载失败，使用默认数据');
+                }
+                
                 // 如果接口失败，使用默认商品数据
                 PRODUCTS = [
                     {id: 1, name: '苹果', price: 5.9, image: '🍎', category: 'category_1'},
@@ -802,22 +910,110 @@
             return iconKey ? DEFAULT_ICONS[iconKey] : DEFAULT_ICONS.default;
         }
 
+        // 检测 fetch 是否可用
+        function isFetchAvailable() {
+            try {
+                return typeof fetch === 'function';
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // 测试 fetch 是否真正可用
+        async function testFetchAvailability() {
+            try {
+                console.log('🔍 [testFetchAvailability] 开始测试fetch可用性...');
+                console.log('🔍 [testFetchAvailability] typeof fetch:', typeof fetch);
+                
+                // 尝试一个简单的 fetch 调用到同源
+                const testResponse = await fetch(window.location.href, {
+                    method: 'HEAD'
+                });
+                console.log('🔍 [testFetchAvailability] 同源HEAD请求成功');
+                return true;
+            } catch (error) {
+                console.error('🔍 [testFetchAvailability] fetch测试失败:', error);
+                return false;
+            }
+        }
+
         // 获取商品分类数据
         async function fetchCategories() {
+            console.log('🔄 [fetchCategories] 函数被调用');
+            
+            // 检查 fetch 是否可用
+            if (!isFetchAvailable()) {
+                console.error('❌ [fetchCategories] fetch API 不可用，可能被Telegram限制');
+                throw new Error('fetch API 不可用 - Telegram Mini App 限制');
+            }
+            
             try {
                 console.log('🔄 [fetchCategories] 开始获取分类数据...');
+                console.log('✅ [fetchCategories] fetch API 可用，继续执行...');
                 
                 const apiUrl = `${API_BASE_URL}/goodscategory/list`;
                 console.log('🌐 [fetchCategories] 请求URL:', apiUrl);
+                console.log('🌐 [fetchCategories] 准备发起fetch请求...');
                 
-                const response = await fetch(apiUrl, {
+                // 第一次尝试：标准请求
+                console.log('🌐 [fetchCategories] 开始执行fetch...');
+                console.log('🌐 [fetchCategories] 请求参数:', {
+                    url: apiUrl,
                     method: 'GET',
                     headers: getRequestHeaders()
                 });
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                
+                let response;
+                try {
+                    response = await fetch(apiUrl, {
+                        method: 'GET',
+                        headers: getRequestHeaders()
+                    });
+                    console.log('🌐 [fetchCategories] fetch请求已发出，等待响应...');
+                } catch (fetchError) {
+                    console.error('❌ [fetchCategories] fetch调用直接失败:', fetchError);
+                    console.error('❌ [fetchCategories] 这可能是Telegram Mini App的网络限制');
+                    throw new Error(`Fetch 被阻止: ${fetchError.message}`);
                 }
-                const categories = await response.json();
+                
+                console.log('📡 [fetchCategories] 响应状态:', response.status, response.statusText);
+                
+                // 如果在 Telegram Mini App 中请求失败，尝试简化请求头
+                if (!response.ok && isTelegramMiniApp()) {
+                    console.log('🔄 [fetchCategories] Telegram Mini App 请求失败，尝试简化请求...');
+                    
+                    response = await fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    console.log('📡 [fetchCategories] 简化请求响应状态:', response.status, response.statusText);
+                }
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ [fetchCategories] 响应错误内容:', errorText);
+                    console.error('🔍 [fetchCategories] 可能的权限问题 - 当前用户ID:', getTelegramUserInfo()?.id);
+                    console.error('🔍 [fetchCategories] 请检查后端是否对用户ID进行了权限限制');
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                // 获取响应文本用于调试
+                const responseText = await response.text();
+                console.log('📄 [fetchCategories] 原始响应内容:', responseText);
+                
+                // 尝试解析JSON
+                let categories;
+                try {
+                    categories = JSON.parse(responseText);
+                    console.log('✅ [fetchCategories] JSON解析成功:', categories);
+                } catch (parseError) {
+                    console.error('❌ [fetchCategories] JSON解析失败:', parseError);
+                    console.error('📄 [fetchCategories] 无法解析的响应内容:', responseText);
+                    throw new Error(`JSON解析失败: ${parseError.message}, 响应内容: ${responseText}`);
+                }
                 console.log('✅ [fetchCategories] 分类数据获取成功:', categories);
                 
                 // 添加"全部"选项到分类列表开头
@@ -838,6 +1034,20 @@
                 return allCategories;
             } catch (error) {
                 console.error('❌ [fetchCategories] 获取分类数据失败:', error);
+                console.error('❌ [fetchCategories] 错误详情:', {
+                    message: error.message,
+                    stack: error.stack,
+                    name: error.name
+                });
+                
+                // 如果是网络限制错误，显示友好提示
+                if (error.message.includes('Fetch 被阻止') || error.message.includes('Type error')) {
+                    console.log('ℹ️ [fetchCategories] 检测到Telegram网络限制');
+                    // 分类错误时不重复显示提示，商品错误时会统一显示
+                } else {
+                    console.error('🔧 [fetchCategories] 分类数据加载失败，使用默认分类');
+                }
+                
                 // 如果接口失败，使用默认分类
                 CATEGORIES = [
                     {id: 'all', name: '全部'},
@@ -1066,6 +1276,10 @@
                 
             } catch (error) {
                 console.error('❌ [fetchOrders] 获取订单数据失败:', error);
+                
+                // 静默处理错误，不显示弹窗，方便debug
+                console.error('🔧 [fetchOrders] 订单数据加载失败');
+                
                 if (isRefresh) {
                     document.getElementById('orders-list').innerHTML = '<div style="text-align:center;color:#dc3545;padding:30px 0;">加载订单失败，请重试</div>';
                 }
@@ -1326,6 +1540,9 @@
                 
             } catch (error) {
                 console.error('❌ [submitOrder] 订单提交失败:', error);
+                
+                // 静默处理错误，不显示弹窗，方便debug
+                console.error('🔧 [submitOrder] 订单提交失败');
                 alert('订单提交失败，请重试！');
             }
         };
@@ -1411,6 +1628,52 @@
         // 页面初始化
         async function initPage() {
             console.log('🚀 [initPage] 开始初始化页面...');
+            console.log('🚀 [initPage] 函数已被调用，开始执行初始化流程');
+            
+            // 环境检测
+            console.log('🌐 [initPage] ========== 环境检测 ==========');
+            console.log('🌐 [initPage] 是否在Telegram Mini App:', isTelegramMiniApp());
+            console.log('🌐 [initPage] Telegram对象存在:', typeof Telegram !== 'undefined');
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                console.log('🌐 [initPage] Telegram.WebApp.initData:', Telegram.WebApp.initData);
+                console.log('🌐 [initPage] Telegram.WebApp.platform:', Telegram.WebApp.platform);
+                console.log('🌐 [initPage] Telegram.WebApp.version:', Telegram.WebApp.version);
+                
+                // 解析 initData 获取详细用户信息
+                if (Telegram.WebApp.initData) {
+                    const urlParams = new URLSearchParams(Telegram.WebApp.initData);
+                    const userParam = urlParams.get('user');
+                    if (userParam) {
+                        try {
+                            console.log('🔍 [initPage] 原始userParam:', userParam);
+                            const decodedUserParam = decodeURIComponent(userParam);
+                            console.log('🔍 [initPage] 解码后的userParam:', decodedUserParam);
+                            const userData = JSON.parse(decodedUserParam);
+                            console.log('🔍 [initPage] 解析的用户数据:', userData);
+                            console.log('🆔 [initPage] 用户ID:', userData.id || 'undefined');
+                            console.log('👤 [initPage] 用户名:', userData.username || 'undefined');
+                            console.log('📛 [initPage] 显示名:', (userData.first_name || 'undefined'), (userData.last_name || 'undefined'));
+                            console.log('🎖️ [initPage] 是否为高级用户:', userData.is_premium !== undefined ? userData.is_premium : 'undefined');
+                        } catch (e) {
+                            console.error('❌ [initPage] 解析用户数据失败:', e);
+                            console.error('❌ [initPage] 错误详情:', e.message, e.stack);
+                        }
+                    }
+                }
+            }
+            console.log('🌐 [initPage] User Agent:', navigator.userAgent);
+            console.log('🌐 [initPage] fetch API 可用:', isFetchAvailable());
+            console.log('🌐 [initPage] XMLHttpRequest 可用:', typeof XMLHttpRequest !== 'undefined');
+            
+            // 测试 fetch 实际可用性
+            try {
+                const fetchActuallyWorks = await testFetchAvailability();
+                console.log('🌐 [initPage] fetch 实际可用:', fetchActuallyWorks);
+            } catch (error) {
+                console.error('🌐 [initPage] fetch 测试异常:', error);
+            }
+            
+            console.log('🌐 [initPage] ================================');
             
             // 检查并打印Telegram用户信息
             const telegramUser = getTelegramUserInfo();
@@ -1422,24 +1685,64 @@
             }
             
             // 先获取分类数据
-            await fetchCategories();
+            try {
+                console.log('🔄 [initPage] 准备调用 fetchCategories...');
+                await fetchCategories();
+                console.log('✅ [initPage] fetchCategories 执行完成');
+            } catch (error) {
+                console.error('❌ [initPage] fetchCategories 执行失败:', error);
+            }
             
             // 再获取商品数据
-            await fetchProducts();
+            try {
+                console.log('🔄 [initPage] 准备调用 fetchProducts...');
+                await fetchProducts();
+                console.log('✅ [initPage] fetchProducts 执行完成');
+            } catch (error) {
+                console.error('❌ [initPage] fetchProducts 执行失败:', error);
+            }
             
             // 从本地存储恢复购物车数据
-            loadCartFromStorage();
+            try {
+                console.log('🔄 [initPage] 恢复购物车数据...');
+                loadCartFromStorage();
+                console.log('✅ [initPage] 购物车数据恢复完成');
+            } catch (error) {
+                console.error('❌ [initPage] 购物车数据恢复失败:', error);
+            }
             
             // 渲染页面内容
-            renderProducts();
-            renderCart(); // 确保购物车也重新渲染
-            initTelegramWebApp();
+            try {
+                console.log('🔄 [initPage] 渲染页面内容...');
+                renderProducts();
+                renderCart(); // 确保购物车也重新渲染
+                console.log('✅ [initPage] 页面渲染完成');
+            } catch (error) {
+                console.error('❌ [initPage] 页面渲染失败:', error);
+            }
+            
+            try {
+                console.log('🔄 [initPage] 初始化Telegram WebApp...');
+                initTelegramWebApp();
+                console.log('✅ [initPage] Telegram WebApp初始化完成');
+            } catch (error) {
+                console.error('❌ [initPage] Telegram WebApp初始化失败:', error);
+            }
             
             console.log('✅ [initPage] 页面初始化完成');
         }
 
         // 启动页面初始化
-        initPage();
+        console.log('🚀 [MAIN] 页面脚本开始执行，准备调用 initPage...');
+        (async () => {
+            try {
+                await initPage();
+                console.log('🚀 [MAIN] initPage 调用成功');
+            } catch (error) {
+                console.error('❌ [MAIN] initPage 调用失败:', error);
+                console.error('❌ [MAIN] 错误堆栈:', error.stack);
+            }
+        })();
 
         // 添加全局错误处理
         window.addEventListener('error', (event) => {
@@ -1539,6 +1842,25 @@
                 return 'checkout';
             }
             return 'products';
+        }
+
+
+
+        // 显示网络限制提示
+        function showNetworkLimitationMessage() {
+            const message = `
+📱 Telegram Mini App 网络限制
+
+由于Telegram的安全策略，您当前无法加载实时商品数据。
+
+🔧 解决方案：
+1. 在浏览器中打开：${window.location.href}
+2. 或联系管理员申请网络权限
+
+📋 当前显示的是演示数据，功能正常可用。
+            `;
+            
+            alert(message);
         }
 
         // 全屏功能
