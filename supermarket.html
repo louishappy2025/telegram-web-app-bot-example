@@ -681,7 +681,18 @@
             
             const telegramUser = getTelegramUserInfo();
             if (telegramUser) {
-                headers['X-Telegram-User'] = JSON.stringify(telegramUser);
+                // Base64 编码解决中文字符问题
+                try {
+                    const userJson = JSON.stringify(telegramUser);
+                    const encodedUser = btoa(unescape(encodeURIComponent(userJson)));
+                    headers['X-Telegram-User'] = encodedUser;
+                    headers['X-Telegram-User-Encoding'] = 'base64';
+                    console.log('🔧 [getRequestHeaders] 用户信息已Base64编码');
+                } catch (encodeError) {
+                    console.error('❌ [getRequestHeaders] 用户信息编码失败:', encodeError);
+                    // 编码失败时只发送用户ID
+                    headers['X-Telegram-User-ID'] = telegramUser.id;
+                }
             }
             
             // 添加环境信息用于调试
@@ -798,61 +809,15 @@
                     headers: getRequestHeaders()
                 });
                 
-                let response;
-                try {
-                    // 第一次尝试：完整请求头
-                    response = await fetch(apiUrl, {
-                        method: 'GET',
-                        headers: getRequestHeaders()
-                    });
-                    console.log('🌐 [fetchProducts] 完整请求头fetch成功');
-                } catch (fetchError) {
-                    console.error('❌ [fetchProducts] 完整请求头失败:', fetchError);
-                    
-                    // 第二次尝试：简化请求头（只保留基础头）
-                    try {
-                        console.log('🔄 [fetchProducts] 尝试简化请求头...');
-                        response = await fetch(apiUrl, {
-                            method: 'GET',
-                            headers: {
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                        console.log('✅ [fetchProducts] 简化请求头成功！问题在于自定义请求头');
-                    } catch (simpleError) {
-                        console.error('❌ [fetchProducts] 简化请求头也失败:', simpleError);
-                        
-                        // 第三次尝试：完全最小化请求头
-                        try {
-                            console.log('🔄 [fetchProducts] 尝试最小化请求头...');
-                            response = await fetch(apiUrl, {
-                                method: 'GET'
-                            });
-                            console.log('✅ [fetchProducts] 最小化请求头成功！问题在于所有自定义请求头');
-                        } catch (minimalError) {
-                            console.error('❌ [fetchProducts] 所有尝试都失败，这是网络限制:', minimalError);
-                            throw new Error(`Fetch 被阻止: ${fetchError.message}`);
-                        }
-                    }
-                }
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: getRequestHeaders()
+                });
                 
                 console.log('📡 [fetchProducts] 响应状态:', response.status, response.statusText);
                 console.log('📡 [fetchProducts] 响应头:', [...response.headers.entries()]);
                 
-                // 如果在 Telegram Mini App 中请求失败，尝试简化请求头
-                if (!response.ok && isTelegramMiniApp()) {
-                    console.log('🔄 [fetchProducts] Telegram Mini App 请求失败，尝试简化请求...');
-                    
-                    response = await fetch(apiUrl, {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
-                    
-                    console.log('📡 [fetchProducts] 简化请求响应状态:', response.status, response.statusText);
-                }
+
                 
                 if (!response.ok) {
                     const errorText = await response.text();
@@ -989,60 +954,14 @@
                     headers: getRequestHeaders()
                 });
                 
-                let response;
-                try {
-                    // 第一次尝试：完整请求头
-                    response = await fetch(apiUrl, {
-                        method: 'GET',
-                        headers: getRequestHeaders()
-                    });
-                    console.log('🌐 [fetchCategories] 完整请求头fetch成功');
-                } catch (fetchError) {
-                    console.error('❌ [fetchCategories] 完整请求头失败:', fetchError);
-                    
-                    // 第二次尝试：简化请求头
-                    try {
-                        console.log('🔄 [fetchCategories] 尝试简化请求头...');
-                        response = await fetch(apiUrl, {
-                            method: 'GET',
-                            headers: {
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                        console.log('✅ [fetchCategories] 简化请求头成功！问题在于自定义请求头');
-                    } catch (simpleError) {
-                        console.error('❌ [fetchCategories] 简化请求头也失败:', simpleError);
-                        
-                        // 第三次尝试：最小化请求头
-                        try {
-                            console.log('🔄 [fetchCategories] 尝试最小化请求头...');
-                            response = await fetch(apiUrl, {
-                                method: 'GET'
-                            });
-                            console.log('✅ [fetchCategories] 最小化请求头成功！问题在于所有自定义请求头');
-                        } catch (minimalError) {
-                            console.error('❌ [fetchCategories] 所有尝试都失败，这是网络限制:', minimalError);
-                            throw new Error(`Fetch 被阻止: ${fetchError.message}`);
-                        }
-                    }
-                }
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: getRequestHeaders()
+                });
                 
                 console.log('📡 [fetchCategories] 响应状态:', response.status, response.statusText);
                 
-                // 如果在 Telegram Mini App 中请求失败，尝试简化请求头
-                if (!response.ok && isTelegramMiniApp()) {
-                    console.log('🔄 [fetchCategories] Telegram Mini App 请求失败，尝试简化请求...');
-                    
-                    response = await fetch(apiUrl, {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
-                    
-                    console.log('📡 [fetchCategories] 简化请求响应状态:', response.status, response.statusText);
-                }
+
                 
                 if (!response.ok) {
                     const errorText = await response.text();
