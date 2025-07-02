@@ -305,7 +305,7 @@
         }
 
         .product-card-body {
-            padding: 16px;
+            padding: 12px;
             position: relative;
         }
 
@@ -317,7 +317,7 @@
             font-weight: 700;
             padding: 3px 10px;
             border-radius: 12px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             letter-spacing: 0.8px;
             box-shadow: 0 2px 8px rgba(108,92,231,0.3);
             text-transform: uppercase;
@@ -359,11 +359,11 @@
 
         .product-name {
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             font-size: 15px;
             line-height: 1.3;
             color: var(--tg-theme-text-color, #333);
-            min-height: 35px;
+            min-height: 20px;
             display: flex;
             align-items: center;
         }
@@ -371,7 +371,7 @@
         .product-price {
             color: var(--tg-theme-button-color, #0088cc);
             font-weight: 700;
-            margin-bottom: 16px;
+            margin-bottom: 4px;
             font-size: 18px;
         }
 
@@ -429,6 +429,257 @@
             text-align: center;
             border: none;
             box-shadow: 0 2px 8px rgba(0,136,204,0.3);
+        }
+
+        /* 销量标签样式 */
+        .sales-count {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(238, 90, 82, 0.3);
+            animation: fadeInScale 0.5s ease-out;
+            backdrop-filter: blur(4px);
+        }
+
+        /* 销量为0的样式 */
+        .sales-count.zero-sales {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            box-shadow: 0 2px 6px rgba(127, 140, 141, 0.3);
+        }
+
+        .sales-count.hot {
+            background: linear-gradient(135deg, #ff9500, #ff6b00);
+            animation: pulse 2s infinite;
+        }
+
+        .sales-count.super-hot {
+            background: linear-gradient(135deg, #ff3838, #d63031);
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 2px 6px rgba(214, 48, 49, 0.3), 0 0 12px rgba(255, 56, 56, 0.4);
+            }
+            to {
+                box-shadow: 0 2px 6px rgba(214, 48, 49, 0.3), 0 0 20px rgba(255, 56, 56, 0.6);
+            }
+        }
+
+        /* 销量统计标签 */
+        .sales-stats {
+            position: relative;
+            display: flex;
+            align-items: center;
+            font-size: 11px;
+            color: var(--tg-theme-hint-color, #999);
+            margin-top: 0px;
+            margin-bottom: 8px;
+        }
+
+        .sales-stats-text {
+            font-weight: 500;
+            font-size: 11px;
+        }
+
+
+
+        /* 返回顶部按钮样式 */
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--tg-theme-button-color, #0088cc), #00a0e6);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,136,204,0.3);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        .back-to-top:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 24px rgba(0,136,204,0.4);
+            background: linear-gradient(135deg, #0099dd, #00b0f0);
+        }
+
+        .back-to-top:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(0,136,204,0.3);
+        }
+
+        .back-to-top::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 10px solid white;
+        }
+
+        /* 按钮内的箭头动画 */
+        .back-to-top:hover::before {
+            animation: arrowBounce 0.6s ease-in-out infinite alternate;
+        }
+
+        @keyframes arrowBounce {
+            0% {
+                transform: translate(-50%, -50%);
+            }
+            100% {
+                transform: translate(-50%, -60%);
+            }
+        }
+
+        /* 脉冲效果 */
+        .back-to-top::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(0,136,204,0.2);
+            transform: scale(0);
+            animation: pulse-ring 2s ease-out infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        /* 响应式设计 - 移动端优化 */
+        @media (max-width: 480px) {
+            .product-card-body {
+                padding: 10px;
+            }
+            
+            .sales-count {
+                font-size: 10px;
+                padding: 3px 6px;
+                border-radius: 10px;
+            }
+            
+            .sales-stats {
+                font-size: 10px;
+                margin-bottom: 6px;
+            }
+            
+            .sales-stats-text {
+                font-size: 10px;
+            }
+            
+            .hot-badge {
+                font-size: 9px;
+                padding: 1px 4px;
+                border-radius: 6px;
+            }
+            
+            .product-name {
+                font-size: 14px;
+                margin-bottom: 3px;
+                min-height: 18px;
+            }
+            
+            .product-price {
+                font-size: 16px;
+                margin-bottom: 3px;
+            }
+            
+            .back-to-top {
+                width: 45px;
+                height: 45px;
+                bottom: 16px;
+                right: 16px;
+                font-size: 18px;
+            }
+            
+            .back-to-top::before {
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-bottom: 8px solid white;
+            }
+        }
+
+        /* 热销徽章样式 */
+        .hot-badge {
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 4px rgba(255, 107, 107, 0.4);
+            animation: shimmer 3s infinite;
+            z-index: 2;
+        }
+
+        @keyframes shimmer {
+            0%, 100% {
+                background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            }
+            50% {
+                background: linear-gradient(45deg, #ffd93d, #ff6b6b);
+            }
         }
 
         /* 加载更多和空状态样式 */
@@ -1264,12 +1515,17 @@
                 }
                 
                 // 处理商品数据
-                const newProducts = result.goods.map(product => ({
-                    ...product,
-                    image: getProductIcon(product.icon),
-                    imageUrl: product.imageUrl,
-                    category: `category_${product.categoryId}`
-                }));
+                const newProducts = result.goods.map(product => {
+                    const processedProduct = {
+                        ...product,
+                        image: getProductIcon(product.icon),
+                        imageUrl: product.imageUrl,
+                        category: `category_${product.categoryId}`,
+                        salesCount: product.salesCount || 0  // 确保销量字段存在，默认为0
+                    };
+                    console.log(`📊 [fetchProducts] 商品 ${product.name} 销量: ${product.salesCount}`);
+                    return processedProduct;
+                });
                 
                 // 更新商品列表
                 if (isRefresh) {
@@ -1300,13 +1556,15 @@
                 // 如果接口失败，使用默认商品数据
                 if (isRefresh || PRODUCTS.length === 0) {
                     PRODUCTS = [
-                        {id: 1, name: '苹果', price: 5.9, image: '🍎', category: 'category_1'},
-                        {id: 2, name: '香蕉', price: 3.5, image: '🍌', category: 'category_1'},
-                        {id: 3, name: '橙子', price: 4.8, image: '🍊', category: 'category_1'},
-                        {id: 4, name: '葡萄', price: 8.9, image: '🍇', category: 'category_1'},
-                        {id: 5, name: '牛奶', price: 8.8, image: '🥛', category: 'category_2'},
-                        {id: 6, name: '酸奶', price: 6.5, image: '🥛', category: 'category_2'},
-                        {id: 7, name: '奶酪', price: 12.9, image: '🧀', category: 'category_2'}
+                        {id: 1, name: '苹果', price: 5.9, image: '🍎', category: 'category_1', salesCount: 328, no: 'AP001'},
+                        {id: 2, name: '香蕉', price: 3.5, image: '🍌', category: 'category_1', salesCount: 156, no: 'BN002'},
+                        {id: 3, name: '橙子', price: 4.8, image: '🍊', category: 'category_1', salesCount: 89, no: 'OR003'},
+                        {id: 4, name: '葡萄', price: 8.9, image: '🍇', category: 'category_1', salesCount: 512, no: 'GR004'},
+                        {id: 5, name: '牛奶', price: 8.8, image: '🥛', category: 'category_2', salesCount: 234, no: 'MK005'},
+                        {id: 6, name: '酸奶', price: 6.5, image: '🥛', category: 'category_2', salesCount: 67, no: 'YG006'},
+                        {id: 7, name: '奶酪', price: 12.9, image: '🧀', category: 'category_2', salesCount: 45, no: 'CH007'},
+                        {id: 8, name: '新品草莓', price: 15.8, image: '🍓', category: 'category_1', salesCount: 0, no: 'ST008'},
+                        {id: 9, name: '新品面包', price: 8.5, image: '🍞', category: 'category_3', salesCount: 0, no: 'BR009'}
                     ];
                 }
                 return PRODUCTS;
@@ -1715,15 +1973,39 @@
                     imageHtml = `<div style="color: var(--tg-theme-hint-color, #999);">${p.image}</div>`;
                 }
                 
+                // 生成销量标签HTML
+                const salesCount = p.salesCount || 0;
+                let salesHtml = '';
+                let hotBadgeHtml = '';
+                
+                // 所有商品都显示销量，包括销量为0的
+                let salesClass = 'sales-count';
+                if (salesCount >= 500) {
+                    salesClass += ' super-hot';
+                    hotBadgeHtml = '<div class="hot-badge">爆款</div>';
+                } else if (salesCount >= 100) {
+                    salesClass += ' hot';
+                    hotBadgeHtml = '<div class="hot-badge">热销</div>';
+                } else if (salesCount === 0) {
+                    salesClass += ' zero-sales';
+                }
+                
+                salesHtml = `<div class="${salesClass}">已售${salesCount}</div>`;
+
                 return `
                     <div class="product-card">
+                        ${hotBadgeHtml}
                         <div class="product-image-container">
                             <div class="product-image">${imageHtml}</div>
+                            ${salesHtml}
                         </div>
                         <div class="product-card-body">
                             ${p.no ? `<div class="product-no">NO.${p.no}</div>` : ''}
                             <div class="product-name">${p.name}</div>
                             <div class="product-price">¥${p.price.toFixed(2)}</div>
+                            <div class="sales-stats">
+                                <span class="sales-stats-text">销量 ${salesCount}</span>
+                            </div>
                             <div class="product-actions">
                                 <button type="button" onclick="changeQty(${p.id},-1)" ${qty===0?'disabled':''}>-</button>
                                 ${qty > 0 ? `<div class="quantity-display">${qty}</div>` : '<div style="flex: 1;"></div>'}
@@ -1784,8 +2066,8 @@
                 return `
                     <div class="cart-item">
                         <div class="cart-item-info">
-                            <div class="cart-item-name">${p.name}</div>
-                            <div class="cart-item-price">¥${p.price.toFixed(2)} × ${cart[id]}</div>
+                            <div class="cart-item-name">${p.name} ${p.salesCount > 100 ? '🔥' : p.salesCount === 0 ? '🆕' : ''}</div>
+                            <div class="cart-item-price">¥${p.price.toFixed(2)} × ${cart[id]} · 销量${p.salesCount || 0}</div>
                         </div>
                         <div class="cart-item-actions">
                             <button onclick='changeQty(${p.id},-1)'>-</button>
@@ -2261,6 +2543,9 @@
             
             // 更新MainButton
             updateMainButton();
+            
+            // 更新返回顶部按钮的显示状态
+            updateBackToTopVisibility();
         }
 
         // 页面初始化
@@ -2388,6 +2673,15 @@
                 console.log('✅ [initPage] 下拉刷新和上拉加载初始化完成');
             } catch (error) {
                 console.error('❌ [initPage] 下拉刷新和上拉加载初始化失败:', error);
+            }
+            
+            // 初始化返回顶部按钮
+            try {
+                console.log('🔄 [initPage] 初始化返回顶部按钮...');
+                initBackToTop();
+                console.log('✅ [initPage] 返回顶部按钮初始化完成');
+            } catch (error) {
+                console.error('❌ [initPage] 返回顶部按钮初始化失败:', error);
             }
             
             console.log('✅ [initPage] 页面初始化完成');
@@ -2534,6 +2828,93 @@
                 }
             }
         }
+
+        // 返回顶部功能
+        function initBackToTop() {
+            const backToTopBtn = document.getElementById('back-to-top');
+            
+            // 监听滚动事件
+            let scrollTimer = null;
+            window.addEventListener('scroll', () => {
+                if (scrollTimer) {
+                    clearTimeout(scrollTimer);
+                }
+                
+                scrollTimer = setTimeout(() => {
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const currentTab = getCurrentTab();
+                    
+                    // 只在商品列表页面且滚动距离超过300px时显示按钮
+                    if (scrollTop > 300 && currentTab === 'products') {
+                        backToTopBtn.classList.add('show');
+                    } else {
+                        backToTopBtn.classList.remove('show');
+                    }
+                }, 10); // 节流处理，10ms延迟
+            });
+            
+            // 点击返回顶部
+            backToTopBtn.addEventListener('click', () => {
+                // 添加触觉反馈
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                    Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                }
+                
+                // 平滑滚动到顶部
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+                
+                // 如果浏览器不支持smooth，使用动画
+                if (!CSS.supports('scroll-behavior', 'smooth')) {
+                    smoothScrollToTop();
+                }
+            });
+        }
+
+        // 平滑滚动到顶部的兼容性实现
+        function smoothScrollToTop() {
+            const startPosition = window.pageYOffset;
+            const duration = 800; // 动画持续时间800ms
+            const startTime = performance.now();
+            
+            function animation(currentTime) {
+                const timeElapsed = currentTime - startTime;
+                const progress = Math.min(timeElapsed / duration, 1);
+                
+                // 使用缓动函数
+                const easeInOutQuad = progress < 0.5 
+                    ? 2 * progress * progress 
+                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                
+                const currentPosition = startPosition * (1 - easeInOutQuad);
+                window.scrollTo(0, currentPosition);
+                
+                if (timeElapsed < duration) {
+                    requestAnimationFrame(animation);
+                }
+            }
+            
+            requestAnimationFrame(animation);
+        }
+
+        // 更新返回顶部按钮的显示状态
+        function updateBackToTopVisibility() {
+            const backToTopBtn = document.getElementById('back-to-top');
+            const currentTab = getCurrentTab();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // 只在商品列表页面且滚动距离超过300px时显示按钮
+            if (scrollTop > 300 && currentTab === 'products') {
+                backToTopBtn.classList.add('show');
+            } else {
+                backToTopBtn.classList.remove('show');
+            }
+        }
     </script>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" class="back-to-top" title="返回顶部" aria-label="返回顶部"></button>
 </body>
 </html> 
