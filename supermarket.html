@@ -9,6 +9,7 @@
     <meta name="HandheldFriendly" content="True" />
     <meta name="robots" content="noindex,nofollow" />
     <script src="https://telegram.org/js/telegram-web-app.js?2"></script>
+    <!-- 🎯 现在使用和商品tab完全相同的原生实现，不需要外部库 -->
     <script>
         function setThemeClass() {
             document.documentElement.className = Telegram.WebApp.colorScheme;
@@ -47,38 +48,32 @@
         }
 
         .header {
-            text-align: center;
-            padding: 20px 0 10px 0;
+            /* 内联样式已覆盖，这里保留备用 */
         }
 
         .logo {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 16px;
-            border-radius: 12px;
+            border-radius: 8px;
             object-fit: cover;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .header h1 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: 600;
+            /* 内联样式已覆盖，这里保留备用 */
         }
 
 
 
         /* 搜索框样式 - 现代美观版本 */
         .search-container {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             position: relative;
         }
 
         .search-input {
             width: 100%;
-            padding: 12px 44px 12px 40px;
+            padding: 10px 40px 10px 36px;
             border: 2px solid transparent;
-            border-radius: 12px;
+            border-radius: 10px;
             background: linear-gradient(#f8fafc, #f8fafc) padding-box,
                         linear-gradient(135deg, #e2e8f0, #cbd5e1) border-box;
             color: #374151;
@@ -104,7 +99,7 @@
         .search-container::before {
             content: '🔍';
             position: absolute;
-            left: 14px;
+            left: 12px;
             top: 50%;
             transform: translateY(-50%);
             font-size: 14px;
@@ -139,69 +134,65 @@
 
         /* 商品分类样式 */
         .categories-container {
-            margin-bottom: 20px;
-        }
-
-        .categories {
-            display: flex;
-            overflow-x: auto;
-            padding: 8px 0;
-            gap: 12px;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
-        .categories::-webkit-scrollbar {
-            display: none;
-        }
-
-        .category-btn {
-            padding: 8px 16px;
-            border: 2px solid transparent;
-            border-radius: 12px;
-            background: #f1f5f9;
-            color: #64748b;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 500;
-            font-size: 14px;
-            min-width: fit-content;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .category-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
+            margin-bottom: 16px;
             width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
-            transition: left 0.5s;
+            box-sizing: border-box;
         }
 
-        .category-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-            background: #e2e8f0;
-            color: #475569;
+        .category-form-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
-        .category-btn:hover::before {
-            left: 100%;
+        .category-form-group label {
+            flex-shrink: 0;
+            width: 75px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #333);
+            margin-bottom: 0;
+            font-size: 14px;
         }
 
-        .category-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-            transform: translateY(-2px);
+        .category-select {
+            flex: 1;
+            min-width: 0;
+            padding: 8px 12px;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            background: linear-gradient(#f8fafc, #f8fafc) padding-box,
+                        linear-gradient(135deg, #e2e8f0, #cbd5e1) border-box;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 40px;
+            box-sizing: border-box;
         }
 
-        .category-btn.active:hover {
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5);
+        .category-select:focus {
+            background: linear-gradient(white, white) padding-box,
+                        linear-gradient(135deg, #667eea, #764ba2) border-box;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .category-select option {
+            padding: 8px 12px;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #333);
         }
 
         /* 下拉刷新样式 */
@@ -246,70 +237,72 @@
             to { transform: translateX(-50%) rotate(360deg); }
         }
 
-        /* 订单页面下拉刷新样式 */
-        .orders-refresh-container {
-            position: relative;
-            min-height: 100px;
+        /* 订单页面下拉刷新样式已移除 */
+
+        /* PC端手动刷新按钮样式 */
+        .pc-refresh-controls {
+            padding: 16px;
+            text-align: center;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+            background: var(--tg-theme-bg-color, #fff);
         }
 
-        .orders-refresh-indicator {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
+        .pc-refresh-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             padding: 12px 24px;
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
+            border: none;
             border-radius: 25px;
             font-size: 14px;
             font-weight: 600;
-            opacity: 0;
+            cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            user-select: none;
         }
 
-        .orders-refresh-indicator.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
+        .pc-refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
 
-        .orders-refresh-indicator.refreshing {
-            opacity: 1;
+        .pc-refresh-btn:active {
+            transform: translateY(0);
         }
 
-        .orders-refresh-indicator .refresh-icon {
+        .pc-refresh-btn .refresh-icon {
             display: inline-block;
             transition: transform 0.3s ease;
         }
 
-        .orders-refresh-indicator.refreshing .refresh-icon {
-            animation: spin 1s linear infinite;
+        .pc-refresh-btn:hover .refresh-icon {
+            transform: rotate(180deg);
         }
 
         /* Tab导航样式 - 现代美观版本 */
         .tabs {
             display: flex;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             background: var(--tg-theme-bg-color, #fff);
             position: relative;
-            padding: 3px;
-            border-radius: 10px;
+            padding: 2px;
+            border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             backdrop-filter: blur(10px);
         }
 
         .tab {
             flex: 1;
-            padding: 10px 16px;
+            padding: 8px 12px;
             border: none;
             background: transparent;
             color: #6b7280;
             cursor: pointer;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 500;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
@@ -320,8 +313,8 @@
             z-index: 10;
             display: block;
             width: 100%;
-            min-height: 40px;
-            border-radius: 7px;
+            min-height: 32px;
+            border-radius: 6px;
         }
 
         .tab::before {
@@ -332,7 +325,7 @@
             right: 0;
             bottom: 0;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 7px;
+            border-radius: 6px;
             opacity: 0;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: -1;
@@ -808,58 +801,7 @@
             }
         }
 
-        /* 响应式设计 - 移动端优化 */
-        @media (max-width: 480px) {
-            .product-card-body {
-                padding: 10px;
-            }
-            
-            .sales-count {
-                font-size: 10px;
-                padding: 3px 6px;
-                border-radius: 10px;
-            }
-            
-            .sales-stats {
-                font-size: 10px;
-                margin-bottom: 6px;
-            }
-            
-            .sales-stats-text {
-                font-size: 10px;
-            }
-            
-            .hot-badge {
-                font-size: 9px;
-                padding: 1px 4px;
-                border-radius: 6px;
-            }
-            
-            .product-name {
-                font-size: 14px;
-                margin-bottom: 3px;
-                min-height: 18px;
-            }
-            
-            .product-price {
-                font-size: 16px;
-                margin-bottom: 3px;
-            }
-            
-            .back-to-top {
-                width: 45px;
-                height: 45px;
-                bottom: 16px;
-                right: 16px;
-                font-size: 18px;
-            }
-            
-            .back-to-top::before {
-                border-left: 5px solid transparent;
-                border-right: 5px solid transparent;
-                border-bottom: 8px solid white;
-            }
-        }
+
 
         /* 热销徽章样式 */
         .hot-badge {
@@ -1021,25 +963,32 @@
         /* 表单样式优化 */
         .form-group {
             margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .form-group label {
-            display: block;
-            margin-bottom: 6px;
+            flex-shrink: 0;
+            min-width: 90px;
             font-weight: 600;
             color: var(--tg-theme-text-color, #333);
+            margin-bottom: 0;
         }
 
         .form-group input,
         .form-group select {
-            width: 100%;
-            padding: 12px;
+            flex: 1;
+            max-width: 250px;
+            height: 36px;
+            padding: 8px 12px;
             border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
             border-radius: 8px;
             background: var(--tg-theme-bg-color, #fff);
             color: var(--tg-theme-text-color, #333);
             font-size: 14px;
             transition: border-color 0.2s ease;
+            box-sizing: border-box;
         }
 
         .form-group input:focus,
@@ -1248,30 +1197,9 @@
             text-align: right;
         }
 
-        /* 空状态 */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--tg-theme-hint-color, #999999);
-        }
 
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
 
-        .empty-state h3 {
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
 
-        .empty-state p {
-            font-size: 14px;
-        }
-
-        .dark pre {
-            background: rgba(255, 255, 255, .15);
-        }
 
         /* 深色主题适配 */
         body.dark {
@@ -1283,13 +1211,7 @@
             border-color: var(--tg-theme-hint-color, #333);
         }
 
-        body.dark .category {
-            border-color: var(--tg-theme-hint-color, #333);
-        }
 
-        body.dark .categories {
-            background: var(--tg-theme-secondary-bg-color, #2a2a2a);
-        }
 
         body.dark .payment-method {
             border-color: var(--tg-theme-hint-color, #333);
@@ -1371,6 +1293,294 @@
             }
         }
 
+        /* 付款方式选择器样式 */
+        .payment-methods-container {
+            margin-bottom: 24px;
+        }
+
+        .payment-methods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .payment-method-card {
+            border: 2px solid var(--tg-theme-hint-color, #e0e0e0);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--tg-theme-bg-color, #fff);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .payment-method-card:hover {
+            border-color: var(--tg-theme-button-color, #0088cc);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 136, 204, 0.15);
+        }
+
+        .payment-method-card.selected {
+            border-color: var(--tg-theme-button-color, #0088cc);
+            background: linear-gradient(135deg, rgba(0, 136, 204, 0.05), rgba(0, 136, 204, 0.1));
+            box-shadow: 0 4px 16px rgba(0, 136, 204, 0.2);
+        }
+
+        .payment-method-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .payment-method-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 12px;
+            border-radius: 6px;
+            object-fit: contain;
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            padding: 4px;
+        }
+
+        .payment-method-info {
+            flex: 1;
+        }
+
+        .payment-method-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--tg-theme-text-color, #333);
+            margin-bottom: 4px;
+        }
+
+        .payment-method-description {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #999);
+        }
+
+        .payment-method-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+
+        .payment-form-container {
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+        }
+
+        .payment-form-title {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: var(--tg-theme-text-color, #333);
+            display: flex;
+            align-items: center;
+        }
+
+        .payment-form-title .payment-method-icon {
+            margin-right: 8px;
+        }
+
+        .payment-instructions {
+            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #1565c0;
+            line-height: 1.5;
+        }
+
+        /* 支付凭证上传样式 */
+        .payment-voucher-section {
+            margin-top: 16px;
+            padding: 16px;
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 8px;
+            border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+        }
+
+        .voucher-upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+            user-select: none;
+        }
+
+        .voucher-upload-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+            background: linear-gradient(135deg, #218838, #1e7e34);
+        }
+
+        .voucher-upload-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+        }
+
+        .voucher-file-input {
+            display: none;
+        }
+
+        .voucher-preview {
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        .voucher-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 12px;
+        }
+
+        .voucher-confirm-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+            user-select: none;
+        }
+
+        .voucher-confirm-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+            background: linear-gradient(135deg, #0056b3, #004085);
+        }
+
+        .voucher-confirm-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+        }
+
+        .voucher-loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--tg-theme-hint-color, #999);
+            font-size: 14px;
+        }
+
+        .voucher-loading .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0,0,0,0.1);
+            border-radius: 50%;
+            border-top-color: var(--tg-theme-button-color, #0088cc);
+            animation: spin 1s linear infinite;
+        }
+
+        /* 货到付款特殊表单样式 */
+        #cod-special-form {
+            border-top: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+            padding-top: 16px;
+        }
+
+        #cod-special-form .form-group {
+            margin-bottom: 16px;
+        }
+
+        #cod-special-form label {
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #333);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        #cod-special-form select,
+        #cod-special-form input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+            border-radius: 8px;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #333);
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        #cod-special-form select:focus,
+        #cod-special-form input:focus {
+            outline: none;
+            border-color: var(--tg-theme-button-color, #0088cc);
+            box-shadow: 0 0 0 3px rgba(0, 136, 204, 0.1);
+        }
+
+        #cod-special-form input[readonly] {
+            background-color: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            color: var(--tg-theme-hint-color, #666);
+            cursor: not-allowed;
+        }
+
+        #cod-special-form small {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #666);
+            margin-top: 4px;
+            display: block;
+        }
+
+        #cod-calculation-info {
+            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 14px;
+            color: #1565c0;
+            line-height: 1.5;
+        }
+
+        #cod-calculation-details {
+            margin-top: 8px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        #cod-amount-error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+            font-weight: 500;
+            background: rgba(220, 53, 69, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border-left: 3px solid #dc3545;
+        }
+
         /* 全屏模式支持 */
         body.fullscreen .container {
             max-width: none;
@@ -1378,32 +1588,108 @@
             padding: 0;
         }
 
-        body.fullscreen .products-layout {
-            height: 100vh;
+        /* 复制按钮样式 */
+        .copy-btn {
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
             border: none;
-            border-radius: 0;
+            border-radius: 20px;
+            font-size: 11px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            user-select: none;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.25);
+            display: inline-flex;
+            align-items: center;
+            min-width: 50px;
+            justify-content: center;
+            letter-spacing: 0.5px;
         }
 
-        /* 底部栏颜色支持 */
-        .bottom-bar {
-            background-color: var(--tg-theme-bottom-bar-bg-color, var(--tg-theme-bg-color));
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 16px;
-            padding-bottom: calc(16px + var(--safe-area-bottom, 0px));
-            border-top: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+        .copy-btn:hover {
+            background: linear-gradient(135deg, #0056b3, #004085);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.35);
+        }
+
+        .copy-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(0, 123, 255, 0.25);
+        }
+
+        .copy-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+        }
+
+        /* 查看收款码按钮样式 */
+        .view-qr-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            user-select: none;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .view-qr-btn:hover {
+            background: linear-gradient(135deg, #218838, #1e7e34);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+        }
+
+        .view-qr-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        /* 隐藏收款码按钮样式 */
+        .hide-qr-btn {
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            user-select: none;
+            box-shadow: 0 2px 6px rgba(108, 117, 125, 0.3);
+        }
+
+        .hide-qr-btn:hover {
+            background: linear-gradient(135deg, #5a6268, #495057);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.4);
+        }
+
+        .hide-qr-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(108, 117, 125, 0.3);
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <div class="header">
-            <img src="image.jpg" alt="超市Logo" class="logo">
-            <h1>🛒 大海超市外卖系统</h1>
-            <button class="btn btn-secondary" onclick="toggleFullscreen()" style="width: auto; margin: 8px 0; padding: 8px 16px; font-size: 12px;">
+        <div class="header" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="image.jpg" alt="超市Logo" class="logo" style="width: 40px; height: 40px;">
+                <h1 style="margin: 0; font-size: 18px; font-weight: 600;">大海超市外卖</h1>
+            </div>
+            <button class="btn btn-secondary" onclick="toggleFullscreen()" style="width: auto; margin: 0; padding: 6px 12px; font-size: 12px;">
                 <span id="fullscreen-text">全屏模式</span>
             </button>
         </div>
@@ -1430,8 +1716,12 @@
                 
                 <!-- 分类容器 -->
                 <div class="categories-container">
-                    <div class="categories" id="categories">
-                        <!-- 分类按钮将通过JavaScript加载 -->
+                    <div class="category-form-group">
+                        <label for="category-select">商品分类：</label>
+                        <select id="category-select" class="category-select" onchange="onCategoryChange()">
+                            <option value="">全部分类</option>
+                            <!-- 分类选项将通过JavaScript加载 -->
+                        </select>
                     </div>
                 </div>
                 
@@ -1459,47 +1749,105 @@
 
         <!-- 下单页面 (独立页面，不是tab) -->
         <div id="checkout" class="tab-content" style="display:none;">
-            <div style="margin-bottom:20px;">
-                <button onclick="backToCart()" style="padding:8px 16px;background:var(--tg-theme-secondary-bg-color,#f8f9fa);border:1px solid var(--tg-theme-hint-color,#e0e0e0);border-radius:6px;cursor:pointer;">← 返回购物车</button>
-            </div>
             <form id="order-form" style="max-width:400px;margin:0 auto;">
-                <div class="form-group">
-                    <label>手机号：</label>
-                    <input type="tel" id="user-phone" required pattern="[0-9]{6,}" placeholder="请输入手机号">
-                </div>
+                <div id="checkout-summary" style="margin-bottom:16px;padding:12px;background:var(--tg-theme-secondary-bg-color,#f8f9fa);border-radius:8px;"></div>
                 <div class="form-group">
                     <label>收货地址：</label>
-                    <input type="text" id="user-address" required placeholder="请输入收货地址">
+                    <input type="text" id="user-address" required placeholder="请输入收货地址" style="height: 36px; padding: 8px 12px;">
                 </div>
                 <div class="form-group">
-                    <label>支付方式：</label>
-                    <select id="pay-method" required>
-                        <option value="">请选择</option>
-                        <option value="aba">ABA银行</option>
-                        <option value="huione">汇旺</option>
-                        <option value="usdt">USDT</option>
-                        <option value="cod">货到付款</option>
-                    </select>
+                    <label>手机号：</label>
+                    <input type="tel" id="user-phone" placeholder="请输入手机号（可选）" style="height: 36px; padding: 8px 12px;">
                 </div>
-                <div class="form-group">
+                
+                <!-- 付款方式选择器 -->
+                <div class="payment-methods-container">
+                    <div class="form-group">
+                        <label>支付方式：</label>
+                        <select id="pay-method" required onchange="onPaymentMethodChange()" style="height: 36px; padding: 8px 12px;">
+                            <option value="">请选择</option>
+                            <!-- 付款方式选项将通过JavaScript动态加载 -->
+                        </select>
+            </div>
+
+                                        <!-- 付款信息展示 -->
+                    <div id="payment-info-display" class="payment-form-container" style="display: none;">
+                        <div id="payment-info-title" class="payment-form-title"></div>
+                        <div id="payment-info-content" class="payment-instructions"></div>
+                        <div id="payment-info-image" style="text-align: center; margin-top: 12px;"></div>
+                    </div>
+                    
+                    <!-- 货到付款特殊处理 -->
+                    <div id="cod-special-form" class="payment-form-container" style="display: none; margin-top: 20px;">
+                        <div class="form-group" style="align-items: flex-start;">
+                            <label style="margin-bottom: 0; min-width: 90px; flex-shrink: 0; margin-top: 0; line-height: 36px;">支付金额：</label>
+                            <div style="display: flex; gap: 12px; align-items: flex-start; flex: 1; max-width: 250px;">
+                                <div style="flex: 1;">
+                                    <input type="number" 
+                                           id="cod-usd-amount" 
+                                           placeholder="支付美金（可选）" 
+                                           step="0.01" 
+                                           min="0"
+                                           oninput="validateAndCalculateCodChange()"
+                                           onkeypress="return validateNumberInput(event)"
+                                           style="width: 100%; height: 36px; padding: 8px 12px; border: 1px solid var(--tg-theme-hint-color, #e0e0e0); border-radius: 8px; background: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #333); font-size: 14px;">
+                                    <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">💵 美元 (USD)</small>
+                                </div>
+                                <div style="flex: 1;">
+                                    <input type="number" 
+                                           id="cod-khr-amount" 
+                                           placeholder="支付柬币（可选）" 
+                                           step="1" 
+                                           min="0"
+                                           oninput="validateAndCalculateCodChange()"
+                                           onkeypress="return validateNumberInput(event)"
+                                           style="width: 100%; height: 36px; padding: 8px 12px; border: 1px solid var(--tg-theme-hint-color, #e0e0e0); border-radius: 8px; background: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #333); font-size: 14px;">
+                                    <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">🏦 柬埔寨币 (KHR)</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group" style="align-items: flex-start;">
+                            <label for="cod-change-amount" style="margin-bottom: 0; min-width: 90px; flex-shrink: 0; margin-top: 0; line-height: 36px;">找零金额：</label>
+                            <div style="flex: 1; max-width: 250px;">
+                                <input type="number" 
+                                       id="cod-change-amount" 
+                                       placeholder="自动计算" 
+                                       readonly
+                                       style="width: 100%; height: 36px; padding: 8px 12px; background-color: #f8f9fa; color: #666; border: 1px solid var(--tg-theme-hint-color, #e0e0e0); border-radius: 8px;">
+                                <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">🏦 找零统一使用柬埔寨币 (KHR)</small>
+                                <small id="cod-amount-error" style="color: #dc3545; font-size: 12px; margin-top: 4px; display: none;"></small>
+                            </div>
+                        </div>
+                        
+                        <div id="cod-calculation-info" style="margin-top: 12px; padding: 12px; background: #e3f2fd; border-radius: 6px; font-size: 14px; color: #1565c0; display: none;">
+                            <div><strong>计算详情：</strong></div>
+                            <div id="cod-calculation-details"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="align-items: center;">
                     <label>订单备注：</label>
-                    <textarea id="user-remark" placeholder="请输入订单备注（可选）" rows="3" style="width: 100%; padding: 12px; border: 1px solid var(--tg-theme-hint-color, #e0e0e0); border-radius: 8px; background: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #333); font-size: 14px; resize: vertical;"></textarea>
+                    <textarea id="user-remark" placeholder="请输入订单备注（可选）" rows="2" style="flex: 1; max-width: 250px; padding: 8px 12px; border: 1px solid var(--tg-theme-hint-color, #e0e0e0); border-radius: 8px; background: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #333); font-size: 14px; resize: vertical; min-height: 60px;"></textarea>
                 </div>
-                <div id="checkout-summary" style="margin-bottom:16px;padding:12px;background:var(--tg-theme-secondary-bg-color,#f8f9fa);border-radius:8px;"></div>
                 <button type="submit" class="submit-btn">提交订单</button>
             </form>
             <div id="order-success" style="display:none;text-align:center;padding:30px 0;color:green;font-weight:bold;"></div>
-        </div>
+            </div>
 
         <!-- 订单页面 -->
         <div id="orders" class="tab-content">
-            <div class="orders-refresh-container">
-                <div class="orders-refresh-indicator" id="orders-refresh-indicator">
+            <!-- PC端手动刷新按钮（已废弃 - 现在PC端和移动端都使用下拉刷新） -->
+            <!-- 💡 由于使用了 disableVerticalSwipes()，PC端现在也支持下拉刷新，不再需要手动按钮 -->
+            <div class="pc-refresh-controls" id="pc-refresh-controls" style="display: none;">
+                <button class="pc-refresh-btn" onclick="refreshOrders()">
                     <span class="refresh-icon">🔄</span>
-                    <span id="orders-refresh-text">下拉刷新订单</span>
-                </div>
-                <div id="orders-list"></div>
-            </div>
+                    刷新订单
+            </button>
+        </div>
+
+            <div id="orders-list"></div>
             <div id="orders-load-more" style="text-align: center; padding: 16px; display: none;">
                 <div style="color: #667eea; font-size: 14px; margin-bottom: 8px;">上拉加载更多订单</div>
                 <div class="loading-spinner" id="orders-loading-spinner" style="display: none; margin: 0 auto;"></div>
@@ -1509,20 +1857,13 @@
 
     <!-- 返回顶部按钮 -->
     <button id="back-to-top" class="back-to-top"></button>
+    
+
 
     <script>
-        console.log('📋 [SCRIPT] JavaScript开始执行');
-        console.log('📋 [SCRIPT] 浏览器信息:', navigator.userAgent);
-        
         // API基础URL配置
         const API_BASE_URL = 'https://dhcs.cc';
-        console.log('📋 [SCRIPT] API_BASE_URL 已设置:', API_BASE_URL);
-        
-        // 调试信息：显示当前访问环境
-        console.log('🌐 [DEBUG] 当前页面URL:', window.location.href);
-        console.log('🌐 [DEBUG] 当前域名:', window.location.hostname);
-        console.log('🌐 [DEBUG] User Agent:', navigator.userAgent);
-        console.log('🌐 [DEBUG] API基础URL:', API_BASE_URL);
+        console.log('📋 [SCRIPT] API URL:', API_BASE_URL);
         
         // 获取Telegram用户信息
         function getTelegramUserInfo() {
@@ -1548,12 +1889,28 @@
                    Telegram.WebApp.initData;
         }
 
+        // 检查是否为移动设备
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                   ('ontouchstart' in window) ||
+                   (navigator.maxTouchPoints > 0);
+        }
+
+        // 检查是否为PC端Telegram
+        function isPCTelegram() {
+            return isTelegramMiniApp() && !isMobileDevice();
+        }
+
         // 获取通用请求头
-        function getRequestHeaders() {
+        function getRequestHeaders(isFormData = false) {
             const headers = {
-                'Content-Type': 'application/json',
                 'Accept': 'application/json'
             };
+            
+            // 如果不是FormData请求，添加Content-Type
+            if (!isFormData) {
+                headers['Content-Type'] = 'application/json';
+            }
             
             // 添加 Telegram Mini App 标识
             if (isTelegramMiniApp()) {
@@ -1630,6 +1987,10 @@
         let goodsLastId = null;
         let goodsHasMore = true;
         let goodsLoading = false;
+
+        // 付款方式数据
+        let PAYMENT_METHODS = [];
+        let selectedPaymentMethod = null;
 
         // 购物车本地存储相关函数
         const CART_STORAGE_KEY = 'supermarket_cart';
@@ -1987,16 +2348,48 @@
 
         // 渲染分类
         function renderCategories() {
-            const categoriesHtml = CATEGORIES.map(cat => 
-                `<button class="category-btn ${cat.id === currentCategory ? 'active' : ''}" onclick="selectCategory('${cat.id}')">${cat.name}</button>`
-            ).join('');
-            document.getElementById('categories').innerHTML = categoriesHtml;
+            const categorySelect = document.getElementById('category-select');
+            if (!categorySelect) return;
+            
+            // 清空所有选项，重新构建
+            categorySelect.innerHTML = '';
+            
+            // 添加"全部分类"选项
+            const allOption = document.createElement('option');
+            allOption.value = '';
+            allOption.textContent = '全部分类';
+            if (!currentCategory || currentCategory === '') {
+                allOption.selected = true;
+            }
+            categorySelect.appendChild(allOption);
+            
+            // 添加其他分类选项（过滤掉可能重复的"全部"选项）
+            CATEGORIES.forEach(cat => {
+                // 跳过名称为"全部"的分类，避免重复
+                if (cat.name === '全部' || cat.name === '全部分类') {
+                    return;
+                }
+                
+                const option = document.createElement('option');
+                option.value = cat.id;
+                option.textContent = cat.name;
+                if (cat.id === currentCategory) {
+                    option.selected = true;
+                }
+                categorySelect.appendChild(option);
+            });
+        }
+
+        // 分类下拉框变化事件
+        function onCategoryChange() {
+            const categorySelect = document.getElementById('category-select');
+            const selectedCategoryId = categorySelect.value;
+            selectCategory(selectedCategoryId);
         }
 
         // 选择分类
         async function selectCategory(categoryId) {
             currentCategory = categoryId;
-            renderCategories();
             
             // 重新获取该分类下的商品
             try {
@@ -2012,114 +2405,159 @@
         let searchTimeout = null;
         let currentSearchKeyword = '';
 
-        // 下拉刷新相关变量
-        let isRefreshing = false;
-        let startY = 0;
-        let pullDistance = 0;
-        let isPulling = false;
-        const pullThreshold = 80;
-
         // 初始化下拉刷新
         function initPullRefresh() {
-            const container = document.getElementById('pull-refresh-container');
-            const indicator = document.getElementById('pull-refresh-indicator');
+            console.log('🔧 [initPullRefresh] 开始初始化下拉刷新功能');
             
-            container.addEventListener('touchstart', handleTouchStart, { passive: false });
-            container.addEventListener('touchmove', handleTouchMove, { passive: false });
-            container.addEventListener('touchend', handleTouchEnd, { passive: false });
-        }
-
-        function handleTouchStart(e) {
-            if (isRefreshing) return;
-            startY = e.touches[0].pageY;
-            pullDistance = 0;
-            isPulling = false;
-        }
-
-        function handleTouchMove(e) {
-            if (isRefreshing) return;
+            // 检查所有相关元素
+            const allOrdersElements = {
+                orders: document.getElementById('orders'),
+                
+                ordersList: document.getElementById('orders-list')
+            };
             
-            const currentY = e.touches[0].pageY;
-            const diff = currentY - startY;
-            
-            // 只有在页面顶部且向下拉时才触发
-            if (window.scrollY === 0 && diff > 0) {
-                e.preventDefault();
-                pullDistance = Math.min(diff * 0.5, pullThreshold * 1.5);
-                isPulling = true;
+            console.log('🔧 [initPullRefresh] 所有订单相关元素检查:', allOrdersElements);
+            // 商品页面下拉刷新
+            const productsContainer = document.getElementById('pull-refresh-container');
+            if (productsContainer) {
+                let productsStartY = 0;
+                let productsCurrentY = 0;
+                let productsPulling = false;
+                let productsRefreshing = false;
                 
-                const container = document.getElementById('pull-refresh-container');
-                const indicator = document.getElementById('pull-refresh-indicator');
+                productsContainer.addEventListener('touchstart', (e) => {
+                    if (getCurrentTab() !== 'products' || window.scrollY > 0 || productsRefreshing) return;
+                    productsStartY = e.touches[0].clientY;
+                    productsPulling = false;
+                });
                 
-                container.style.transform = `translateY(${pullDistance}px)`;
+                productsContainer.addEventListener('touchmove', (e) => {
+                    if (getCurrentTab() !== 'products' || window.scrollY > 0 || productsRefreshing) return;
+                    
+                    productsCurrentY = e.touches[0].clientY;
+                    const diff = productsCurrentY - productsStartY;
+                    
+                    if (diff > 0 && diff < 150) {
+                        e.preventDefault();
+                        productsPulling = true;
+                        const pullDistance = Math.min(diff * 0.5, 80 * 1.5);
+                        
+                        productsContainer.style.transform = `translateY(${pullDistance}px)`;
+                        
+                        const indicator = document.getElementById('pull-refresh-indicator');
+                        if (pullDistance >= 80) {
+                            productsContainer.classList.add('pulling');
+                            indicator.innerHTML = '↑';
+                        } else {
+                            productsContainer.classList.remove('pulling');
+                            indicator.innerHTML = '↓';
+                        }
+                    }
+                });
                 
-                if (pullDistance >= pullThreshold) {
-                    container.classList.add('pulling');
-                    indicator.textContent = '释放刷新';
-                } else {
-                    container.classList.remove('pulling');
-                    indicator.textContent = '下拉刷新';
-                }
+                productsContainer.addEventListener('touchend', async (e) => {
+                    if (!productsPulling || productsRefreshing) return;
+                    
+                    const diff = productsCurrentY - productsStartY;
+                    if (diff > 80) {
+                        // 触发刷新
+                        productsRefreshing = true;
+                        productsContainer.classList.remove('pulling');
+                        productsContainer.classList.add('refreshing');
+                        productsContainer.style.transform = 'translateY(40px)';
+                        
+                        const indicator = document.getElementById('pull-refresh-indicator');
+                        indicator.innerHTML = '⟳';
+                        
+                        // 添加触觉反馈
+                        if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                        }
+                        
+                        try {
+                            await refreshProducts();
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                        } catch (error) {
+                            console.error('商品刷新失败:', error);
+                        } finally {
+                            // 恢复状态
+                            setTimeout(() => {
+                                productsRefreshing = false;
+                                productsPulling = false;
+                                productsContainer.classList.remove('refreshing');
+                                productsContainer.style.transform = 'translateY(0)';
+                                indicator.innerHTML = '↓';
+                            }, 500);
+                        }
+                    } else {
+                        // 取消刷新
+                        productsPulling = false;
+                        productsContainer.classList.remove('pulling');
+                        productsContainer.style.transform = 'translateY(0)';
+                    }
+                });
             }
+            
+    
         }
+        
 
-        async function handleTouchEnd(e) {
-            if (isRefreshing || !isPulling) return;
-            
-            const container = document.getElementById('pull-refresh-container');
-            const indicator = document.getElementById('pull-refresh-indicator');
-            
-            if (pullDistance >= pullThreshold) {
-                // 触发刷新
-                isRefreshing = true;
-                container.classList.remove('pulling');
-                container.classList.add('refreshing');
-                indicator.textContent = '🔄';
-                
-                try {
-                    await refreshProducts();
-                    await new Promise(resolve => setTimeout(resolve, 500)); // 最少显示500ms
-                } catch (error) {
-                    console.error('下拉刷新失败:', error);
-                } finally {
-                    // 重置状态
-                    isRefreshing = false;
-                    isPulling = false;
-                    pullDistance = 0;
-                    container.classList.remove('refreshing');
-                    container.style.transform = '';
-                    indicator.textContent = '↓';
-                }
-            } else {
-                // 未达到刷新阈值，回弹
-                container.classList.remove('pulling');
-                container.style.transform = '';
-                isPulling = false;
-                pullDistance = 0;
-            }
-        }
 
         // 初始化上拉加载
         function initInfiniteScroll() {
-            let isLoading = false;
+            let isLoadingProducts = false;
+            let isLoadingOrders = false;
             
             window.addEventListener('scroll', async () => {
-                if (isLoading || !goodsHasMore || goodsLoading) return;
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const scrollHeight = document.documentElement.scrollHeight;
+                const clientHeight = document.documentElement.clientHeight;
+                const currentTab = getCurrentTab();
                 
-                const scrollTop = window.scrollY;
-                const windowHeight = window.innerHeight;
-                const documentHeight = document.documentElement.scrollHeight;
+                // 商品页面上拉加载
+                if (currentTab === 'products' && !isLoadingProducts && goodsHasMore && !goodsLoading) {
+                    if (scrollTop + clientHeight >= scrollHeight - 100) {
+                        isLoadingProducts = true;
+                        try {
+                            await loadMoreProducts();
+                        } catch (error) {
+                            console.error('商品上拉加载失败:', error);
+                        } finally {
+                            isLoadingProducts = false;
+                        }
+                    }
+                }
                 
-                // 距离底部100px时触发加载
-                if (scrollTop + windowHeight >= documentHeight - 100) {
-                    isLoading = true;
-                    
-                    try {
-                        await loadMoreProducts();
-                    } catch (error) {
-                        console.error('上拉加载失败:', error);
-                    } finally {
-                        isLoading = false;
+                // 订单页面上拉加载
+                if (currentTab === 'orders' && !isLoadingOrders && orderHasMore && !orderLoading) {
+                    if (scrollTop + clientHeight >= scrollHeight - 100) {
+                        isLoadingOrders = true;
+                        const loadingSpinner = document.getElementById('orders-loading-spinner');
+                        const loadMoreContainer = document.getElementById('orders-load-more');
+                        
+                        if (loadingSpinner && loadMoreContainer) {
+                            loadMoreContainer.style.display = 'block';
+                            loadingSpinner.style.display = 'block';
+                        }
+                        
+                        // 添加触觉反馈
+                        if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                        }
+                        
+                        try {
+                            await loadMoreOrders();
+                        } catch (error) {
+                            console.error('订单上拉加载失败:', error);
+                        } finally {
+                            isLoadingOrders = false;
+                            if (loadingSpinner) {
+                                loadingSpinner.style.display = 'none';
+                            }
+                            if (!orderHasMore && loadMoreContainer) {
+                                loadMoreContainer.style.display = 'none';
+                            }
+                        }
                     }
                 }
             });
@@ -2172,9 +2610,9 @@
         // 加载更多商品
         async function loadMoreProducts() {
             if (goodsLoading || !goodsHasMore) {
-                return;
-            }
-            
+                    return;
+                }
+
             // 更新按钮状态
             const loadMoreBtn = document.getElementById('load-more-btn');
             const loadMoreText = document.getElementById('load-more-text');
@@ -2277,7 +2715,7 @@
             
             if (list) {
                 document.getElementById('product-list').innerHTML = list;
-            } else {
+                } else {
                 // 显示空状态
                 const emptyHtml = `
                     <div class="empty-state">
@@ -2371,8 +2809,8 @@
         async function fetchOrders(isRefresh = false) {
             if (orderLoading) {
                 console.log('🔄 [fetchOrders] 正在加载中，跳过重复请求');
-                return;
-            }
+                        return;
+                    }
 
             try {
                 orderLoading = true;
@@ -2388,15 +2826,15 @@
                 // 如果没有更多数据，直接返回
                 if (!orderHasMore && !isRefresh) {
                     console.log('📋 [fetchOrders] 没有更多订单数据');
-                    return;
-                }
-                
+                        return;
+                    }
+
                 const telegramUser = getTelegramUserInfo();
                 if (!telegramUser) {
                     console.log('❌ [fetchOrders] 无法获取Telegram用户信息');
-                    return;
-                }
-                
+                            return;
+                        }
+
                 // 构建请求参数
                 const requestData = {
                     telegramId: telegramUser.id,
@@ -2424,7 +2862,15 @@
                 console.log('✅ [fetchOrders] 订单数据获取成功:', result);
                 
                 // 处理返回的订单数据
-                const payMap = {aba:'ABA银行',huione:'汇旺',usdt:'USDT',cod:'货到付款'};
+                // 使用动态付款方式名称映射（同时支持id和code）
+                const payMap = {};
+                PAYMENT_METHODS.forEach(method => {
+                    payMap[method.code] = method.name;  // 通过code映射
+                    payMap[method.id] = method.name;    // 通过id映射
+                });
+                // 添加一些默认映射作为备选
+                const defaultPayMap = {aba_bank:'ABA银行',wing_bank:'汇旺',usdt:'USDT',cash_on_delivery:'货到付款',aba:'ABA银行',huione:'汇旺',cod:'货到付款'};
+                Object.assign(payMap, defaultPayMap);
                 
                 const newOrders = result.orders.map(orderData => {
                     const order = orderData.order;
@@ -2482,17 +2928,36 @@
             }
         }
 
-        // 刷新订单数据
-        function refreshOrders() {
+        // 刷新订单数据（手动刷新按钮）
+        async function refreshOrders() {
             console.log('🔄 [refreshOrders] 刷新订单数据');
-            fetchOrders(true);
+            
+            try {
+                await fetchOrders(true);
+                
+                // 添加触觉反馈
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                    Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                }
+                
+                console.log('✅ [refreshOrders] 订单数据刷新完成');
+            } catch (error) {
+                console.error('❌ [refreshOrders] 刷新失败:', error);
+            }
         }
 
         // 加载更多订单数据
-        function loadMoreOrders() {
+        async function loadMoreOrders() {
             console.log('🔄 [loadMoreOrders] 加载更多订单数据');
-            fetchOrders(false);
+            try {
+                await fetchOrders(false);
+                console.log('✅ [loadMoreOrders] 订单数据加载完成');
+            } catch (error) {
+                console.error('❌ [loadMoreOrders] 加载更多订单失败:', error);
+            }
         }
+
+
 
         // 渲染下单页摘要
         function renderCheckoutSummary() {
@@ -2510,7 +2975,7 @@
             console.log('[renderCheckoutSummary] 购物车摘要', cart, '总价', total);
         }
 
-        // 渲染订单列表
+                // 渲染订单列表
         function renderOrders() {
             console.log('[renderOrders] 当前订单', orders);
             const list = orders.map((o,i) => {
@@ -2518,23 +2983,72 @@
                 const payStatusText = getPayStatusText(o.payStatus || 0);
                 const statusColor = getOrderStatusColor(o.orderStatus || 0);
                 
+                // 为已配送的订单添加确认收货按钮
+                const confirmReceiptButton = o.orderStatus === 2 ? 
+                    `<div style='margin-top:12px;text-align:center;'>
+                        <button onclick="confirmReceipt(${o.id})" style='
+                            padding:8px 16px;
+                            background:#28a745;
+                            color:white;
+                            border:none;
+                            border-radius:6px;
+                            font-size:14px;
+                            font-weight:600;
+                            cursor:pointer;
+                            transition:all 0.2s;
+                        ' onmouseover="this.style.background='#218838'" onmouseout="this.style.background='#28a745'">
+                            ✅ 确认收货
+                        </button>
+                    </div>` : '';
+                
+                // 为未支付的订单添加支付凭证上传功能
+                const paymentVoucherSection = o.payStatus === 0 ? 
+                    `<div class="payment-voucher-section" id="voucher-section-${o.id}">
+                        <div style="margin-bottom: 8px; font-weight: 600; color: var(--tg-theme-text-color, #333);">
+                            💳 上传支付凭证
+                        </div>
+                        <input type="file" 
+                               id="voucher-file-${o.id}" 
+                               class="voucher-file-input" 
+                               accept="image/*" 
+                               onchange="handleVoucherFileSelect(${o.id}, this)">
+                        <button class="voucher-upload-btn" onclick="selectVoucherFile(${o.id})">
+                            📎 选择图片
+                        </button>
+                        <div id="voucher-preview-${o.id}" class="voucher-preview" style="display: none;">
+                            <img id="voucher-image-${o.id}" class="voucher-image" alt="支付凭证">
+                            <div>
+                                <button class="voucher-confirm-btn" onclick="confirmPaymentVoucher(${o.id})">
+                                    ✅ 确认提交支付凭证
+                                </button>
+                            </div>
+                        </div>
+                        <div id="voucher-loading-${o.id}" class="voucher-loading" style="display: none;">
+                            <div class="spinner"></div>
+                            <span>正在处理...</span>
+                        </div>
+                    </div>` : '';
+                
                 return `<div style='border:1px solid #eee;border-radius:6px;padding:12px;margin-bottom:12px;'>
                     <div style='font-weight:bold;margin-bottom:8px;'>
                         <span style='color:#0088cc;'>${o.orderNo || `订单#${o.id}`}</span>
                         <span style='float:right;color:${statusColor};font-size:12px;'>${orderStatusText}</span>
-                    </div>
+                        </div>
                     <div style='color:#888;font-size:13px;margin-bottom:8px;'>
                         <div>📱 ${o.phone}</div>
                         <div>📍 ${o.address}</div>
                         <div>💳 ${o.payMethodName} (${payStatusText})</div>
+                        ${o.paymentUrl ? `<div>📎 <a href="${o.paymentUrl}" target="_blank" style="color:#007bff;">查看支付凭证</a></div>` : ''}
                         <div>🕒 ${o.createTime ? new Date(o.createTime).toLocaleString() : '未知时间'}</div>
-                    </div>
+                        </div>
                     <div style='margin:8px 0;padding:8px;background:#f8f9fa;border-radius:4px;'>
                         ${o.items.map(it=>`${it.name} × ${it.qty} = ¥${(it.price*it.qty).toFixed(2)}`).join('<br>')}
-                    </div>
+                                </div>
                     <div style='font-weight:bold;text-align:right;color:#0088cc;font-size:16px;'>
                         总计：¥${o.total.toFixed(2)}
-                    </div>
+                        </div>
+                    ${paymentVoucherSection}
+                    ${confirmReceiptButton}
                 </div>`;
             }).join('');
             document.getElementById('orders-list').innerHTML = list || '<div style="text-align:center;color:#aaa;padding:30px 0;">暂无订单</div>';
@@ -2546,38 +3060,60 @@
             }
         }
 
-        // 获取订单状态文本
-        function getOrderStatusText(status) {
-            const statusMap = {
-                0: '待确认',
-                1: '已确认', 
-                2: '配送中',
-                3: '已完成',
-                4: '已取消'
-            };
-            return statusMap[status] || '未知状态';
-        }
-
-        // 获取支付状态文本
-        function getPayStatusText(status) {
-            const statusMap = {
-                0: '未支付',
-                1: '已支付',
-                2: '已退款'
-            };
-            return statusMap[status] || '未知状态';
-        }
-
-        // 获取订单状态颜色
-        function getOrderStatusColor(status) {
-            const colorMap = {
-                0: '#ffc107', // 待确认 - 黄色
-                1: '#17a2b8', // 已确认 - 青色
-                2: '#007bff', // 配送中 - 蓝色
-                3: '#28a745', // 已完成 - 绿色
-                4: '#dc3545'  // 已取消 - 红色
-            };
-            return colorMap[status] || '#6c757d';
+        // 确认收货功能
+        async function confirmReceipt(orderId) {
+            try {
+                console.log('🔄 [confirmReceipt] 开始确认收货，订单ID:', orderId);
+                
+                // 添加触觉反馈
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                    Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                }
+                
+                // 调用确认收货API
+                const response = await fetch(`${API_BASE_URL}/order/${orderId}/complete`, {
+                    method: 'PUT',
+                    headers: getRequestHeaders(),
+                    body: JSON.stringify({
+                        remark: '用户确认收货'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [confirmReceipt] 确认收货成功:', result);
+                
+                // 更新本地订单状态
+                const orderIndex = orders.findIndex(o => o.id === orderId);
+                if (orderIndex !== -1) {
+                    orders[orderIndex].orderStatus = 3; // 更新为已完成
+                    orders[orderIndex].updateTime = result.updateTime || new Date().toISOString();
+                    orders[orderIndex].completeTime = result.updateTime || new Date().toISOString();
+                }
+                
+                // 重新渲染订单列表
+                renderOrders();
+                
+                // 显示成功提示
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
+                    Telegram.WebApp.showAlert('✅ 确认收货成功！订单已完成。');
+                } else {
+                    alert('✅ 确认收货成功！订单已完成。');
+                }
+                
+            } catch (error) {
+                console.error('❌ [confirmReceipt] 确认收货失败:', error);
+                
+                // 显示错误提示
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
+                    Telegram.WebApp.showAlert('❌ 确认收货失败，请重试！');
+                } else {
+                    alert('❌ 确认收货失败，请重试！');
+                }
+            }
         }
 
         // 下单表单提交
@@ -2585,13 +3121,38 @@
             e.preventDefault();
             if(Object.keys(cart).length===0) {
                 alert('购物车为空！');
-                return;
-            }
+                    return;
+                }
             const phone = document.getElementById('user-phone').value.trim();
             const address = document.getElementById('user-address').value.trim();
-            const pay = document.getElementById('pay-method').value;
             const remark = document.getElementById('user-remark')?.value?.trim() || '';
-            if(!phone||!address||!pay) return;
+            
+            // 验证付款方式选择
+            const paymentErrors = validatePaymentMethod();
+            if (paymentErrors.length > 0) {
+                alert('付款信息不完整：\n' + paymentErrors.join('\n'));
+                return;
+            }
+            
+            if(!address||!selectedPaymentMethod) {
+                if (!address) {
+                    alert('请输入收货地址');
+                    return;
+                }
+                if (!selectedPaymentMethod) {
+                    alert('请选择支付方式');
+                    return;
+                }
+            }
+            
+            // 验证手机号格式（如果输入了手机号）
+            if (phone) {
+                const phoneRegex = /^[0-9]{6,}$/;
+                if (!phoneRegex.test(phone)) {
+                    alert('手机号格式不正确，请输入至少6位数字');
+                    return;
+                }
+            }
             
             // 获取Telegram用户信息
             let telegramUser = null;
@@ -2607,7 +3168,7 @@
                     added_to_attachment_menu: telegramUser.added_to_attachment_menu,
                     allows_write_to_pm: telegramUser.allows_write_to_pm
                 });
-            } else {
+                } else {
                 console.log('📱 [Telegram用户信息] 无法获取用户信息，可能不在Telegram环境中');
             }
             
@@ -2635,13 +3196,28 @@
                     order: {
                         userId: null, // 暂时不传用户ID
                         telegramId: telegramUser ? telegramUser.id : null,
-                        payMethod: pay,
+                        payMethod: selectedPaymentMethod.id, // 使用付款方式的id而不是code
                         phone: phone,
                         address: address,
                         remark: remark
                     },
                     orderItems: orderItems
                 };
+                
+                // 如果是货到付款，添加现金金额信息
+                if (selectedPaymentMethod.code === 'cash_on_delivery') {
+                    const usdAmountInput = document.getElementById('cod-usd-amount');
+                    const khrAmountInput = document.getElementById('cod-khr-amount');
+                    
+                    const usdAmount = parseFloat(usdAmountInput?.value) || 0;
+                    const khrAmount = parseFloat(khrAmountInput?.value) || 0;
+                    
+                    if (usdAmount > 0 || khrAmount > 0) {
+                        requestData.order.usdCashAmount = usdAmount;
+                        requestData.order.khrCashAmount = khrAmount;
+                        requestData.order.currencyType = 'MIXED'; // 混合货币
+                    }
+                }
                 
                 console.log('📤 [submitOrder] 请求数据:', requestData);
                 
@@ -2661,7 +3237,8 @@
                 
                 // 处理成功响应
                 const order = result.order;
-                const payMap = {aba:'ABA银行',huione:'汇旺',usdt:'USDT',cod:'货到付款'};
+                // 使用动态付款方式名称
+                const paymentMethodName = selectedPaymentMethod ? selectedPaymentMethod.name : order.payMethod;
                 
                 // 将新订单添加到本地订单列表
                 const localOrder = {
@@ -2670,7 +3247,7 @@
                     phone: order.phone,
                     address: order.address,
                     payMethod: order.payMethod,
-                    payMethodName: payMap[order.payMethod],
+                    payMethodName: paymentMethodName,
                     total: order.totalAmount,
                     items: result.orderItems.map(item => ({
                         id: item.goodsId,
@@ -2701,7 +3278,7 @@
                     '订单号': order.orderNo,
                     '订单ID': order.id,
                     '订单金额': `¥${order.totalAmount.toFixed(2)}`,
-                    '支付方式': payMap[order.payMethod],
+                    '支付方式': paymentMethodName,
                     '订单状态': order.orderStatus,
                     '支付状态': order.payStatus
                 });
@@ -2726,7 +3303,7 @@
                         <div><strong>订单号：</strong>${order.orderNo}</div>
                         <div><strong>订单ID：</strong>${order.id}</div>
                         <div><strong>总计：</strong>¥${order.totalAmount.toFixed(2)}</div>
-                        <div><strong>支付方式：</strong>${payMap[order.payMethod]}</div>
+                        <div><strong>支付方式：</strong>${paymentMethodName}</div>
                         <div><strong>订单状态：</strong>${getOrderStatusText(order.orderStatus)}</div>
                         <div><strong>支付状态：</strong>${getPayStatusText(order.payStatus)}</div>
                     </div>
@@ -2760,8 +3337,8 @@
                 return;
             }
             // 隐藏所有tab内容
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.remove('active');
                 tab.style.display = 'none';
             });
             // 显示下单页面
@@ -2770,6 +3347,16 @@
             document.querySelector('.tabs').style.display = 'none';
             // 渲染下单摘要
             renderCheckoutSummary();
+            // 渲染付款方式（确保最新数据）
+            renderPaymentMethods();
+            // 重置付款方式选择
+            selectedPaymentMethod = null;
+            const paymentInfoDisplay = document.getElementById('payment-info-display');
+            if (paymentInfoDisplay) {
+                paymentInfoDisplay.style.display = 'none';
+            }
+            // 重置货到付款表单
+            resetCodForm();
             // 重置表单
             document.getElementById('order-form').reset();
             document.getElementById('order-form').style.display = '';
@@ -2781,6 +3368,7 @@
         // tab切换时自动刷新
         function switchTab(tabName) {
             console.log('[switchTab] 切换到', tabName);
+            console.log('[switchTab] 切换前当前tab:', getCurrentTab());
             
             // 显示tab导航
             document.querySelector('.tabs').style.display = 'flex';
@@ -2792,10 +3380,17 @@
             });
             
             // 显示目标tab内容
-            const targetTab = document.getElementById(tabName);
-            if (targetTab) {
-                targetTab.classList.add('active');
+                const targetTab = document.getElementById(tabName);
+                if (targetTab) {
+                    targetTab.classList.add('active');
                 targetTab.style.display = 'block';
+                console.log('[switchTab] 已设置tab显示:', tabName);
+                console.log('[switchTab] tab元素状态:', {
+                    id: targetTab.id,
+                    display: targetTab.style.display,
+                    hasActiveClass: targetTab.classList.contains('active'),
+                    getCurrentTab: getCurrentTab()
+                });
             }
             
             // 更新tab按钮状态
@@ -2820,6 +3415,13 @@
                 } else {
                     renderOrders();
                 }
+                
+                // 🎯 统一的刷新处理逻辑（PC端和移动端现在表现一致）
+                // 由于使用了 disableVerticalSwipes()，PC端和移动端都可以使用下拉刷新
+                const pcRefreshControls = document.getElementById('pc-refresh-controls');
+                // 显示PC端手动刷新按钮
+                if (pcRefreshControls) pcRefreshControls.style.display = 'block';
+
             }
             
             // 更新MainButton
@@ -2832,182 +3434,126 @@
         // 页面初始化
         async function initPage() {
             console.log('🚀 [initPage] 开始初始化页面...');
-            console.log('🚀 [initPage] 函数已被调用，开始执行初始化流程');
             
             // 环境检测
-            console.log('🌐 [initPage] ========== 环境检测 ==========');
-            console.log('🌐 [initPage] 是否在Telegram Mini App:', isTelegramMiniApp());
-            console.log('🌐 [initPage] Telegram对象存在:', typeof Telegram !== 'undefined');
-            if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-                console.log('🌐 [initPage] Telegram.WebApp.initData:', Telegram.WebApp.initData);
-                console.log('🌐 [initPage] Telegram.WebApp.platform:', Telegram.WebApp.platform);
-                console.log('🌐 [initPage] Telegram.WebApp.version:', Telegram.WebApp.version);
-                
-                // 解析 initData 获取详细用户信息
-                if (Telegram.WebApp.initData) {
-                    const urlParams = new URLSearchParams(Telegram.WebApp.initData);
-                    const userParam = urlParams.get('user');
-                    if (userParam) {
-                        try {
-                            console.log('🔍 [initPage] 原始userParam:', userParam);
-                            const decodedUserParam = decodeURIComponent(userParam);
-                            console.log('🔍 [initPage] 解码后的userParam:', decodedUserParam);
-                            const userData = JSON.parse(decodedUserParam);
-                            console.log('🔍 [initPage] 解析的用户数据:', userData);
-                            console.log('🆔 [initPage] 用户ID:', userData.id || 'undefined');
-                            console.log('👤 [initPage] 用户名:', userData.username || 'undefined');
-                            console.log('📛 [initPage] 显示名:', (userData.first_name || 'undefined'), (userData.last_name || 'undefined'));
-                            console.log('🎖️ [initPage] 是否为高级用户:', userData.is_premium !== undefined ? userData.is_premium : 'undefined');
-                        } catch (e) {
-                            console.error('❌ [initPage] 解析用户数据失败:', e);
-                            console.error('❌ [initPage] 错误详情:', e.message, e.stack);
-                        }
-                    }
-                }
-            }
-            console.log('🌐 [initPage] User Agent:', navigator.userAgent);
+            console.log('🌐 [initPage] 在Telegram Mini App:', isTelegramMiniApp());
+            console.log('🌐 [initPage] 移动设备:', isMobileDevice());
             console.log('🌐 [initPage] fetch API 可用:', isFetchAvailable());
-            console.log('🌐 [initPage] XMLHttpRequest 可用:', typeof XMLHttpRequest !== 'undefined');
-            
-            // 检查请求头内容和大小
-            try {
-                const headers = getRequestHeaders();
-                console.log('🔍 [initPage] 请求头检查:');
-                Object.keys(headers).forEach(key => {
-                    const value = headers[key];
-                    console.log(`🔍 [initPage] ${key}: ${value ? value.substring(0, 100) : 'undefined'}${value && value.length > 100 ? '...' : ''}`);
-                    console.log(`🔍 [initPage] ${key} 长度: ${value ? value.length : 0} 字符`);
-                });
-            } catch (headerError) {
-                console.error('❌ [initPage] 请求头检查失败:', headerError);
-            }
-            
-            // 测试 fetch 实际可用性
-            try {
-                const fetchActuallyWorks = await testFetchAvailability();
-                console.log('🌐 [initPage] fetch 实际可用:', fetchActuallyWorks);
-            } catch (error) {
-                console.error('🌐 [initPage] fetch 测试异常:', error);
-            }
-            
-            console.log('🌐 [initPage] ================================');
-            
-            // 检查并打印Telegram用户信息
-            const telegramUser = getTelegramUserInfo();
-            if (telegramUser) {
-                console.log('👤 [initPage] Telegram用户信息:', telegramUser);
-                console.log('📋 [initPage] X-Telegram-User请求头:', JSON.stringify(telegramUser));
-            } else {
-                console.log('👤 [initPage] 未在Telegram环境中运行，无法获取用户信息');
-            }
+            console.log('💡 [initPage] 注意：PC端和移动端现在使用统一的触摸事件处理');
             
             // 先获取分类数据
             try {
-                console.log('🔄 [initPage] 准备调用 fetchCategories...');
                 await fetchCategories();
-                console.log('✅ [initPage] fetchCategories 执行完成');
             } catch (error) {
-                console.error('❌ [initPage] fetchCategories 执行失败:', error);
+                console.error('❌ 获取分类失败:', error);
+            }
+            
+            // 获取付款方式数据
+            try {
+                await fetchPaymentMethods();
+            } catch (error) {
+                console.error('❌ 获取付款方式失败:', error);
             }
             
             // 再获取商品数据
             try {
-                console.log('🔄 [initPage] 准备调用 fetchProducts...');
                 // 先获取全部商品数据，确保购物车可以正常显示
                 const originalCategory = currentCategory;
                 currentCategory = 'all'; // 临时设置为全部分类
                 await fetchProducts(true); // 初始化时刷新商品列表
                 currentCategory = originalCategory; // 恢复原始分类
-                console.log('✅ [initPage] fetchProducts 执行完成');
             } catch (error) {
-                console.error('❌ [initPage] fetchProducts 执行失败:', error);
+                console.error('❌ 获取商品失败:', error);
             }
             
             // 从本地存储恢复购物车数据
-            try {
-                console.log('🔄 [initPage] 恢复购物车数据...');
-                loadCartFromStorage();
-                console.log('✅ [initPage] 购物车数据恢复完成');
-            } catch (error) {
-                console.error('❌ [initPage] 购物车数据恢复失败:', error);
-            }
+            loadCartFromStorage();
             
             // 渲染页面内容
-            try {
-                console.log('🔄 [initPage] 渲染页面内容...');
-                renderProducts();
-                renderCart(); // 确保购物车也重新渲染
-                console.log('✅ [initPage] 页面渲染完成');
-            } catch (error) {
-                console.error('❌ [initPage] 页面渲染失败:', error);
-            }
+            renderProducts();
+            renderCart();
             
-            try {
-                console.log('🔄 [initPage] 初始化Telegram WebApp...');
-                initTelegramWebApp();
-                console.log('✅ [initPage] Telegram WebApp初始化完成');
-            } catch (error) {
-                console.error('❌ [initPage] Telegram WebApp初始化失败:', error);
-            }
-            
-            // 初始化下拉刷新和上拉加载
-            try {
-                console.log('🔄 [initPage] 初始化下拉刷新和上拉加载...');
-                initPullRefresh();
-                initInfiniteScroll();
-                console.log('✅ [initPage] 下拉刷新和上拉加载初始化完成');
-            } catch (error) {
-                console.error('❌ [initPage] 下拉刷新和上拉加载初始化失败:', error);
-            }
-            
-            // 初始化返回顶部按钮
-            try {
-                console.log('🔄 [initPage] 初始化返回顶部按钮...');
-                initBackToTop();
-                console.log('✅ [initPage] 返回顶部按钮初始化完成');
-            } catch (error) {
-                console.error('❌ [initPage] 返回顶部按钮初始化失败:', error);
-            }
-            
-            // 初始化数量按钮事件监听器
-            try {
-                console.log('🔄 [initPage] 初始化数量按钮事件监听器...');
-                initQuantityButtons();
-                console.log('✅ [initPage] 数量按钮事件监听器初始化完成');
-            } catch (error) {
-                console.error('❌ [initPage] 数量按钮事件监听器初始化失败:', error);
-            }
+            // 初始化各种功能
+            initTelegramWebApp();
+            console.log('🚀 [initPage] 准备初始化下拉刷新功能...');
+            initPullRefresh();
+            console.log('🚀 [initPage] 准备初始化上拉加载功能...');
+            initInfiniteScroll();
+            initBackToTop();
+            initQuantityButtons();
             
             console.log('✅ [initPage] 页面初始化完成');
         }
 
         // 启动页面初始化
-        console.log('🚀 [MAIN] 页面脚本开始执行，准备调用 initPage...');
         (async () => {
             try {
                 await initPage();
-                console.log('🚀 [MAIN] initPage 调用成功');
             } catch (error) {
-                console.error('❌ [MAIN] initPage 调用失败:', error);
-                console.error('❌ [MAIN] 错误堆栈:', error.stack);
+                console.error('❌ [initPage] 初始化失败:', error);
             }
         })();
 
-        // 添加全局错误处理
-        window.addEventListener('error', (event) => {
-            console.error('❌ [DEBUG] 全局错误:', event.error);
-        });
+
 
         // 简化的Telegram WebApp初始化
         function initTelegramWebApp() {
-            if (typeof Telegram === 'undefined' || !Telegram.WebApp) {
-                console.log('🔧 [DEBUG] Telegram WebApp API 不可用，使用浏览器模式');
-                return;
-            }
-
-            console.log('🔧 [DEBUG] 初始化 Telegram WebApp...');
+                if (typeof Telegram === 'undefined' || !Telegram.WebApp) {
+                    return;
+                }
             document.body.style.visibility = '';
             Telegram.WebApp.ready();
+            
+            // 🎯 多重解决方案：确保PC端和移动端都能正常使用下拉刷新
+            // 
+            // ✨ 方案1：使用官方 disableVerticalSwipes() 方法 (Bot API 7.7+)
+            // 这是官方推荐的解决方案，但在某些iOS版本上可能不完全有效
+            //
+            // 📚 参考：https://core.telegram.org/bots/webapps#july-7-2024
+            // 📚 参考：https://dev.to/nimaxin/how-to-fix-the-telegram-mini-app-scrolling-collapse-issue-a-handy-trick-1abe
+            let verticalSwipesDisabled = false;
+            if (Telegram.WebApp.isVersionAtLeast && Telegram.WebApp.isVersionAtLeast('7.7')) {
+                try {
+                    Telegram.WebApp.disableVerticalSwipes();
+                    verticalSwipesDisabled = true;
+                    console.log('✅ 已禁用垂直滑动（官方方法）');
+                } catch (error) {
+                    console.log('❌ 禁用垂直滑动失败:', error);
+                }
+            } else {
+                console.log('⚠️ 当前Telegram版本不支持disableVerticalSwipes方法');
+            }
+            
+            // ✨ 方案2：CSS + JS 防止意外关闭（兼容iOS和旧版本）
+            // 这是一个补充方案，确保在iOS或旧版本Telegram上也能正常工作
+            try {
+                // 确保文档可滚动
+                function ensureDocumentScrollable() {
+                    const isScrollable = document.documentElement.scrollHeight > window.innerHeight;
+                    if (!isScrollable) {
+                        document.documentElement.style.setProperty('height', 'calc(100vh + 1px)', 'important');
+                        console.log('📏 已设置文档高度确保可滚动');
+                    }
+                }
+                
+                // 防止 window.scrollY 变为零
+                function preventCollapse() {
+                    if (window.scrollY === 0) {
+                        window.scrollTo(0, 1);
+                    }
+                }
+                
+                // 应用兼容性方案
+                ensureDocumentScrollable();
+                
+
+                
+                console.log('✅ 兼容性防护方案已启用');
+            } catch (error) {
+                console.log('❌ 兼容性防护方案失败:', error);
+            }
+            
+            console.log('🎯 多重防护已启用，PC端和移动端应该都能正常使用下拉刷新');
 
             // 设置底部按钮
             updateMainButton();
@@ -3033,63 +3579,100 @@
                 });
             }
 
-            console.log('✅ [DEBUG] Telegram WebApp 初始化完成');
+
         }
 
         // 更新MainButton
         function updateMainButton() {
             if (typeof Telegram === 'undefined' || !Telegram.WebApp || !Telegram.WebApp.MainButton) {
-                return;
-            }
+                    return;
+                }
 
             const currentTab = getCurrentTab();
             const cartCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-
+                
             switch (currentTab) {
-                case 'products':
+                    case 'products':
                     Telegram.WebApp.MainButton.setParams({
-                        text: cartCount > 0 ? `购物车 (${cartCount})` : '查看购物车',
-                        is_visible: true
-                    });
-                    break;
-                case 'cart':
-                    if (cartCount > 0) {
-                        Telegram.WebApp.MainButton.setParams({
-                            text: '去下单',
+                            text: cartCount > 0 ? `购物车 (${cartCount})` : '查看购物车',
                             is_visible: true
                         });
-                    } else {
+                        break;
+                    case 'cart':
+                        if (cartCount > 0) {
                         Telegram.WebApp.MainButton.setParams({
+                                text: '去下单',
+                                is_visible: true
+                            });
+                        } else {
+                        Telegram.WebApp.MainButton.setParams({
+                                text: '继续购物',
+                                is_visible: true
+                            });
+                        }
+                        break;
+                    case 'checkout':
+                    Telegram.WebApp.MainButton.setParams({
+                            text: '返回购物车',
+                            is_visible: true
+                        });
+                        break;
+                    case 'orders':
+                    Telegram.WebApp.MainButton.setParams({
                             text: '继续购物',
                             is_visible: true
                         });
-                    }
-                    break;
-                case 'checkout':
-                    Telegram.WebApp.MainButton.setParams({
-                        text: '返回购物车',
-                        is_visible: true
-                    });
-                    break;
-                case 'orders':
-                    Telegram.WebApp.MainButton.setParams({
-                        text: '继续购物',
-                        is_visible: true
-                    });
-                    break;
+                        break;
+                }
             }
-        }
 
         // 获取当前tab
         function getCurrentTab() {
-            const activeTab = document.querySelector('.tab-content.active');
-            if (activeTab) {
-                return activeTab.id;
-            }
-            // 检查是否在下单页面
-            if (document.getElementById('checkout').style.display === 'block') {
+            // 限制日志输出频率
+            const now = Date.now();
+            const shouldLog = !getCurrentTab.lastLogTime || (now - getCurrentTab.lastLogTime > 1000); // 1秒内最多输出一次
+            
+            // 先检查是否在下单页面
+            const checkoutTab = document.getElementById('checkout');
+            if (checkoutTab && checkoutTab.style.display === 'block') {
+                if (shouldLog) console.log('🔍 [getCurrentTab] 检测到下单页面');
                 return 'checkout';
             }
+            
+            // 检查哪个tab-content是显示状态
+            const tabContents = document.querySelectorAll('.tab-content');
+            const tabStates = [];
+            for (let tab of tabContents) {
+                const isVisible = tab.style.display === 'block' || (tab.style.display === '' && tab.classList.contains('active'));
+                tabStates.push({
+                    id: tab.id,
+                    display: tab.style.display,
+                    hasActive: tab.classList.contains('active'),
+                    isVisible: isVisible
+                });
+                
+                if (isVisible) {
+                    if (shouldLog) {
+                        console.log('🔍 [getCurrentTab] 当前显示的tab:', tab.id, '状态:', {
+                            display: tab.style.display,
+                            hasActiveClass: tab.classList.contains('active')
+                        });
+                        
+                        // 追踪调用栈 - 看看是谁在频繁调用这个函数
+                        console.trace('🔍 [getCurrentTab] 调用栈追踪');
+                        getCurrentTab.lastLogTime = now;
+                    }
+                    return tab.id;
+                }
+            }
+            
+            if (shouldLog) {
+                console.log('🔍 [getCurrentTab] 所有tab状态:', tabStates);
+                console.log('🔍 [getCurrentTab] 没有找到显示的tab，默认返回products');
+                getCurrentTab.lastLogTime = now;
+            }
+            
+            // 默认返回products
             return 'products';
         }
 
@@ -3114,7 +3697,7 @@
 
         // 全屏功能
         function toggleFullscreen() {
-            if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
                 if (Telegram.WebApp.isFullscreen) {
                     Telegram.WebApp.exitFullscreen();
                 } else {
@@ -3169,7 +3752,7 @@
                     // 只在商品列表页面且滚动距离超过300px时显示按钮
                     if (scrollTop > 300 && currentTab === 'products') {
                         backToTopBtn.classList.add('show');
-                    } else {
+                } else {
                         backToTopBtn.classList.remove('show');
                     }
                 }, 10); // 节流处理，10ms延迟
@@ -3235,221 +3818,1039 @@
             }
         }
 
-        // 下拉刷新功能
-        function initPullRefresh() {
-            let startY = 0;
-            let currentY = 0;
-            let pulling = false;
-            let refreshing = false;
+        // 获取订单状态文本
+        function getOrderStatusText(status) {
+            const statusMap = {
+                0: '下单成功',
+                1: '正在备货', 
+                2: '已配送',
+                3: '已完成',
+                4: '已取消'
+            };
+            return statusMap[status] || '未知状态';
+        }
+
+        // 获取支付状态文本
+        function getPayStatusText(status) {
+            const statusMap = {
+                0: '未支付',
+                1: '已支付',
+                2: '已退款'
+            };
+            return statusMap[status] || '未知状态';
+        }
+
+        // 获取订单状态颜色
+        function getOrderStatusColor(status) {
+            const colorMap = {
+                0: '#ffc107', // 下单成功 - 黄色
+                1: '#17a2b8', // 正在备货 - 青色
+                2: '#007bff', // 已配送 - 蓝色
+                3: '#28a745', // 已完成 - 绿色
+                4: '#dc3545'  // 已取消 - 红色
+            };
+            return colorMap[status] || '#6c757d';
+        }
+
+        // 支付凭证上传相关功能
+        let voucherUploadData = {}; // 存储每个订单的上传数据
+
+        // 选择支付凭证文件
+        function selectVoucherFile(orderId) {
+            console.log('🔄 [selectVoucherFile] 选择支付凭证文件，订单ID:', orderId);
             
-            const pullRefreshContainer = document.getElementById('pull-refresh-container');
-            const pullRefreshIndicator = document.getElementById('pull-refresh-indicator');
-            const ordersContainer = document.getElementById('orders');
-            const ordersRefreshIndicator = document.getElementById('orders-refresh-indicator');
-            const ordersRefreshText = document.getElementById('orders-refresh-text');
-            
-            // 商品页面下拉刷新
-            if (pullRefreshContainer) {
-                pullRefreshContainer.addEventListener('touchstart', (e) => {
-                    if (getCurrentTab() !== 'products' || window.scrollY > 0) return;
-                    startY = e.touches[0].clientY;
-                    pulling = false;
-                });
-                
-                pullRefreshContainer.addEventListener('touchmove', (e) => {
-                    if (getCurrentTab() !== 'products' || window.scrollY > 0 || refreshing) return;
-                    
-                    currentY = e.touches[0].clientY;
-                    const diff = currentY - startY;
-                    
-                    if (diff > 0 && diff < 150) {
-                        e.preventDefault();
-                        pulling = true;
-                        pullRefreshContainer.style.transform = `translateY(${diff * 0.5}px)`;
-                        pullRefreshContainer.classList.add('pulling');
-                        
-                        if (diff > 80) {
-                            pullRefreshIndicator.innerHTML = '↑';
-                            pullRefreshIndicator.style.transform = 'translateX(-50%) rotate(180deg)';
-                        } else {
-                            pullRefreshIndicator.innerHTML = '↓';
-                            pullRefreshIndicator.style.transform = 'translateX(-50%) rotate(0deg)';
-                        }
-                    }
-                });
-                
-                pullRefreshContainer.addEventListener('touchend', (e) => {
-                    if (!pulling || refreshing) return;
-                    
-                    const diff = currentY - startY;
-                    if (diff > 80) {
-                        // 触发刷新
-                        refreshing = true;
-                        pullRefreshContainer.classList.remove('pulling');
-                        pullRefreshContainer.classList.add('refreshing');
-                        pullRefreshContainer.style.transform = 'translateY(40px)';
-                        pullRefreshIndicator.innerHTML = '⟳';
-                        
-                        // 添加触觉反馈
-                        if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
-                            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-                        }
-                        
-                        // 执行刷新
-                        setTimeout(async () => {
-                            try {
-                                await fetchProducts(true);
-                                renderProducts();
-                            } catch (error) {
-                                console.error('刷新商品失败:', error);
-                            } finally {
-                                // 恢复状态
-                                setTimeout(() => {
-                                    refreshing = false;
-                                    pulling = false;
-                                    pullRefreshContainer.classList.remove('refreshing');
-                                    pullRefreshContainer.style.transform = 'translateY(0)';
-                                    pullRefreshIndicator.innerHTML = '↓';
-                                    pullRefreshIndicator.style.transform = 'translateX(-50%) rotate(0deg)';
-                                }, 500);
-                            }
-                        }, 1000);
-                    } else {
-                        // 取消刷新
-                        pulling = false;
-                        pullRefreshContainer.classList.remove('pulling');
-                        pullRefreshContainer.style.transform = 'translateY(0)';
-                    }
-                });
+            // 添加触觉反馈
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                Telegram.WebApp.HapticFeedback.impactOccurred('light');
             }
             
-            // 订单页面下拉刷新
-            if (ordersContainer) {
-                let ordersStartY = 0;
-                let ordersCurrentY = 0;
-                let ordersPulling = false;
-                let ordersRefreshing = false;
-                
-                ordersContainer.addEventListener('touchstart', (e) => {
-                    if (getCurrentTab() !== 'orders' || ordersContainer.scrollTop > 0) return;
-                    ordersStartY = e.touches[0].clientY;
-                    ordersPulling = false;
-                });
-                
-                ordersContainer.addEventListener('touchmove', (e) => {
-                    if (getCurrentTab() !== 'orders' || ordersContainer.scrollTop > 0 || ordersRefreshing) return;
-                    
-                    ordersCurrentY = e.touches[0].clientY;
-                    const diff = ordersCurrentY - ordersStartY;
-                    
-                    if (diff > 0 && diff < 120) {
-                        e.preventDefault();
-                        ordersPulling = true;
-                        ordersRefreshIndicator.classList.add('show');
-                        
-                        if (diff > 60) {
-                            ordersRefreshText.textContent = '松开刷新订单';
-                            ordersRefreshIndicator.style.transform = 'translateX(-50%) scale(1.1)';
-                        } else {
-                            ordersRefreshText.textContent = '下拉刷新订单';
-                            ordersRefreshIndicator.style.transform = 'translateX(-50%) scale(1)';
-                        }
-                    }
-                });
-                
-                ordersContainer.addEventListener('touchend', (e) => {
-                    if (!ordersPulling || ordersRefreshing) return;
-                    
-                    const diff = ordersCurrentY - ordersStartY;
-                    if (diff > 60) {
-                        // 触发刷新
-                        ordersRefreshing = true;
-                        ordersRefreshIndicator.classList.add('refreshing');
-                        ordersRefreshText.textContent = '正在刷新...';
-                        
-                        // 添加触觉反馈
-                        if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
-                            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-                        }
-                        
-                        // 执行刷新
-                        setTimeout(async () => {
-                            try {
-                                await fetchOrders(true);
-                            } catch (error) {
-                                console.error('刷新订单失败:', error);
-                            } finally {
-                                // 恢复状态
-                                setTimeout(() => {
-                                    ordersRefreshing = false;
-                                    ordersPulling = false;
-                                    ordersRefreshIndicator.classList.remove('show', 'refreshing');
-                                    ordersRefreshText.textContent = '下拉刷新订单';
-                                    ordersRefreshIndicator.style.transform = 'translateX(-50%) scale(1)';
-                                }, 500);
-                            }
-                        }, 1000);
-                    } else {
-                        // 取消刷新
-                        ordersPulling = false;
-                        ordersRefreshIndicator.classList.remove('show');
-                        ordersRefreshText.textContent = '下拉刷新订单';
-                        ordersRefreshIndicator.style.transform = 'translateX(-50%) scale(1)';
-                    }
-                });
+            const fileInput = document.getElementById(`voucher-file-${orderId}`);
+            if (fileInput) {
+                fileInput.click();
             }
         }
 
-        // 无限滚动加载
-        function initInfiniteScroll() {
-            let isLoadingProducts = false;
-            let isLoadingOrders = false;
+        // 处理文件选择
+        function handleVoucherFileSelect(orderId, inputElement) {
+            const file = inputElement.files[0];
+            if (!file) {
+                console.log('🔄 [handleVoucherFileSelect] 没有选择文件');
+                    return;
+                }
+
+            console.log('🔄 [handleVoucherFileSelect] 开始上传文件:', file.name);
             
-            window.addEventListener('scroll', () => {
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const scrollHeight = document.documentElement.scrollHeight;
-                const clientHeight = document.documentElement.clientHeight;
-                const currentTab = getCurrentTab();
+            // 验证文件类型
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('请选择有效的图片文件（JPG、PNG、GIF）');
+                inputElement.value = ''; // 清空文件选择
+                return;
+            }
+            
+            // 验证文件大小（10MB限制）
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            if (file.size > maxSize) {
+                alert('图片文件大小不能超过10MB');
+                inputElement.value = ''; // 清空文件选择
+                return;
+            }
+            
+            // 开始上传
+            uploadVoucherImage(orderId, file);
+        }
+
+        // 上传支付凭证图片
+        async function uploadVoucherImage(orderId, file) {
+            console.log('🔄 [uploadVoucherImage] 开始上传图片，订单ID:', orderId);
+            
+            // 显示加载状态
+            showVoucherLoading(orderId, true);
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('folder', 'payment');
                 
-                // 商品页面上拉加载
-                if (currentTab === 'products' && !isLoadingProducts && goodsHasMore) {
-                    if (scrollTop + clientHeight >= scrollHeight - 100) {
-                        isLoadingProducts = true;
-                        loadMoreProducts().finally(() => {
-                            isLoadingProducts = false;
-                        });
-                    }
+                console.log('📤 [uploadVoucherImage] 发送上传请求...');
+                
+                const response = await fetch(`${API_BASE_URL}/api/v1/file/upload/image`, {
+                    method: 'POST',
+                    headers: getRequestHeaders(true), // 传递true表示是FormData请求
+                    body: formData
+                });
+                
+                console.log('📡 [uploadVoucherImage] 响应状态:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
-                // 订单页面上拉加载
-                if (currentTab === 'orders' && !isLoadingOrders && ordersHasMore) {
-                    if (scrollTop + clientHeight >= scrollHeight - 100) {
-                        isLoadingOrders = true;
-                        const loadingSpinner = document.getElementById('orders-loading-spinner');
-                        const loadMoreContainer = document.getElementById('orders-load-more');
-                        
-                        if (loadingSpinner && loadMoreContainer) {
-                            loadMoreContainer.style.display = 'block';
-                            loadingSpinner.style.display = 'block';
-                        }
-                        
-                        // 添加触觉反馈
-                        if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
-                            Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                        }
-                        
-                        loadMoreOrders().finally(() => {
-                            isLoadingOrders = false;
-                            if (loadingSpinner) {
-                                loadingSpinner.style.display = 'none';
-                            }
-                            if (!ordersHasMore && loadMoreContainer) {
-                                loadMoreContainer.style.display = 'none';
-                            }
-                        });
+                const result = await response.json();
+                console.log('✅ [uploadVoucherImage] 上传响应:', result);
+                
+                if (result.code === 200 && result.data && result.data.length > 0) {
+                    const imageUrl = result.data[0];
+                    console.log('✅ [uploadVoucherImage] 图片上传成功，URL:', imageUrl);
+                    
+                    // 保存上传数据
+                    voucherUploadData[orderId] = {
+                        imageUrl: imageUrl,
+                        file: file
+                    };
+                    
+                    // 显示图片预览
+                    showVoucherPreview(orderId, imageUrl);
+                    
+                    // 添加触觉反馈
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                        Telegram.WebApp.HapticFeedback.impactOccurred('medium');
                     }
+                    
+                } else {
+                    throw new Error(result.message || '上传失败');
+                }
+                
+            } catch (error) {
+                console.error('❌ [uploadVoucherImage] 上传失败:', error);
+                
+                // 显示错误提示
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
+                    Telegram.WebApp.showAlert('图片上传失败：' + error.message);
+                } else {
+                    alert('图片上传失败：' + error.message);
+                }
+                
+                // 清空文件选择
+                const fileInput = document.getElementById(`voucher-file-${orderId}`);
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+                
+            } finally {
+                // 隐藏加载状态
+                showVoucherLoading(orderId, false);
+            }
+        }
+
+        // 显示/隐藏加载状态
+        function showVoucherLoading(orderId, show) {
+            const loadingElement = document.getElementById(`voucher-loading-${orderId}`);
+            const uploadBtn = document.querySelector(`#voucher-section-${orderId} .voucher-upload-btn`);
+            
+            if (loadingElement) {
+                loadingElement.style.display = show ? 'flex' : 'none';
+            }
+            
+            if (uploadBtn) {
+                uploadBtn.disabled = show;
+            }
+        }
+
+        // 显示图片预览
+        function showVoucherPreview(orderId, imageUrl) {
+            console.log('🔄 [showVoucherPreview] 显示图片预览，订单ID:', orderId, 'URL:', imageUrl);
+            
+            const previewElement = document.getElementById(`voucher-preview-${orderId}`);
+            const imageElement = document.getElementById(`voucher-image-${orderId}`);
+            
+            if (previewElement && imageElement) {
+                imageElement.src = imageUrl;
+                previewElement.style.display = 'block';
+                
+                console.log('✅ [showVoucherPreview] 图片预览显示完成');
+            }
+        }
+
+        // 确认提交支付凭证
+        async function confirmPaymentVoucher(orderId) {
+            console.log('🔄 [confirmPaymentVoucher] 确认提交支付凭证，订单ID:', orderId);
+            
+            const uploadData = voucherUploadData[orderId];
+            if (!uploadData || !uploadData.imageUrl) {
+                console.error('❌ [confirmPaymentVoucher] 没有找到上传的图片数据');
+                alert('请先上传支付凭证图片');
+                    return;
+                }
+
+            // 添加触觉反馈
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+            }
+            
+            // 显示加载状态
+            showVoucherLoading(orderId, true);
+            
+            try {
+                const requestData = {
+                    paymentUrl: uploadData.imageUrl,
+                    remark: `用户上传支付凭证，文件名：${uploadData.file.name}`
+                };
+                
+                console.log('📤 [confirmPaymentVoucher] 发送提交请求:', requestData);
+                
+                const response = await fetch(`${API_BASE_URL}/order/${orderId}/payment-voucher`, {
+                    method: 'POST',
+                    headers: getRequestHeaders(),
+                    body: JSON.stringify(requestData)
+                });
+                
+                console.log('📡 [confirmPaymentVoucher] 响应状态:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [confirmPaymentVoucher] 提交响应:', result);
+                
+                if (result.code === 200) {
+                    console.log('✅ [confirmPaymentVoucher] 支付凭证提交成功');
+                    
+                    // 更新本地订单状态
+                    const orderIndex = orders.findIndex(o => o.id === orderId);
+                    if (orderIndex !== -1) {
+                        orders[orderIndex].payStatus = 1; // 更新为已支付
+                        orders[orderIndex].updateTime = result.data.updateTime || new Date().toISOString();
+                    }
+                    
+                    // 清理上传数据
+                    delete voucherUploadData[orderId];
+                    
+                    // 重新渲染订单列表
+                    renderOrders();
+                    
+                    // 显示成功提示
+                    if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
+                        Telegram.WebApp.showAlert('✅ 支付凭证提交成功！订单已标记为已支付。');
+                    } else {
+                        alert('✅ 支付凭证提交成功！订单已标记为已支付。');
+                    }
+                    
+                    } else {
+                    throw new Error(result.message || '提交失败');
+                }
+                
+            } catch (error) {
+                console.error('❌ [confirmPaymentVoucher] 提交失败:', error);
+                
+                // 显示错误提示
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
+                    Telegram.WebApp.showAlert('支付凭证提交失败：' + error.message);
+                } else {
+                    alert('支付凭证提交失败：' + error.message);
+                }
+                
+            } finally {
+                // 隐藏加载状态
+                showVoucherLoading(orderId, false);
+            }
+        }
+
+        // 获取付款方式数据
+        async function fetchPaymentMethods() {
+            console.log('🔄 [fetchPaymentMethods] 开始获取付款方式数据...');
+            
+            // 检查 fetch 是否可用
+            if (!isFetchAvailable()) {
+                console.error('❌ [fetchPaymentMethods] fetch API 不可用，可能被Telegram限制');
+                throw new Error('fetch API 不可用 - Telegram Mini App 限制');
+            }
+            
+            try {
+                const apiUrl = `${API_BASE_URL}/payment-methods`;
+                console.log('🌐 [fetchPaymentMethods] 请求URL:', apiUrl);
+                
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: getRequestHeaders()
+                });
+                
+                console.log('📡 [fetchPaymentMethods] 响应状态:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ [fetchPaymentMethods] 响应错误内容:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                // 获取响应文本用于调试
+                const responseText = await response.text();
+                console.log('📄 [fetchPaymentMethods] 原始响应内容:', responseText);
+                
+                // 尝试解析JSON
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                    console.log('✅ [fetchPaymentMethods] JSON解析成功:', result);
+                } catch (parseError) {
+                    console.error('❌ [fetchPaymentMethods] JSON解析失败:', parseError);
+                    throw new Error(`JSON解析失败: ${parseError.message}`);
+                }
+                
+                if (result.code === 200) {
+                    PAYMENT_METHODS = result.data;
+                    console.log('✅ [fetchPaymentMethods] 付款方式数据获取成功:', PAYMENT_METHODS);
+                    renderPaymentMethods();
+                    return PAYMENT_METHODS;
+                } else {
+                    throw new Error(`API错误: ${result.message}`);
+                }
+                
+            } catch (error) {
+                console.error('❌ [fetchPaymentMethods] 获取付款方式数据失败:', error);
+                
+                // 如果接口失败，使用默认付款方式
+                PAYMENT_METHODS = [
+                    {
+                        id: 1,
+                        code: "aba_bank",
+                        name: "ABA银行转账",
+                        description: "ABA银行转账付款",
+                        iconUrl: null,
+                        imageUrl: "https://via.placeholder.com/300x300/007bff/ffffff?text=ABA%E6%94%B6%E6%AC%BE%E7%A0%81",
+                        enabled: 1,
+                        sortOrder: 1,
+                        requireAccountName: 1,
+                        accountNameLabel: "收款人姓名",
+                        accountNamePlaceholder: "大海超市",
+                        requireAccountNumber: 1,
+                        accountNumberLabel: "银行账号",
+                        accountNumberPlaceholder: "001234567890",
+                        requireWalletAddress: 0,
+                        requireCashAmount: 0,
+                        requireChangeAmount: 0,
+                        paymentInstructions: "请转账至ABA银行账户：{accountName}（账号：{accountNumber}）"
+                    },
+                    {
+                        id: 2,
+                        code: "wing_bank",
+                        name: "汇旺银行转账",
+                        description: "汇旺银行转账付款",
+                        iconUrl: null,
+                        imageUrl: null,
+                        enabled: 1,
+                        sortOrder: 2,
+                        requireAccountName: 1,
+                        accountNameLabel: "收款人姓名",
+                        accountNamePlaceholder: "大海超市",
+                        requireAccountNumber: 1,
+                        accountNumberLabel: "银行账号",
+                        accountNumberPlaceholder: "002345678901",
+                        requireWalletAddress: 0,
+                        requireCashAmount: 0,
+                        requireChangeAmount: 0,
+                        paymentInstructions: "请转账至汇旺银行账户：{accountName}（账号：{accountNumber}）"
+                    },
+                    {
+                        id: 3,
+                        code: "usdt",
+                        name: "USDT加密货币",
+                        description: "USDT加密货币付款",
+                        iconUrl: null,
+                        imageUrl: "https://via.placeholder.com/300x300/f39c12/ffffff?text=USDT%E6%94%B6%E6%AC%BE%E7%A0%81",
+                        enabled: 1,
+                        sortOrder: 3,
+                        requireAccountName: 0,
+                        requireAccountNumber: 0,
+                        requireWalletAddress: 1,
+                        walletAddressLabel: "USDT钱包地址",
+                        walletAddressPlaceholder: "TQn9Y2khEsLMWD5uMcCd8KZazQSs5Lp2VG",
+                        requireCashAmount: 0,
+                        requireChangeAmount: 0,
+                        paymentInstructions: "请转账USDT至钱包地址：{walletAddress}"
+                    },
+                    {
+                        id: 4,
+                        code: "cash_on_delivery",
+                        name: "货到付款",
+                        description: "送货时现金付款",
+                        iconUrl: null,
+                        imageUrl: null,
+                        enabled: 1,
+                        sortOrder: 4,
+                        requireAccountName: 0,
+                        requireAccountNumber: 0,
+                        requireWalletAddress: 0,
+                        requireCashAmount: 1,
+                        cashAmountLabel: "应付现金",
+                        cashAmountPlaceholder: "请输入应付现金金额",
+                        requireChangeAmount: 1,
+                        changeAmountLabel: "找零金额",
+                        changeAmountPlaceholder: "请输入需要找零的金额",
+                        paymentInstructions: "货到付款：应付现金 {cashAmount}，找零 {changeAmount}"
+                    }
+                ];
+                
+                console.log('🔧 [fetchPaymentMethods] 使用默认付款方式数据');
+                renderPaymentMethods();
+                return PAYMENT_METHODS;
+            }
+        }
+
+        // 渲染付款方式下拉选项
+        function renderPaymentMethods() {
+            console.log('🔄 [renderPaymentMethods] 渲染付款方式下拉选项', PAYMENT_METHODS);
+            
+            const selectElement = document.getElementById('pay-method');
+            if (!selectElement) {
+                console.error('❌ [renderPaymentMethods] 找不到付款方式选择框元素');
+                    return;
+                }
+
+            // 清空现有选项（保留第一个"请选择"选项）
+            selectElement.innerHTML = '<option value="">请选择</option>';
+            
+            // 添加付款方式选项
+            PAYMENT_METHODS.forEach(method => {
+                const option = document.createElement('option');
+                option.value = method.code;
+                option.textContent = method.name;
+                option.dataset.methodId = method.id;
+                selectElement.appendChild(option);
+            });
+            
+            console.log('✅ [renderPaymentMethods] 付款方式选项渲染完成');
+        }
+
+        // 获取付款方式默认图标
+        function getPaymentMethodDefaultIcon(code) {
+            const iconMap = {
+                'aba_bank': '🏦',
+                'wing_bank': '🏛️',
+                'usdt': '₿',
+                'cash_on_delivery': '💵',
+                'default': '💳'
+            };
+            return iconMap[code] || iconMap.default;
+        }
+
+        // 付款方式选择变化事件
+        function onPaymentMethodChange() {
+            const selectElement = document.getElementById('pay-method');
+            const selectedCode = selectElement.value;
+            
+            console.log('🔄 [onPaymentMethodChange] 选择付款方式:', selectedCode);
+            
+            if (!selectedCode) {
+                // 没有选择付款方式，隐藏所有信息展示
+                selectedPaymentMethod = null;
+                const infoDisplay = document.getElementById('payment-info-display');
+                const codSpecialForm = document.getElementById('cod-special-form');
+                if (infoDisplay) {
+                    infoDisplay.style.display = 'none';
+                }
+                if (codSpecialForm) {
+                    codSpecialForm.style.display = 'none';
+                }
+                return;
+            }
+            
+            // 添加触觉反馈
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+            
+            // 找到选中的付款方式
+            selectedPaymentMethod = PAYMENT_METHODS.find(method => method.code === selectedCode);
+            if (!selectedPaymentMethod) {
+                console.error('❌ [onPaymentMethodChange] 未找到付款方式:', selectedCode);
+                return;
+            }
+            
+            // 显示付款信息
+            displayPaymentInfo();
+            
+            console.log('✅ [onPaymentMethodChange] 付款方式选择完成:', selectedPaymentMethod);
+        }
+
+                // 显示付款信息
+        function displayPaymentInfo() {
+            if (!selectedPaymentMethod) {
+                console.error('❌ [displayPaymentInfo] 没有选中的付款方式');
+                return;
+            }
+
+            console.log('🔄 [displayPaymentInfo] 显示付款信息:', selectedPaymentMethod);
+            
+            const infoDisplay = document.getElementById('payment-info-display');
+            const infoTitle = document.getElementById('payment-info-title');
+            const infoContent = document.getElementById('payment-info-content');
+            const infoImage = document.getElementById('payment-info-image');
+            const codSpecialForm = document.getElementById('cod-special-form');
+            
+            if (!infoDisplay || !infoTitle || !infoContent || !infoImage) {
+                console.error('❌ [displayPaymentInfo] 找不到付款信息展示容器元素');
+                return;
+            }
+            
+            // 检查是否为货到付款
+            const isCashOnDelivery = selectedPaymentMethod.code === 'cash_on_delivery';
+            
+            // 对于货到付款，隐藏付款信息展示区域，只显示特殊表单
+            if (isCashOnDelivery) {
+                infoDisplay.style.display = 'none';
+                if (codSpecialForm) {
+                    codSpecialForm.style.display = 'block';
+                    // 重置货到付款表单
+                    resetCodForm();
+                }
+                console.log('✅ [displayPaymentInfo] 货到付款：隐藏付款信息，显示特殊表单');
+                return;
+            }
+            
+            // 生成标题
+            let titleIconHtml = '';
+            if (selectedPaymentMethod.iconUrl) {
+                titleIconHtml = `<img src="${selectedPaymentMethod.iconUrl}" alt="${selectedPaymentMethod.name}" class="payment-method-icon" onerror="this.style.display='none';">`;
+            } else {
+                const defaultIcon = getPaymentMethodDefaultIcon(selectedPaymentMethod.code);
+                titleIconHtml = `<div class="payment-method-icon" style="display: flex; align-items: center; justify-content: center; font-size: 18px; background: var(--tg-theme-secondary-bg-color, #f8f9fa);">${defaultIcon}</div>`;
+            }
+            infoTitle.innerHTML = `${titleIconHtml}${selectedPaymentMethod.name}`;
+            
+            // 生成收款信息内容
+            const infoItems = [];
+            
+            // 收款人姓名信息
+            if (selectedPaymentMethod.requireAccountName === 1) {
+                infoItems.push(`
+                    <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <div style="flex: 1;">
+                            <strong>${selectedPaymentMethod.accountNameLabel}：</strong>
+                            <span style="color: var(--tg-theme-button-color, #0088cc);">${selectedPaymentMethod.accountNamePlaceholder}</span>
+                        </div>
+                        <button type="button" class="copy-btn" onclick="copyToClipboard('${selectedPaymentMethod.accountNamePlaceholder.replace(/'/g, '\\\'').replace(/"/g, '\\"')}', '${selectedPaymentMethod.accountNameLabel.replace(/'/g, '\\\'').replace(/"/g, '\\"')}')">
+                            复制
+                        </button>
+                    </div>
+                `);
+            }
+            
+            // 收款账号信息
+            if (selectedPaymentMethod.requireAccountNumber === 1) {
+                infoItems.push(`
+                    <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <div style="flex: 1;">
+                            <strong>${selectedPaymentMethod.accountNumberLabel}：</strong>
+                            <span style="color: var(--tg-theme-button-color, #0088cc);">${selectedPaymentMethod.accountNumberPlaceholder}</span>
+                        </div>
+                        <button type="button" class="copy-btn" onclick="copyToClipboard('${selectedPaymentMethod.accountNumberPlaceholder.replace(/'/g, '\\\'').replace(/"/g, '\\"')}', '${selectedPaymentMethod.accountNumberLabel.replace(/'/g, '\\\'').replace(/"/g, '\\"')}')">
+                            复制
+                        </button>
+                    </div>
+                `);
+            }
+            
+            // 钱包地址信息
+            if (selectedPaymentMethod.requireWalletAddress === 1) {
+                infoItems.push(`
+                    <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <div style="flex: 1;">
+                            <strong>${selectedPaymentMethod.walletAddressLabel}：</strong>
+                            <span style="color: var(--tg-theme-button-color, #0088cc); word-break: break-all;">${selectedPaymentMethod.walletAddressPlaceholder}</span>
+                        </div>
+                        <button type="button" class="copy-btn" onclick="copyToClipboard('${selectedPaymentMethod.walletAddressPlaceholder.replace(/'/g, '\\\'').replace(/"/g, '\\"')}', '${selectedPaymentMethod.walletAddressLabel.replace(/'/g, '\\\'').replace(/"/g, '\\"')}')">
+                            复制
+                        </button>
+                    </div>
+                `);
+            }
+            
+            // 现金金额信息
+            if (selectedPaymentMethod.requireCashAmount === 1) {
+                infoItems.push(`
+                    <div style="margin-bottom: 12px;">
+                        <strong>${selectedPaymentMethod.cashAmountLabel}：</strong>
+                        <span style="color: var(--tg-theme-button-color, #0088cc);">${selectedPaymentMethod.cashAmountPlaceholder}</span>
+                    </div>
+                `);
+            }
+            
+            // 找零金额信息
+            if (selectedPaymentMethod.requireChangeAmount === 1) {
+                infoItems.push(`
+                    <div style="margin-bottom: 12px;">
+                        <strong>${selectedPaymentMethod.changeAmountLabel}：</strong>
+                        <span style="color: var(--tg-theme-button-color, #0088cc);">${selectedPaymentMethod.changeAmountPlaceholder}</span>
+                    </div>
+                `);
+            }
+            
+            infoContent.innerHTML = infoItems.join('');
+            
+            // 隐藏货到付款特殊表单
+            if (codSpecialForm) {
+                codSpecialForm.style.display = 'none';
+            }
+            
+            // 显示付款方式图片或按钮
+            let imageHtml = '';
+            if (selectedPaymentMethod.imageUrl) {
+                imageHtml = `
+                    <div id="payment-qr-button-container" style="text-align: center; margin-top: 12px;">
+                        <button type="button" class="view-qr-btn" onclick="showPaymentQRCode('${selectedPaymentMethod.imageUrl}', '${selectedPaymentMethod.name}')">
+                            📱 查看收款码
+                        </button>
+                    </div>
+                    <div id="payment-qr-image-container" style="display: none; text-align: center; margin-top: 12px;">
+                        <img src="${selectedPaymentMethod.imageUrl}" alt="${selectedPaymentMethod.name}" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" onerror="this.style.display='none';">
+                        <div style="margin-top: 8px;">
+                            <button type="button" class="hide-qr-btn" onclick="hidePaymentQRCode()">
+                                ✕ 隐藏收款码
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            infoImage.innerHTML = imageHtml;
+            
+            // 显示付款信息容器
+            infoDisplay.style.display = 'block';
+            
+            console.log('✅ [displayPaymentInfo] 付款信息显示完成');
+        }
+
+        // 验证付款方式选择
+        function validatePaymentMethod() {
+            if (!selectedPaymentMethod) {
+                return ['请选择付款方式'];
+            }
+            
+            // 如果是货到付款，需要额外验证
+            if (selectedPaymentMethod.code === 'cash_on_delivery') {
+                return validateCodForm();
+            }
+            
+            return []; // 只需要验证是否选择了付款方式即可
+        }
+
+        // 复制到剪贴板功能
+        async function copyToClipboard(text, label) {
+            try {
+                // 尝试使用现代 Clipboard API
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    // 回退到传统方法
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-999999px';
+                    textArea.style.top = '-999999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    textArea.remove();
+                }
+                
+                // 添加触觉反馈
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                }
+                
+                // 显示成功提示
+                showToast(`✅ ${label}已复制到剪贴板`);
+                
+                console.log('✅ [copyToClipboard] 复制成功:', { text, label });
+                
+            } catch (error) {
+                console.error('❌ [copyToClipboard] 复制失败:', error);
+                
+                // 添加错误触觉反馈
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+                }
+                
+                // 显示错误提示
+                showToast(`❌ 复制失败，请手动复制：${text}`);
+            }
+        }
+
+        // 显示提示消息
+        function showToast(message) {
+            // 创建提示元素
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 10000;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                max-width: 90%;
+                text-align: center;
+                word-wrap: break-word;
+            `;
+            toast.textContent = message;
+            
+            // 添加到页面
+            document.body.appendChild(toast);
+            
+            // 显示动画
+            setTimeout(() => {
+                toast.style.opacity = '1';
+            }, 100);
+            
+            // 自动隐藏
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // 显示收款码
+        function showPaymentQRCode(imageUrl, paymentName) {
+            console.log('🔄 [showPaymentQRCode] 显示收款码:', imageUrl, paymentName);
+            
+            const buttonContainer = document.getElementById('payment-qr-button-container');
+            const imageContainer = document.getElementById('payment-qr-image-container');
+            
+            if (buttonContainer && imageContainer) {
+                buttonContainer.style.display = 'none';
+                imageContainer.style.display = 'block';
+                
+                // 添加触觉反馈
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                    Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                }
+                
+                console.log('✅ [showPaymentQRCode] 收款码显示成功');
+            }
+        }
+
+        // 隐藏收款码
+        function hidePaymentQRCode() {
+            console.log('🔄 [hidePaymentQRCode] 隐藏收款码');
+            
+            const buttonContainer = document.getElementById('payment-qr-button-container');
+            const imageContainer = document.getElementById('payment-qr-image-container');
+            
+            if (buttonContainer && imageContainer) {
+                buttonContainer.style.display = 'block';
+                imageContainer.style.display = 'none';
+                
+                // 添加触觉反馈
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                    Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                }
+                
+                console.log('✅ [hidePaymentQRCode] 收款码隐藏成功');
+            }
+        }
+
+        // 货到付款相关变量
+        let codExchangeRate = { USD: 4000 }; // 汇率：1美元 = 4000柬埔寨币
+
+        // 重置货到付款表单
+        function resetCodForm() {
+            console.log('🔄 [resetCodForm] 重置货到付款表单');
+            
+            // 重置表单元素
+            const usdAmountInput = document.getElementById('cod-usd-amount');
+            const khrAmountInput = document.getElementById('cod-khr-amount');
+            const changeAmountInput = document.getElementById('cod-change-amount');
+            const calculationInfo = document.getElementById('cod-calculation-info');
+            const errorElement = document.getElementById('cod-amount-error');
+            
+            if (usdAmountInput) usdAmountInput.value = '';
+            if (khrAmountInput) khrAmountInput.value = '';
+            if (changeAmountInput) changeAmountInput.value = '';
+            if (calculationInfo) calculationInfo.style.display = 'none';
+            if (errorElement) {
+                errorElement.style.display = 'none';
+                errorElement.textContent = '';
+            }
+            
+            console.log('✅ [resetCodForm] 货到付款表单重置完成');
+        }
+
+        // 货币选择变化事件（已废弃，保留空函数以兼容）
+        function onCodCurrencyChange() {
+            // 已废弃，新版本不需要货币选择
+        }
+
+        // 验证数字输入（只允许数字和小数点）
+        function validateNumberInput(event) {
+            const char = String.fromCharCode(event.which);
+            const pattern = /[0-9.]/;
+            
+            // 允许退格键、删除键等控制键
+            if (event.which === 8 || event.which === 46 || event.which === 37 || event.which === 39) {
+                return true;
+            }
+            
+            // 只允许数字和小数点
+            if (!pattern.test(char)) {
+                event.preventDefault();
+                return false;
+            }
+            
+            // 防止输入多个小数点
+            const currentValue = event.target.value;
+            if (char === '.' && currentValue.indexOf('.') !== -1) {
+                event.preventDefault();
+                return false;
+            }
+            
+            return true;
+        }
+
+        // 验证并计算找零金额
+        function validateAndCalculateCodChange() {
+            const usdAmountInput = document.getElementById('cod-usd-amount');
+            const khrAmountInput = document.getElementById('cod-khr-amount');
+            const changeAmountInput = document.getElementById('cod-change-amount');
+            const calculationInfo = document.getElementById('cod-calculation-info');
+            const calculationDetails = document.getElementById('cod-calculation-details');
+            const errorElement = document.getElementById('cod-amount-error');
+            
+            if (!usdAmountInput || !khrAmountInput || !changeAmountInput) {
+                console.log('🔄 [validateAndCalculateCodChange] 缺少必要元素，跳过计算');
+                return;
+            }
+            
+            const usdAmount = parseFloat(usdAmountInput.value) || 0;
+            const khrAmount = parseFloat(khrAmountInput.value) || 0;
+            
+            // 清除之前的错误提示
+            if (errorElement) {
+                errorElement.style.display = 'none';
+                errorElement.textContent = '';
+            }
+            
+            if (usdAmount <= 0 && khrAmount <= 0) {
+                // 清空找零金额和计算详情
+                changeAmountInput.value = '';
+                if (calculationInfo) calculationInfo.style.display = 'none';
+                return;
+            }
+            
+            // 获取订单总金额（美元）
+            const orderTotal = getCartTotal();
+            
+            // 计算总现金金额（转换为柬埔寨币）
+            const usdInKHR = usdAmount * codExchangeRate.USD; // 美元转柬埔寨币
+            const totalCashKHR = usdInKHR + khrAmount; // 总现金（柬埔寨币）
+            
+            // 计算订单总金额（柬埔寨币）
+            const orderTotalKHR = orderTotal * codExchangeRate.USD;
+            
+            // 计算找零金额（柬埔寨币）
+            const changeAmountKHR = totalCashKHR - orderTotalKHR;
+            
+            let isValidAmount = true;
+            let errorMessage = '';
+            
+            // 验证总现金是否足够
+            if (totalCashKHR < orderTotalKHR) {
+                isValidAmount = false;
+                const shortageKHR = orderTotalKHR - totalCashKHR;
+                errorMessage = `现金不足，还需要 ${shortageKHR.toFixed(0)}៛`;
+            }
+            
+            // 生成计算详情
+            let calculationText = `
+                支付美金：$${usdAmount.toFixed(2)} × 4000 = ${usdInKHR.toFixed(0)}៛<br>
+                支付柬币：${khrAmount.toFixed(0)}៛<br>
+                总现金：${totalCashKHR.toFixed(0)}៛<br>
+                订单总金额：$${orderTotal.toFixed(2)} × 4000 = ${orderTotalKHR.toFixed(0)}៛<br>
+                找零金额：<span style="color: ${changeAmountKHR >= 0 ? '#28a745' : '#dc3545'}">${changeAmountKHR >= 0 ? '' : '-'}${Math.abs(changeAmountKHR).toFixed(0)}៛</span>
+            `;
+            
+            // 显示错误提示
+            if (!isValidAmount && errorElement) {
+                errorElement.textContent = errorMessage;
+                errorElement.style.display = 'block';
+            }
+            
+            // 设置找零金额
+            changeAmountInput.value = changeAmountKHR.toFixed(0);
+            
+            // 显示计算详情
+            if (calculationDetails && calculationInfo) {
+                calculationDetails.innerHTML = calculationText;
+                calculationInfo.style.display = 'block';
+            }
+            
+            // 只有在金额有效时才自动更新备注
+            if (isValidAmount) {
+                updateCodRemark();
+            } else {
+                // 清空备注
+                const remarkInput = document.getElementById('user-remark');
+                if (remarkInput) {
+                    remarkInput.value = '';
+                }
+            }
+            
+            console.log('✅ [validateAndCalculateCodChange] 验证和计算完成:', {
+                usdAmount,
+                khrAmount,
+                totalCashKHR,
+                orderTotal,
+                orderTotalKHR,
+                changeAmountKHR,
+                isValid: isValidAmount
+            });
+        }
+
+        // 计算找零金额（保留原函数名以兼容其他调用）
+        function calculateCodChange() {
+            validateAndCalculateCodChange();
+        }
+
+        // 获取购物车总金额
+        function getCartTotal() {
+            let total = 0;
+            Object.keys(cart).forEach(id => {
+                const product = getProductById(id);
+                if (product) {
+                    total += product.price * cart[id];
                 }
             });
+            return total;
+        }
+
+        // 更新货到付款备注
+        function updateCodRemark() {
+            if (!selectedPaymentMethod || selectedPaymentMethod.code !== 'cash_on_delivery') {
+                return;
+            }
+            
+            const usdAmountInput = document.getElementById('cod-usd-amount');
+            const khrAmountInput = document.getElementById('cod-khr-amount');
+            const changeAmountInput = document.getElementById('cod-change-amount');
+            const remarkInput = document.getElementById('user-remark');
+            
+            if (!usdAmountInput || !khrAmountInput || !changeAmountInput || !remarkInput) {
+                return;
+            }
+            
+            const usdAmount = parseFloat(usdAmountInput.value) || 0;
+            const khrAmount = parseFloat(khrAmountInput.value) || 0;
+            const changeAmount = parseFloat(changeAmountInput.value) || 0;
+            
+            if (usdAmount <= 0 && khrAmount <= 0) {
+                return;
+            }
+            
+            // 生成备注内容
+            let remarkParts = [];
+            
+            if (usdAmount > 0) {
+                remarkParts.push(`支付美金 $${usdAmount.toFixed(2)}`);
+            }
+            
+            if (khrAmount > 0) {
+                remarkParts.push(`支付柬币 ${khrAmount.toFixed(0)}៛`);
+            }
+            
+            const finalInstructions = `货到付款：${remarkParts.join(' + ')}，找零 ${changeAmount.toFixed(0)}៛`;
+            
+            // 自动填写到备注输入框
+            remarkInput.value = finalInstructions;
+            
+            console.log('✅ [updateCodRemark] 备注已更新:', finalInstructions);
+        }
+
+        // 验证货到付款表单
+        function validateCodForm() {
+            const errors = [];
+            
+            const usdAmountInput = document.getElementById('cod-usd-amount');
+            const khrAmountInput = document.getElementById('cod-khr-amount');
+            
+            const usdAmount = parseFloat(usdAmountInput?.value) || 0;
+            const khrAmount = parseFloat(khrAmountInput?.value) || 0;
+            
+            // 验证至少输入一种货币的现金金额
+            if (usdAmount <= 0 && khrAmount <= 0) {
+                errors.push('请至少输入一种货币的现金金额');
+                return errors;
+            }
+            
+            // 获取订单总金额（美元）
+            const orderTotal = getCartTotal();
+            
+            // 计算总现金金额（转换为柬埔寨币）
+            const usdInKHR = usdAmount * codExchangeRate.USD;
+            const totalCashKHR = usdInKHR + khrAmount;
+            
+            // 计算订单总金额（柬埔寨币）
+            const orderTotalKHR = orderTotal * codExchangeRate.USD;
+            
+            // 验证总现金是否足够
+            if (totalCashKHR < orderTotalKHR) {
+                const shortageKHR = orderTotalKHR - totalCashKHR;
+                errors.push(`现金不足，还需要 ${shortageKHR.toFixed(0)}៛`);
+            }
+            
+            // 计算找零金额
+            const changeAmountKHR = totalCashKHR - orderTotalKHR;
+            
+            console.log('🔍 [validateCodForm] 货到付款验证结果:', {
+                usdAmount,
+                khrAmount,
+                totalCashKHR,
+                orderTotal,
+                orderTotalKHR,
+                changeAmountKHR,
+                errors: errors.length > 0 ? errors : '无错误'
+            });
+            
+            return errors;
         }
     </script>
 
