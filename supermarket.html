@@ -1018,6 +1018,37 @@
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
 
+        .back-to-cart-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            color: var(--tg-theme-text-color, #333);
+            border: 2px solid var(--tg-theme-hint-color, #e0e0e0);
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            margin-top: 12px;
+        }
+
+        .back-to-cart-btn:hover {
+            background: var(--tg-theme-hint-color, #e0e0e0);
+            transform: translateY(-1px);
+        }
+
+        /* 异常状态闪烁动画 */
+        @keyframes exceptionPulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .exception-status {
+            animation: exceptionPulse 2s infinite;
+        }
+
         /* 下单页面 */
         .checkout-steps {
             display: flex;
@@ -1885,16 +1916,15 @@
                     </div>
                 </div>
 
-                <div class="form-group" style="align-items: flex-start;">
-                    <label style="line-height: 36px;">付款参数：</label>
-                    <textarea id="payment-remark" placeholder="付款相关参数（自动生成）" rows="2" style="flex: 1; max-width: 250px; padding: 8px 12px; border: 1px solid var(--tg-theme-hint-color, #e0e0e0); border-radius: 8px; background: var(--tg-theme-bg-color, #f5f5f5); color: var(--tg-theme-text-color, #333); font-size: 14px; resize: vertical; min-height: 60px;" readonly></textarea>
-                </div>
+
                 
                 <div class="form-group" style="align-items: flex-start;">
                     <label style="line-height: 36px;">订单备注：</label>
                     <textarea id="user-remark" placeholder="请输入订单备注（可选）" rows="2" style="flex: 1; max-width: 250px; padding: 8px 12px; border: 1px solid var(--tg-theme-hint-color, #e0e0e0); border-radius: 8px; background: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #333); font-size: 14px; resize: vertical; min-height: 60px;"></textarea>
                 </div>
-                <button type="submit" class="submit-btn">提交订单</button>
+                
+                <!-- 返回购物车按钮 -->
+                <button type="button" class="back-to-cart-btn" onclick="backToCart()">返回购物车</button>
             </form>
             <div id="order-success" style="display:none;text-align:center;padding:30px 0;color:green;font-weight:bold;"></div>
             </div>
@@ -2059,6 +2089,10 @@
         const CART_STORAGE_KEY = 'supermarket_cart';
         const CART_VERSION_KEY = 'supermarket_cart_version';
         const CURRENT_CART_VERSION = '1.1'; // 当前购物车数据版本
+        
+        // 用户信息缓存相关函数
+        const USER_ADDRESS_KEY = 'supermarket_user_address';
+        const USER_PHONE_KEY = 'supermarket_user_phone';
 
         // 保存购物车到本地存储
         function saveCartToStorage() {
@@ -2216,6 +2250,144 @@
                 console.log('🗑️ [clearCartStorage] 购物车本地存储已清除');
             } catch (error) {
                 console.error('❌ [clearCartStorage] 清除购物车存储失败:', error);
+            }
+        }
+
+        // 保存用户地址到本地存储
+        function saveUserAddress(address) {
+            try {
+                if (address && address.trim()) {
+                    localStorage.setItem(USER_ADDRESS_KEY, address.trim());
+                    console.log('💾 [saveUserAddress] 用户地址已保存到本地存储:', address.trim());
+                }
+            } catch (error) {
+                console.error('❌ [saveUserAddress] 保存用户地址失败:', error);
+            }
+        }
+
+        // 从本地存储加载用户地址
+        function loadUserAddress() {
+            try {
+                const savedAddress = localStorage.getItem(USER_ADDRESS_KEY);
+                if (savedAddress) {
+                    console.log('📍 [loadUserAddress] 从本地存储加载用户地址:', savedAddress);
+                    return savedAddress;
+                }
+            } catch (error) {
+                console.error('❌ [loadUserAddress] 加载用户地址失败:', error);
+            }
+            return '';
+        }
+
+        // 保存用户手机号到本地存储
+        function saveUserPhone(phone) {
+            try {
+                if (phone && phone.trim()) {
+                    localStorage.setItem(USER_PHONE_KEY, phone.trim());
+                    console.log('💾 [saveUserPhone] 用户手机号已保存到本地存储:', phone.trim());
+                }
+            } catch (error) {
+                console.error('❌ [saveUserPhone] 保存用户手机号失败:', error);
+            }
+        }
+
+        // 从本地存储加载用户手机号
+        function loadUserPhone() {
+            try {
+                const savedPhone = localStorage.getItem(USER_PHONE_KEY);
+                if (savedPhone) {
+                    console.log('📱 [loadUserPhone] 从本地存储加载用户手机号:', savedPhone);
+                    return savedPhone;
+                }
+            } catch (error) {
+                console.error('❌ [loadUserPhone] 加载用户手机号失败:', error);
+            }
+            return '';
+        }
+
+        // 从缓存加载用户信息到表单
+        function loadUserInfoFromCache() {
+            try {
+                // 加载收货地址
+                const savedAddress = loadUserAddress();
+                if (savedAddress) {
+                    const addressInput = document.getElementById('user-address');
+                    if (addressInput) {
+                        addressInput.value = savedAddress;
+                        console.log('📍 [loadUserInfoFromCache] 已恢复收货地址:', savedAddress);
+                    }
+                }
+
+                // 加载手机号
+                const savedPhone = loadUserPhone();
+                if (savedPhone) {
+                    const phoneInput = document.getElementById('user-phone');
+                    if (phoneInput) {
+                        phoneInput.value = savedPhone;
+                        console.log('📱 [loadUserInfoFromCache] 已恢复手机号:', savedPhone);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ [loadUserInfoFromCache] 加载用户信息失败:', error);
+            }
+        }
+
+        // 初始化用户信息缓存功能
+        function initUserInfoCaching() {
+            try {
+                // 为收货地址输入框绑定事件
+                const addressInput = document.getElementById('user-address');
+                if (addressInput) {
+                    // 使用防抖处理，避免频繁保存
+                    let addressSaveTimer;
+                    addressInput.addEventListener('input', function() {
+                        clearTimeout(addressSaveTimer);
+                        addressSaveTimer = setTimeout(() => {
+                            const address = this.value.trim();
+                            if (address) {
+                                saveUserAddress(address);
+                            }
+                        }, 500); // 500ms 防抖
+                    });
+                    
+                    // 失去焦点时也保存
+                    addressInput.addEventListener('blur', function() {
+                        const address = this.value.trim();
+                        if (address) {
+                            saveUserAddress(address);
+                        }
+                    });
+                    
+                    console.log('✅ [initUserInfoCaching] 收货地址输入框事件已绑定');
+                }
+
+                // 为手机号输入框绑定事件
+                const phoneInput = document.getElementById('user-phone');
+                if (phoneInput) {
+                    // 使用防抖处理，避免频繁保存
+                    let phoneSaveTimer;
+                    phoneInput.addEventListener('input', function() {
+                        clearTimeout(phoneSaveTimer);
+                        phoneSaveTimer = setTimeout(() => {
+                            const phone = this.value.trim();
+                            if (phone) {
+                                saveUserPhone(phone);
+                            }
+                        }, 500); // 500ms 防抖
+                    });
+                    
+                    // 失去焦点时也保存
+                    phoneInput.addEventListener('blur', function() {
+                        const phone = this.value.trim();
+                        if (phone) {
+                            saveUserPhone(phone);
+                        }
+                    });
+                    
+                    console.log('✅ [initUserInfoCaching] 手机号输入框事件已绑定');
+                }
+            } catch (error) {
+                console.error('❌ [initUserInfoCaching] 初始化用户信息缓存失败:', error);
             }
         }
 
@@ -2886,7 +3058,7 @@
                         <div class="product-card-body">
                             ${p.no ? `<div class="product-no">NO.${p.no}</div>` : ''}
                             <div class="product-name">${p.name}</div>
-                            <div class="product-price">¥${p.price.toFixed(2)}</div>
+                            <div class="product-price">$${p.price.toFixed(2)}</div>
                             <div class="product-actions">
                                 <button type="button" class="qty-btn qty-decrease" data-product-id="${p.id}" ${qty===0?'disabled':''}><span class="btn-icon">−</span></button>
                                 ${qty > 0 ? `<div class="quantity-display">${qty}</div>` : '<div style="flex: 1;"></div>'}
@@ -2961,7 +3133,7 @@
                     <div class="cart-item">
                         <div class="cart-item-info">
                             <div class="cart-item-name">${p.name} ${p.salesCount > 100 ? '🔥' : p.salesCount === 0 ? '🆕' : ''}</div>
-                            <div class="cart-item-price">¥${p.price.toFixed(2)} × ${cart[id]}</div>
+                            <div class="cart-item-price">$${p.price.toFixed(2)} × ${cart[id]}</div>
                         </div>
                         <div class="cart-item-actions">
                             <button class="qty-btn qty-decrease" data-product-id="${p.id}">-</button>
@@ -2979,7 +3151,7 @@
                     total += p.price * cart[id];
                 }
             });
-            document.getElementById('cart-total').innerText = items ? `总计：¥${total.toFixed(2)}` : '';
+            document.getElementById('cart-total').innerText = items ? `总计：$${total.toFixed(2)}` : '';
             console.log('[renderCart] 总价', total);
         }
 
@@ -3078,7 +3250,8 @@
                         createTime: order.createTime,
                         updateTime: order.updateTime,
                         payTime: order.payTime,
-                        completeTime: order.completeTime
+                        completeTime: order.completeTime,
+                        reason: order.reason || '' // 添加异常原因字段
                     };
                 });
                 
@@ -3153,9 +3326,9 @@
                 }
                 const qty = cart[id];
                 total += p.price * qty;
-                return `<div>${p.name} × ${qty} = ¥${(p.price*qty).toFixed(2)}</div>`;
+                return `<div>${p.name} × ${qty} = $${(p.price*qty).toFixed(2)}</div>`;
             }).filter(item => item !== '').join('');
-            document.getElementById('checkout-summary').innerHTML = summary ? summary+`<div style='margin-top:8px;font-weight:bold;'>总计：¥${total.toFixed(2)}</div>` : '<div style="color:#aaa;">购物车为空</div>';
+            document.getElementById('checkout-summary').innerHTML = summary ? summary+`<div style='margin-top:8px;font-weight:bold;'>总计：$${total.toFixed(2)}</div>` : '<div style="color:#aaa;">购物车为空</div>';
             console.log('[renderCheckoutSummary] 购物车摘要', cart, '总价', total);
         }
 
@@ -3187,10 +3360,19 @@
                 
                 // 移除支付凭证上传功能
                 
+                // 为异常订单添加点击事件和视觉效果
+                const statusClickHandler = o.orderStatus === 5 ? 
+                    `onclick="showOrderExceptionReason(${o.id}, '${(o.reason || '').replace(/'/g, '\\\'')}')" 
+                     class="exception-status"
+                     style="cursor:pointer; text-decoration:underline; padding:2px 4px; border-radius:3px; background:rgba(255,107,53,0.1); transition:all 0.2s; font-weight:bold;" 
+                     onmouseover="this.style.background='rgba(255,107,53,0.2)'; this.style.transform='scale(1.05)'; this.style.animation='none';" 
+                     onmouseout="this.style.background='rgba(255,107,53,0.1)'; this.style.transform='scale(1)'; this.style.animation='exceptionPulse 2s infinite';" 
+                     title="点击查看异常原因"` : '';
+                
                 return `<div style='border:1px solid #eee;border-radius:6px;padding:12px;margin-bottom:12px;'>
                     <div style='font-weight:bold;margin-bottom:8px;'>
                         <span style='color:#0088cc;'>${o.orderNo || `订单#${o.id}`}</span>
-                        <span style='float:right;color:${statusColor};font-size:12px;'>${orderStatusText}</span>
+                                                 <span style='float:right;color:${statusColor};font-size:12px;' ${statusClickHandler}>${orderStatusText}${o.orderStatus === 5 ? ' 🔍 点击查看' : ''}</span>
                         </div>
                     <div style='color:#888;font-size:13px;margin-bottom:8px;'>
                         <div>📱 ${o.phone}</div>
@@ -3200,10 +3382,10 @@
                         <div>🕒 ${o.createTime ? new Date(o.createTime).toLocaleString() : '未知时间'}</div>
                         </div>
                     <div style='margin:8px 0;padding:8px;background:#f8f9fa;border-radius:4px;'>
-                        ${o.items.map(it=>`${it.name} × ${it.qty} = ¥${(it.price*it.qty).toFixed(2)}`).join('<br>')}
+                        ${o.items.map(it=>`${it.name} × ${it.qty} = $${(it.price*it.qty).toFixed(2)}`).join('<br>')}
                                 </div>
                     <div style='font-weight:bold;text-align:right;color:#0088cc;font-size:16px;'>
-                        总计：¥${o.total.toFixed(2)}
+                        总计：$${o.total.toFixed(2)}
                         </div>
                     ${confirmReceiptButton}
                 </div>`;
@@ -3214,6 +3396,27 @@
             const loadMoreBtn = document.getElementById('orders-load-more');
             if (loadMoreBtn) {
                 loadMoreBtn.style.display = orderHasMore && orders.length > 0 ? 'block' : 'none';
+            }
+        }
+
+        // 显示订单异常原因
+        function showOrderExceptionReason(orderId, reason) {
+            console.log('🔍 [showOrderExceptionReason] 显示异常原因，订单ID:', orderId, '原因:', reason);
+            
+            // 添加触觉反馈
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+            
+            // 处理异常原因显示
+            const displayReason = reason && reason.trim() ? reason : '暂无异常原因说明';
+            const message = `⚠️ 订单异常详情\n\n订单ID: ${orderId}\n异常原因: ${displayReason}`;
+            
+            // 优先使用Telegram的弹窗
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
+                Telegram.WebApp.showAlert(message);
+            } else {
+                alert(message);
             }
         }
 
@@ -3273,8 +3476,8 @@
             }
         }
 
-        // 下单表单提交
-        document.getElementById('order-form').onsubmit = async function(e) {
+        // 下单表单提交事件处理函数
+        async function handleOrderFormSubmit(e) {
             e.preventDefault();
             if(Object.keys(cart).length===0) {
                 alert('购物车为空！');
@@ -3283,7 +3486,7 @@
             const phone = document.getElementById('user-phone').value.trim();
             const address = document.getElementById('user-address').value.trim();
             const remark = document.getElementById('user-remark')?.value?.trim() || '';
-            const paymentRemark = document.getElementById('payment-remark')?.value?.trim() || '';
+
             
             // 验证付款方式选择
             const paymentErrors = validatePaymentMethod();
@@ -3357,8 +3560,7 @@
                         payMethod: selectedPaymentMethod.id, // 使用付款方式的id而不是code
                         phone: phone,
                         address: address,
-                        remark: remark,
-                        paymentRemark: paymentRemark
+                        remark: remark
                     },
                     orderItems: orderItems
                 };
@@ -3441,11 +3643,17 @@
                     '地址': address,
                     '订单号': order.orderNo,
                     '订单ID': order.id,
-                    '订单金额': `¥${order.totalAmount.toFixed(2)}`,
+                    '订单金额': `$${order.totalAmount.toFixed(2)}`,
                     '支付方式': paymentMethodName,
                     '订单状态': order.orderStatus,
                     '支付状态': order.payStatus
                 });
+                
+                // 订单提交成功后，保存用户信息到缓存
+                saveUserAddress(address);
+                if (phone) {
+                    saveUserPhone(phone);
+                }
                 
                 // 清空购物车并清除本地存储
                 cart = {};
@@ -3466,7 +3674,7 @@
                     <div style="text-align: left; background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
                         <div><strong>订单号：</strong>${order.orderNo}</div>
                         <div><strong>订单ID：</strong>${order.id}</div>
-                        <div><strong>总计：</strong>¥${order.totalAmount.toFixed(2)}</div>
+                        <div><strong>总计：</strong>$${order.totalAmount.toFixed(2)}</div>
                         <div><strong>支付方式：</strong>${paymentMethodName}</div>
                         <div><strong>订单状态：</strong>${getOrderStatusText(order.orderStatus)}</div>
                         <div><strong>支付状态：</strong>${getPayStatusText(order.payStatus)}</div>
@@ -3521,12 +3729,14 @@
             }
             // 重置货到付款表单
             resetCodForm();
-            // 重置付款参数
-            resetPaymentRemark();
             // 重置表单
             document.getElementById('order-form').reset();
             document.getElementById('order-form').style.display = '';
             document.getElementById('order-success').style.display = 'none';
+            
+            // 加载缓存的用户信息
+            loadUserInfoFromCache();
+            
             // 更新MainButton
             updateMainButton();
         }
@@ -3651,6 +3861,18 @@
             initBackToTop();
             initQuantityButtons();
             
+            // 绑定表单提交事件
+            const orderForm = document.getElementById('order-form');
+            if (orderForm) {
+                orderForm.onsubmit = handleOrderFormSubmit;
+                console.log('✅ [initPage] 订单表单事件已绑定');
+            } else {
+                console.error('❌ [initPage] 未找到订单表单元素');
+            }
+            
+            // 绑定用户信息输入事件，实时保存到缓存
+            initUserInfoCaching();
+            
             console.log('✅ [initPage] 页面初始化完成');
             
             // 暴露调试函数到全局作用域（仅用于调试）
@@ -3752,7 +3974,20 @@
                             switchTab('products');
                         }
                     } else if (currentTab === 'checkout') {
-                        backToCart();
+                        // 触发提交订单
+                        console.log('🔥 [MainButton] 下单页面点击，准备提交订单');
+                        const orderForm = document.getElementById('order-form');
+                        if (orderForm) {
+                            console.log('🔥 [MainButton] 找到订单表单，触发提交事件');
+                            // 创建并触发submit事件
+                            const submitEvent = new Event('submit', {
+                                bubbles: true,
+                                cancelable: true
+                            });
+                            orderForm.dispatchEvent(submitEvent);
+                        } else {
+                            console.error('❌ [MainButton] 未找到订单表单元素');
+                        }
                     } else if (currentTab === 'orders') {
                         switchTab('products');
                     }
@@ -3793,7 +4028,7 @@
                         break;
                     case 'checkout':
                     Telegram.WebApp.MainButton.setParams({
-                            text: '返回购物车',
+                            text: '提交订单',
                             is_visible: true
                         });
                         break;
@@ -4005,7 +4240,8 @@
                 1: '正在备货', 
                 2: '已配送',
                 3: '已完成',
-                4: '已取消'
+                4: '已取消',
+                5: '异常'
             };
             return statusMap[status] || '未知状态';
         }
@@ -4027,7 +4263,8 @@
                 1: '#17a2b8', // 正在备货 - 青色
                 2: '#007bff', // 已配送 - 蓝色
                 3: '#28a745', // 已完成 - 绿色
-                4: '#dc3545'  // 已取消 - 红色
+                4: '#dc3545', // 已取消 - 红色
+                5: '#ff6b35'  // 异常 - 橙红色
             };
             return colorMap[status] || '#6c757d';
         }
@@ -4463,9 +4700,8 @@
                 if (codSpecialForm) {
                     codSpecialForm.style.display = 'none';
                 }
-                // 重置支付凭证和付款参数
+                // 重置支付凭证
                 resetPaymentVoucher();
-                resetPaymentRemark();
                 return;
             }
             
@@ -4523,9 +4759,8 @@
                 console.log('✅ [displayPaymentInfo] 货到付款：隐藏付款信息，显示特殊表单');
                 return;
             } else {
-                // 非货到付款时重置支付凭证和付款参数
+                // 非货到付款时重置支付凭证
                 resetPaymentVoucher();
-                resetPaymentRemark();
             }
             
             // 生成标题
@@ -5002,16 +5237,10 @@
             console.log('✅ [resetPaymentVoucher] 支付凭证重置完成');
         }
 
-        // 重置付款参数
+        // 重置付款参数（已废弃 - 后端自动生成）
         function resetPaymentRemark() {
-            console.log('🔄 [resetPaymentRemark] 重置付款参数');
-            
-            const paymentRemarkInput = document.getElementById('payment-remark');
-            if (paymentRemarkInput) {
-                paymentRemarkInput.value = '';
-            }
-            
-            console.log('✅ [resetPaymentRemark] 付款参数重置完成');
+            // 已废弃，保留空函数以兼容现有代码
+            console.log('🔄 [resetPaymentRemark] 已废弃 - 后端自动生成付款参数');
         }
 
         // 货到付款相关变量
@@ -5044,8 +5273,7 @@
                 errorElement.textContent = '';
             }
             
-            // 重置付款参数
-            resetPaymentRemark();
+
             
             console.log('✅ [resetCodForm] 货到付款表单重置完成');
         }
@@ -5158,16 +5386,7 @@
                 calculationInfo.style.display = 'block';
             }
             
-            // 只有在金额有效时才自动更新备注
-            if (isValidAmount) {
-                updateCodRemark();
-            } else {
-                // 清空付款参数
-                const paymentRemarkInput = document.getElementById('payment-remark');
-                if (paymentRemarkInput) {
-                    paymentRemarkInput.value = '';
-                }
-            }
+            // 金额验证完成，不再需要更新付款参数（后端自动生成）
             
             console.log('✅ [validateAndCalculateCodChange] 验证和计算完成:', {
                 usdAmount,
@@ -5197,48 +5416,10 @@
             return total;
         }
 
-        // 更新货到付款付款参数
+        // 更新货到付款付款参数（已废弃 - 后端自动生成）
         function updateCodRemark() {
-            if (!selectedPaymentMethod || selectedPaymentMethod.code !== 'cash_on_delivery') {
-                return;
-            }
-            
-            const usdAmountInput = document.getElementById('cod-usd-amount');
-            const khrAmountInput = document.getElementById('cod-khr-amount');
-            const changeAmountInput = document.getElementById('cod-change-amount');
-            const paymentRemarkInput = document.getElementById('payment-remark');
-            
-            if (!usdAmountInput || !khrAmountInput || !changeAmountInput || !paymentRemarkInput) {
-                return;
-            }
-            
-            const usdAmount = parseFloat(usdAmountInput.value) || 0;
-            const khrAmount = parseFloat(khrAmountInput.value) || 0;
-            const changeAmount = parseFloat(changeAmountInput.value) || 0;
-            
-            if (usdAmount <= 0 && khrAmount <= 0) {
-                // 清空付款参数
-                paymentRemarkInput.value = '';
-                return;
-            }
-            
-            // 生成付款参数内容
-            let remarkParts = [];
-            
-            if (usdAmount > 0) {
-                remarkParts.push(`支付美金 $${usdAmount.toFixed(2)}`);
-            }
-            
-            if (khrAmount > 0) {
-                remarkParts.push(`支付柬币 ${khrAmount.toFixed(0)}៛`);
-            }
-            
-            const finalInstructions = `货到付款：${remarkParts.join(' + ')}，找零 ${changeAmount.toFixed(0)}៛`;
-            
-            // 自动填写到付款参数输入框
-            paymentRemarkInput.value = finalInstructions;
-            
-            console.log('✅ [updateCodRemark] 付款参数已更新:', finalInstructions);
+            // 已废弃，保留空函数以兼容现有代码
+            console.log('🔄 [updateCodRemark] 已废弃 - 后端自动生成付款参数');
         }
 
         // 验证货到付款表单
