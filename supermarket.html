@@ -1048,6 +1048,12 @@
         .exception-status {
             animation: exceptionPulse 2s infinite;
         }
+        
+        /* 旋转动画 */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         /* 下单页面 */
         .checkout-steps {
@@ -1939,6 +1945,12 @@
                     刷新订单
             </button>
         </div>
+        
+            <!-- 自动刷新状态指示器 -->
+            <div id="order-auto-refresh-indicator" style="display: none; text-align: center; padding: 8px; background: var(--tg-theme-secondary-bg-color, #f8f9fa); border-radius: 6px; margin-bottom: 12px; font-size: 12px; color: var(--tg-theme-hint-color, #6c757d);">
+                <span class="refresh-icon" style="display: inline-block; animation: spin 1s linear infinite;">🔄</span>
+                自动刷新中...
+            </div>
 
             <div id="orders-list"></div>
             <div id="orders-load-more" style="text-align: center; padding: 16px; display: none;">
@@ -3160,9 +3172,79 @@
         let orderLastId = null;
         let orderHasMore = true;
         let orderLoading = false;
+        
+        // 订单自动刷新定时器
+        let orderAutoRefreshTimer = null;
+        const ORDER_AUTO_REFRESH_INTERVAL = 60000; // 60秒 = 1分钟
+        
+        // 启动订单自动刷新
+        function startOrderAutoRefresh() {
+            // 清除之前的定时器（如果存在）
+            if (orderAutoRefreshTimer) {
+                clearInterval(orderAutoRefreshTimer);
+            }
+            
+            console.log('🔄 [startOrderAutoRefresh] 启动订单自动刷新，间隔:', ORDER_AUTO_REFRESH_INTERVAL / 1000, '秒');
+            
+            orderAutoRefreshTimer = setInterval(async () => {
+                // 只有在订单tab激活时才自动刷新
+                const currentTab = getCurrentTab();
+                if (currentTab === 'orders' && !orderLoading) {
+                    console.log('🔄 [orderAutoRefresh] 执行自动刷新');
+                    
+                    // 显示自动刷新指示器
+                    const indicator = document.getElementById('order-auto-refresh-indicator');
+                    if (indicator) {
+                        indicator.style.display = 'block';
+                    }
+                    
+                    try {
+                        await fetchOrders(true, true); // 传递第二个参数表示是自动刷新
+                        console.log('✅ [orderAutoRefresh] 自动刷新完成');
+                    } catch (error) {
+                        console.error('❌ [orderAutoRefresh] 自动刷新失败:', error);
+                    } finally {
+                        // 隐藏自动刷新指示器
+                        if (indicator) {
+                            setTimeout(() => {
+                                indicator.style.display = 'none';
+                            }, 1000); // 1秒后隐藏
+                        }
+                    }
+                }
+            }, ORDER_AUTO_REFRESH_INTERVAL);
+        }
+        
+        // 停止订单自动刷新
+        function stopOrderAutoRefresh() {
+            if (orderAutoRefreshTimer) {
+                console.log('🛑 [stopOrderAutoRefresh] 停止订单自动刷新');
+                clearInterval(orderAutoRefreshTimer);
+                orderAutoRefreshTimer = null;
+            }
+        }
+        
+        // 页面卸载时清理定时器
+        window.addEventListener('beforeunload', function() {
+            stopOrderAutoRefresh();
+        });
+        
+        // 页面隐藏时暂停自动刷新，显示时恢复
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                console.log('📱 [visibilitychange] 页面隐藏，暂停订单自动刷新');
+                stopOrderAutoRefresh();
+            } else {
+                console.log('📱 [visibilitychange] 页面显示，恢复订单自动刷新');
+                const currentTab = getCurrentTab();
+                if (currentTab === 'orders') {
+                    startOrderAutoRefresh();
+                }
+            }
+        });
 
         // 获取订单数据
-        async function fetchOrders(isRefresh = false) {
+        async function fetchOrders(isRefresh = false, isAutoRefresh = false) {
             if (orderLoading) {
                 console.log('🔄 [fetchOrders] 正在加载中，跳过重复请求');
                         return;
@@ -3170,7 +3252,11 @@
 
             try {
                 orderLoading = true;
-                console.log('🔄 [fetchOrders] 开始获取订单数据...');
+                if (isAutoRefresh) {
+                    console.log('🔄 [fetchOrders] 开始自动刷新订单数据...');
+                } else {
+                    console.log('🔄 [fetchOrders] 开始获取订单数据...');
+                }
                 
                 // 如果是刷新，重置分页参数
                 if (isRefresh) {
@@ -3782,8 +3868,14 @@
             if(tabName==='products') {
                 renderCategories();
                 renderProducts();
+                // 离开订单tab时停止自动刷新
+                stopOrderAutoRefresh();
             }
-            if(tabName==='cart') renderCart();
+            if(tabName==='cart') {
+                renderCart();
+                // 离开订单tab时停止自动刷新
+                stopOrderAutoRefresh();
+            }
             if(tabName==='orders') {
                 // 如果订单列表为空，则加载订单数据
                 if (orders.length === 0) {
@@ -3797,7 +3889,9 @@
                 const pcRefreshControls = document.getElementById('pc-refresh-controls');
                 // 显示PC端手动刷新按钮
                 if (pcRefreshControls) pcRefreshControls.style.display = 'block';
-
+                
+                // 启动订单自动刷新
+                startOrderAutoRefresh();
             }
             
             // 更新MainButton
