@@ -1679,6 +1679,32 @@
             transform: translateY(0);
             box-shadow: 0 2px 6px rgba(108, 117, 125, 0.3);
         }
+
+        /* 移除凭证按钮样式 */
+        .voucher-remove-btn {
+            padding: 4px 8px;
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+        }
+
+        .voucher-remove-btn:hover {
+            background: linear-gradient(135deg, #c82333, #a71e2a);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.4);
+        }
+
+        .voucher-remove-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+        }
     </style>
 </head>
 
@@ -1775,6 +1801,38 @@
                         <div id="payment-info-title" class="payment-form-title"></div>
                         <div id="payment-info-content" class="payment-instructions"></div>
                         <div id="payment-info-image" style="text-align: center; margin-top: 12px;"></div>
+                        
+                        <!-- 支付凭证上传区域 -->
+                        <div id="payment-voucher-upload" class="payment-voucher-section" style="margin-top: 16px;">
+                            <div style="margin-bottom: 12px; font-weight: 600; color: var(--tg-theme-text-color, #333);">
+                                💳 上传支付凭证 <span style="color: #dc3545;">*</span>
+                            </div>
+                            <div style="margin-bottom: 8px; font-size: 12px; color: #666;">
+                                请上传转账截图或支付凭证，支持jpg、png格式
+                            </div>
+                            <input type="file" 
+                                   id="payment-voucher-file" 
+                                   class="voucher-file-input" 
+                                   accept="image/*" 
+                                   onchange="handlePaymentVoucherSelect(this)"
+                                   style="display: none;">
+                            <button type="button" class="voucher-upload-btn" onclick="selectPaymentVoucherFile()">
+                                📎 选择图片
+                            </button>
+                            <div id="payment-voucher-preview" class="voucher-preview" style="display: none;">
+                                <img id="payment-voucher-image" class="voucher-image" alt="支付凭证" style="max-width: 200px; max-height: 200px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                <div style="margin-top: 8px;">
+                                    <button type="button" class="voucher-remove-btn" onclick="removePaymentVoucher()">
+                                        🗑️ 移除图片
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="payment-voucher-loading" class="voucher-loading" style="display: none;">
+                                <div class="spinner"></div>
+                                <span>正在上传...</span>
+                            </div>
+                            <div id="payment-voucher-error" style="color: #dc3545; font-size: 12px; margin-top: 4px; display: none;"></div>
+                        </div>
                     </div>
                     
                     <!-- 货到付款特殊处理 -->
@@ -1827,8 +1885,13 @@
                     </div>
                 </div>
 
-                <div class="form-group" style="align-items: center;">
-                    <label>订单备注：</label>
+                <div class="form-group" style="align-items: flex-start;">
+                    <label style="line-height: 36px;">付款参数：</label>
+                    <textarea id="payment-remark" placeholder="付款相关参数（自动生成）" rows="2" style="flex: 1; max-width: 250px; padding: 8px 12px; border: 1px solid var(--tg-theme-hint-color, #e0e0e0); border-radius: 8px; background: var(--tg-theme-bg-color, #f5f5f5); color: var(--tg-theme-text-color, #333); font-size: 14px; resize: vertical; min-height: 60px;" readonly></textarea>
+                </div>
+                
+                <div class="form-group" style="align-items: flex-start;">
+                    <label style="line-height: 36px;">订单备注：</label>
                     <textarea id="user-remark" placeholder="请输入订单备注（可选）" rows="2" style="flex: 1; max-width: 250px; padding: 8px 12px; border: 1px solid var(--tg-theme-hint-color, #e0e0e0); border-radius: 8px; background: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #333); font-size: 14px; resize: vertical; min-height: 60px;"></textarea>
                 </div>
                 <button type="submit" class="submit-btn">提交订单</button>
@@ -1994,11 +2057,14 @@
 
         // 购物车本地存储相关函数
         const CART_STORAGE_KEY = 'supermarket_cart';
+        const CART_VERSION_KEY = 'supermarket_cart_version';
+        const CURRENT_CART_VERSION = '1.1'; // 当前购物车数据版本
 
         // 保存购物车到本地存储
         function saveCartToStorage() {
             try {
                 localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+                localStorage.setItem(CART_VERSION_KEY, CURRENT_CART_VERSION);
                 console.log('💾 [saveCartToStorage] 购物车已保存到本地存储:', cart);
             } catch (error) {
                 console.error('❌ [saveCartToStorage] 保存购物车失败:', error);
@@ -2008,23 +2074,145 @@
         // 从本地存储加载购物车
         function loadCartFromStorage() {
             try {
+                // 检查购物车数据版本
+                const savedVersion = localStorage.getItem(CART_VERSION_KEY);
+                const needsVersionUpdate = savedVersion !== CURRENT_CART_VERSION;
+                
+                if (needsVersionUpdate) {
+                    console.log(`🔄 [loadCartFromStorage] 检测到购物车版本更新: ${savedVersion} -> ${CURRENT_CART_VERSION}`);
+                    
+                    // 版本不匹配，清理旧数据
+                    cart = {};
+                    localStorage.removeItem(CART_STORAGE_KEY);
+                    localStorage.setItem(CART_VERSION_KEY, CURRENT_CART_VERSION);
+                    
+                    console.log('🧹 [loadCartFromStorage] 已清理旧版本购物车数据');
+                    showToast('🔄 购物车数据已更新');
+                    return;
+                }
+                
                 const savedCart = localStorage.getItem(CART_STORAGE_KEY);
                 if (savedCart) {
                     cart = JSON.parse(savedCart);
                     console.log('📂 [loadCartFromStorage] 从本地存储加载购物车:', cart);
+                    
+                    // 清理无效的商品ID
+                    cleanupInvalidCartItems();
                 } else {
                     console.log('📂 [loadCartFromStorage] 本地存储中没有购物车数据');
+                    // 设置版本号
+                    localStorage.setItem(CART_VERSION_KEY, CURRENT_CART_VERSION);
                 }
             } catch (error) {
                 console.error('❌ [loadCartFromStorage] 加载购物车失败:', error);
                 cart = {};
+                // 重置版本号
+                localStorage.setItem(CART_VERSION_KEY, CURRENT_CART_VERSION);
             }
+        }
+
+        // 清理购物车中无效的商品ID
+        function cleanupInvalidCartItems(showToastNotification = true) {
+            console.log('🧹 [cleanupInvalidCartItems] 开始清理无效购物车商品...');
+            
+            const originalCartKeys = Object.keys(cart);
+            if (originalCartKeys.length === 0) {
+                console.log('✅ [cleanupInvalidCartItems] 购物车为空，无需清理');
+                return;
+            }
+            
+            const invalidIds = [];
+            const validCart = {};
+            
+            // 检查每个购物车商品是否还存在
+            originalCartKeys.forEach(id => {
+                const product = getProductById(id);
+                if (product) {
+                    // 商品存在，保留
+                    validCart[id] = cart[id];
+                } else {
+                    // 商品不存在，记录为无效ID
+                    invalidIds.push(id);
+                    console.warn(`🗑️ [cleanupInvalidCartItems] 发现无效商品ID: ${id}，数量: ${cart[id]}`);
+                }
+            });
+            
+            // 如果有无效商品，更新购物车并保存
+            if (invalidIds.length > 0) {
+                cart = validCart;
+                saveCartToStorage();
+                
+                console.log(`🧹 [cleanupInvalidCartItems] 清理完成，移除了 ${invalidIds.length} 个无效商品:`, invalidIds);
+                console.log('✅ [cleanupInvalidCartItems] 清理后的购物车:', cart);
+                
+                // 显示用户友好的提示（可选）
+                if (showToastNotification) {
+                    if (invalidIds.length === 1) {
+                        showToast('🧹 已自动清理1个无效商品');
+                    } else {
+                        showToast(`🧹 已自动清理${invalidIds.length}个无效商品`);
+                    }
+                }
+                
+                // 重新渲染购物车
+                renderCart();
+                updateMainButton();
+            } else {
+                console.log('✅ [cleanupInvalidCartItems] 购物车中所有商品都有效，无需清理');
+            }
+        }
+
+        // 强制清理购物车缓存（用于调试或手动清理）
+        function forceCleanupCart() {
+            console.log('🗑️ [forceCleanupCart] 强制清理购物车缓存');
+            
+            // 清空购物车
+            cart = {};
+            
+            // 清除本地存储
+            clearCartStorage();
+            
+            // 重新渲染
+            renderProducts();
+            renderCart();
+            updateMainButton();
+            
+            console.log('✅ [forceCleanupCart] 购物车缓存已强制清理');
+            showToast('🗑️ 购物车缓存已清理');
+        }
+
+        // 验证购物车完整性
+        function validateCartIntegrity() {
+            console.log('🔍 [validateCartIntegrity] 验证购物车完整性...');
+            
+            const cartIds = Object.keys(cart);
+            const report = {
+                total: cartIds.length,
+                valid: 0,
+                invalid: 0,
+                invalidIds: []
+            };
+            
+            cartIds.forEach(id => {
+                const product = getProductById(id);
+                if (product) {
+                    report.valid++;
+                } else {
+                    report.invalid++;
+                    report.invalidIds.push(id);
+                }
+            });
+            
+            console.log('📊 [validateCartIntegrity] 完整性报告:', report);
+            
+            return report;
         }
 
         // 清除购物车本地存储
         function clearCartStorage() {
             try {
                 localStorage.removeItem(CART_STORAGE_KEY);
+                localStorage.removeItem(CART_VERSION_KEY);
                 console.log('🗑️ [clearCartStorage] 购物车本地存储已清除');
             } catch (error) {
                 console.error('❌ [clearCartStorage] 清除购物车存储失败:', error);
@@ -2157,6 +2345,11 @@
                 goodsHasMore = result.hasMore;
                 
                 console.log(`📊 [fetchProducts] 商品数据更新完成，当前共${PRODUCTS.length}条商品，还有更多：${goodsHasMore}`);
+                
+                // 商品数据更新后，清理购物车中的无效商品（静默清理）
+                if (Object.keys(cart).length > 0) {
+                    cleanupInvalidCartItems(false);
+                }
                 
                 return PRODUCTS;
                 
@@ -2673,31 +2866,22 @@
                     imageHtml = `<div style="color: var(--tg-theme-hint-color, #999);">${p.image}</div>`;
                 }
                 
-                // 生成销量标签HTML
+                // 移除销量显示，保留热销标签逻辑
                 const salesCount = p.salesCount || 0;
-                let salesHtml = '';
                 let hotBadgeHtml = '';
                 
-                // 所有商品都显示销量，包括销量为0的
-                let salesClass = 'sales-count';
+                // 保留热销标签，但不显示具体销量
                 if (salesCount >= 500) {
-                    salesClass += ' super-hot';
                     hotBadgeHtml = '<div class="hot-badge">爆款</div>';
                 } else if (salesCount >= 100) {
-                    salesClass += ' hot';
                     hotBadgeHtml = '<div class="hot-badge">热销</div>';
-                } else if (salesCount === 0) {
-                    salesClass += ' zero-sales';
                 }
-                
-                salesHtml = `<div class="${salesClass}">已售${salesCount}</div>`;
 
                 return `
                     <div class="product-card">
                         ${hotBadgeHtml}
                         <div class="product-image-container">
                             <div class="product-image">${imageHtml}</div>
-                            ${salesHtml}
                         </div>
                         <div class="product-card-body">
                             ${p.no ? `<div class="product-no">NO.${p.no}</div>` : ''}
@@ -2777,7 +2961,7 @@
                     <div class="cart-item">
                         <div class="cart-item-info">
                             <div class="cart-item-name">${p.name} ${p.salesCount > 100 ? '🔥' : p.salesCount === 0 ? '🆕' : ''}</div>
-                            <div class="cart-item-price">¥${p.price.toFixed(2)} × ${cart[id]} · 销量${p.salesCount || 0}</div>
+                            <div class="cart-item-price">¥${p.price.toFixed(2)} × ${cart[id]}</div>
                         </div>
                         <div class="cart-item-actions">
                             <button class="qty-btn qty-decrease" data-product-id="${p.id}">-</button>
@@ -3001,33 +3185,7 @@
                         </button>
                     </div>` : '';
                 
-                // 为未支付的订单添加支付凭证上传功能
-                const paymentVoucherSection = o.payStatus === 0 ? 
-                    `<div class="payment-voucher-section" id="voucher-section-${o.id}">
-                        <div style="margin-bottom: 8px; font-weight: 600; color: var(--tg-theme-text-color, #333);">
-                            💳 上传支付凭证
-                        </div>
-                        <input type="file" 
-                               id="voucher-file-${o.id}" 
-                               class="voucher-file-input" 
-                               accept="image/*" 
-                               onchange="handleVoucherFileSelect(${o.id}, this)">
-                        <button class="voucher-upload-btn" onclick="selectVoucherFile(${o.id})">
-                            📎 选择图片
-                        </button>
-                        <div id="voucher-preview-${o.id}" class="voucher-preview" style="display: none;">
-                            <img id="voucher-image-${o.id}" class="voucher-image" alt="支付凭证">
-                            <div>
-                                <button class="voucher-confirm-btn" onclick="confirmPaymentVoucher(${o.id})">
-                                    ✅ 确认提交支付凭证
-                                </button>
-                            </div>
-                        </div>
-                        <div id="voucher-loading-${o.id}" class="voucher-loading" style="display: none;">
-                            <div class="spinner"></div>
-                            <span>正在处理...</span>
-                        </div>
-                    </div>` : '';
+                // 移除支付凭证上传功能
                 
                 return `<div style='border:1px solid #eee;border-radius:6px;padding:12px;margin-bottom:12px;'>
                     <div style='font-weight:bold;margin-bottom:8px;'>
@@ -3047,7 +3205,6 @@
                     <div style='font-weight:bold;text-align:right;color:#0088cc;font-size:16px;'>
                         总计：¥${o.total.toFixed(2)}
                         </div>
-                    ${paymentVoucherSection}
                     ${confirmReceiptButton}
                 </div>`;
             }).join('');
@@ -3126,6 +3283,7 @@
             const phone = document.getElementById('user-phone').value.trim();
             const address = document.getElementById('user-address').value.trim();
             const remark = document.getElementById('user-remark')?.value?.trim() || '';
+            const paymentRemark = document.getElementById('payment-remark')?.value?.trim() || '';
             
             // 验证付款方式选择
             const paymentErrors = validatePaymentMethod();
@@ -3199,7 +3357,8 @@
                         payMethod: selectedPaymentMethod.id, // 使用付款方式的id而不是code
                         phone: phone,
                         address: address,
-                        remark: remark
+                        remark: remark,
+                        paymentRemark: paymentRemark
                     },
                     orderItems: orderItems
                 };
@@ -3216,6 +3375,11 @@
                         requestData.order.usdCashAmount = usdAmount;
                         requestData.order.khrCashAmount = khrAmount;
                         requestData.order.currencyType = 'MIXED'; // 混合货币
+                    }
+                } else {
+                    // 非货到付款时添加支付凭证URL
+                    if (paymentVoucherData.imageUrl) {
+                        requestData.order.paymentUrl = paymentVoucherData.imageUrl;
                     }
                 }
                 
@@ -3357,6 +3521,8 @@
             }
             // 重置货到付款表单
             resetCodForm();
+            // 重置付款参数
+            resetPaymentRemark();
             // 重置表单
             document.getElementById('order-form').reset();
             document.getElementById('order-form').style.display = '';
@@ -3469,6 +3635,9 @@
             // 从本地存储恢复购物车数据
             loadCartFromStorage();
             
+            // 在商品数据加载完成后，再次清理购物车以确保数据一致性（静默清理）
+            cleanupInvalidCartItems(false);
+            
             // 渲染页面内容
             renderProducts();
             renderCart();
@@ -3483,6 +3652,17 @@
             initQuantityButtons();
             
             console.log('✅ [initPage] 页面初始化完成');
+            
+            // 暴露调试函数到全局作用域（仅用于调试）
+            if (typeof window !== 'undefined') {
+                window.debugCart = {
+                    validate: validateCartIntegrity,
+                    cleanup: cleanupInvalidCartItems,
+                    forceClean: forceCleanupCart,
+                    show: () => console.log('当前购物车:', cart)
+                };
+                console.log('🔧 [调试工具] 购物车调试函数已暴露到 window.debugCart');
+            }
         }
 
         // 启动页面初始化
@@ -3855,7 +4035,7 @@
         // 支付凭证上传相关功能
         let voucherUploadData = {}; // 存储每个订单的上传数据
 
-        // 选择支付凭证文件
+        // 选择支付凭证文件（已废弃 - 订单列表不再支持上传支付凭证）
         function selectVoucherFile(orderId) {
             console.log('🔄 [selectVoucherFile] 选择支付凭证文件，订单ID:', orderId);
             
@@ -3870,7 +4050,7 @@
             }
         }
 
-        // 处理文件选择
+        // 处理文件选择（已废弃 - 订单列表不再支持上传支付凭证）
         function handleVoucherFileSelect(orderId, inputElement) {
             const file = inputElement.files[0];
             if (!file) {
@@ -3900,7 +4080,7 @@
             uploadVoucherImage(orderId, file);
         }
 
-        // 上传支付凭证图片
+        // 上传支付凭证图片（已废弃 - 订单列表不再支持上传支付凭证）
         async function uploadVoucherImage(orderId, file) {
             console.log('🔄 [uploadVoucherImage] 开始上传图片，订单ID:', orderId);
             
@@ -3973,7 +4153,7 @@
             }
         }
 
-        // 显示/隐藏加载状态
+        // 显示/隐藏加载状态（已废弃 - 订单列表不再支持上传支付凭证）
         function showVoucherLoading(orderId, show) {
             const loadingElement = document.getElementById(`voucher-loading-${orderId}`);
             const uploadBtn = document.querySelector(`#voucher-section-${orderId} .voucher-upload-btn`);
@@ -3987,7 +4167,7 @@
             }
         }
 
-        // 显示图片预览
+        // 显示图片预览（已废弃 - 订单列表不再支持上传支付凭证）
         function showVoucherPreview(orderId, imageUrl) {
             console.log('🔄 [showVoucherPreview] 显示图片预览，订单ID:', orderId, 'URL:', imageUrl);
             
@@ -4002,7 +4182,7 @@
             }
         }
 
-        // 确认提交支付凭证
+        // 确认提交支付凭证（已废弃 - 订单列表不再支持上传支付凭证）
         async function confirmPaymentVoucher(orderId) {
             console.log('🔄 [confirmPaymentVoucher] 确认提交支付凭证，订单ID:', orderId);
             
@@ -4283,6 +4463,9 @@
                 if (codSpecialForm) {
                     codSpecialForm.style.display = 'none';
                 }
+                // 重置支付凭证和付款参数
+                resetPaymentVoucher();
+                resetPaymentRemark();
                 return;
             }
             
@@ -4335,8 +4518,14 @@
                     // 重置货到付款表单
                     resetCodForm();
                 }
+                // 重置支付凭证
+                resetPaymentVoucher();
                 console.log('✅ [displayPaymentInfo] 货到付款：隐藏付款信息，显示特殊表单');
                 return;
+            } else {
+                // 非货到付款时重置支付凭证和付款参数
+                resetPaymentVoucher();
+                resetPaymentRemark();
             }
             
             // 生成标题
@@ -4462,7 +4651,16 @@
                 return validateCodForm();
             }
             
-            return []; // 只需要验证是否选择了付款方式即可
+            // 非货到付款需要验证支付凭证
+            const errors = [];
+            
+            if (paymentVoucherData.uploading) {
+                errors.push('支付凭证正在上传中，请稍候');
+            } else if (!paymentVoucherData.imageUrl) {
+                errors.push('请上传支付凭证');
+            }
+            
+            return errors;
         }
 
         // 复制到剪贴板功能
@@ -4590,8 +4788,241 @@
             }
         }
 
+        // 选择支付凭证文件
+        function selectPaymentVoucherFile() {
+            console.log('🔄 [selectPaymentVoucherFile] 选择支付凭证文件');
+            
+            const fileInput = document.getElementById('payment-voucher-file');
+            if (fileInput) {
+                fileInput.click();
+            }
+        }
+
+        // 处理支付凭证文件选择
+        function handlePaymentVoucherSelect(input) {
+            console.log('🔄 [handlePaymentVoucherSelect] 处理支付凭证文件选择');
+            
+            const file = input.files[0];
+            if (!file) {
+                console.log('❌ [handlePaymentVoucherSelect] 没有选择文件');
+                return;
+            }
+            
+            // 验证文件类型
+            if (!file.type.startsWith('image/')) {
+                showPaymentVoucherError('请选择图片文件');
+                return;
+            }
+            
+            // 验证文件大小 (最大5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showPaymentVoucherError('图片文件大小不能超过5MB');
+                return;
+            }
+            
+            // 存储文件信息
+            paymentVoucherData.file = file;
+            
+            // 显示预览
+            showPaymentVoucherPreview(file);
+            
+            // 上传文件
+            uploadPaymentVoucher(file);
+        }
+
+        // 显示支付凭证预览
+        function showPaymentVoucherPreview(file) {
+            console.log('🔄 [showPaymentVoucherPreview] 显示支付凭证预览');
+            
+            const previewElement = document.getElementById('payment-voucher-preview');
+            const imageElement = document.getElementById('payment-voucher-image');
+            
+            if (previewElement && imageElement) {
+                // 创建文件URL用于预览
+                const fileURL = URL.createObjectURL(file);
+                imageElement.src = fileURL;
+                previewElement.style.display = 'block';
+                
+                // 隐藏错误信息
+                hidePaymentVoucherError();
+                
+                console.log('✅ [showPaymentVoucherPreview] 支付凭证预览显示完成');
+            }
+        }
+
+        // 上传支付凭证
+        async function uploadPaymentVoucher(file) {
+            console.log('🔄 [uploadPaymentVoucher] 开始上传支付凭证');
+            
+            // 显示加载状态
+            showPaymentVoucherLoading(true);
+            paymentVoucherData.uploading = true;
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('folder', 'payment');
+                
+                console.log('📤 [uploadPaymentVoucher] 发送上传请求');
+                
+                const response = await fetch(`${API_BASE_URL}/api/v1/file/upload/image`, {
+                    method: 'POST',
+                    headers: getRequestHeaders(true), // 传递true表示FormData请求
+                    body: formData
+                });
+                
+                console.log('📡 [uploadPaymentVoucher] 响应状态:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [uploadPaymentVoucher] 上传响应:', result);
+                
+                if (result.code === 200 && result.data && result.data.length > 0) {
+                    paymentVoucherData.imageUrl = result.data[0];
+                    console.log('✅ [uploadPaymentVoucher] 支付凭证上传成功:', paymentVoucherData.imageUrl);
+                    
+                    // 添加触觉反馈
+                    if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                        Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                    }
+                    
+                    showToast('✅ 支付凭证上传成功');
+                } else {
+                    throw new Error(result.message || '上传失败');
+                }
+                
+            } catch (error) {
+                console.error('❌ [uploadPaymentVoucher] 上传失败:', error);
+                
+                // 添加错误触觉反馈
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+                }
+                
+                showPaymentVoucherError('上传失败：' + error.message);
+                
+                // 清理数据
+                paymentVoucherData.file = null;
+                paymentVoucherData.imageUrl = null;
+                
+                // 隐藏预览
+                const previewElement = document.getElementById('payment-voucher-preview');
+                if (previewElement) {
+                    previewElement.style.display = 'none';
+                }
+                
+            } finally {
+                // 隐藏加载状态
+                showPaymentVoucherLoading(false);
+                paymentVoucherData.uploading = false;
+            }
+        }
+
+        // 移除支付凭证
+        function removePaymentVoucher() {
+            console.log('🔄 [removePaymentVoucher] 移除支付凭证');
+            
+            // 清理数据
+            paymentVoucherData.file = null;
+            paymentVoucherData.imageUrl = null;
+            
+            // 清理文件输入
+            const fileInput = document.getElementById('payment-voucher-file');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+            
+            // 隐藏预览
+            const previewElement = document.getElementById('payment-voucher-preview');
+            if (previewElement) {
+                previewElement.style.display = 'none';
+            }
+            
+            // 隐藏错误信息
+            hidePaymentVoucherError();
+            
+            console.log('✅ [removePaymentVoucher] 支付凭证移除完成');
+        }
+
+        // 显示支付凭证加载状态
+        function showPaymentVoucherLoading(show) {
+            const loadingElement = document.getElementById('payment-voucher-loading');
+            if (loadingElement) {
+                loadingElement.style.display = show ? 'flex' : 'none';
+            }
+        }
+
+        // 显示支付凭证错误信息
+        function showPaymentVoucherError(message) {
+            const errorElement = document.getElementById('payment-voucher-error');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+        }
+
+        // 隐藏支付凭证错误信息
+        function hidePaymentVoucherError() {
+            const errorElement = document.getElementById('payment-voucher-error');
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+        }
+
+        // 重置支付凭证
+        function resetPaymentVoucher() {
+            console.log('🔄 [resetPaymentVoucher] 重置支付凭证');
+            
+            // 清理数据
+            paymentVoucherData.file = null;
+            paymentVoucherData.imageUrl = null;
+            paymentVoucherData.uploading = false;
+            
+            // 清理文件输入
+            const fileInput = document.getElementById('payment-voucher-file');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+            
+            // 隐藏预览
+            const previewElement = document.getElementById('payment-voucher-preview');
+            if (previewElement) {
+                previewElement.style.display = 'none';
+            }
+            
+            // 隐藏加载状态
+            showPaymentVoucherLoading(false);
+            
+            // 隐藏错误信息
+            hidePaymentVoucherError();
+            
+            console.log('✅ [resetPaymentVoucher] 支付凭证重置完成');
+        }
+
+        // 重置付款参数
+        function resetPaymentRemark() {
+            console.log('🔄 [resetPaymentRemark] 重置付款参数');
+            
+            const paymentRemarkInput = document.getElementById('payment-remark');
+            if (paymentRemarkInput) {
+                paymentRemarkInput.value = '';
+            }
+            
+            console.log('✅ [resetPaymentRemark] 付款参数重置完成');
+        }
+
         // 货到付款相关变量
         let codExchangeRate = { USD: 4000 }; // 汇率：1美元 = 4000柬埔寨币
+
+        // 支付凭证上传相关变量
+        let paymentVoucherData = {
+            file: null,
+            imageUrl: null,
+            uploading: false
+        };
 
         // 重置货到付款表单
         function resetCodForm() {
@@ -4612,6 +5043,9 @@
                 errorElement.style.display = 'none';
                 errorElement.textContent = '';
             }
+            
+            // 重置付款参数
+            resetPaymentRemark();
             
             console.log('✅ [resetCodForm] 货到付款表单重置完成');
         }
@@ -4728,10 +5162,10 @@
             if (isValidAmount) {
                 updateCodRemark();
             } else {
-                // 清空备注
-                const remarkInput = document.getElementById('user-remark');
-                if (remarkInput) {
-                    remarkInput.value = '';
+                // 清空付款参数
+                const paymentRemarkInput = document.getElementById('payment-remark');
+                if (paymentRemarkInput) {
+                    paymentRemarkInput.value = '';
                 }
             }
             
@@ -4763,7 +5197,7 @@
             return total;
         }
 
-        // 更新货到付款备注
+        // 更新货到付款付款参数
         function updateCodRemark() {
             if (!selectedPaymentMethod || selectedPaymentMethod.code !== 'cash_on_delivery') {
                 return;
@@ -4772,9 +5206,9 @@
             const usdAmountInput = document.getElementById('cod-usd-amount');
             const khrAmountInput = document.getElementById('cod-khr-amount');
             const changeAmountInput = document.getElementById('cod-change-amount');
-            const remarkInput = document.getElementById('user-remark');
+            const paymentRemarkInput = document.getElementById('payment-remark');
             
-            if (!usdAmountInput || !khrAmountInput || !changeAmountInput || !remarkInput) {
+            if (!usdAmountInput || !khrAmountInput || !changeAmountInput || !paymentRemarkInput) {
                 return;
             }
             
@@ -4783,10 +5217,12 @@
             const changeAmount = parseFloat(changeAmountInput.value) || 0;
             
             if (usdAmount <= 0 && khrAmount <= 0) {
+                // 清空付款参数
+                paymentRemarkInput.value = '';
                 return;
             }
             
-            // 生成备注内容
+            // 生成付款参数内容
             let remarkParts = [];
             
             if (usdAmount > 0) {
@@ -4799,10 +5235,10 @@
             
             const finalInstructions = `货到付款：${remarkParts.join(' + ')}，找零 ${changeAmount.toFixed(0)}៛`;
             
-            // 自动填写到备注输入框
-            remarkInput.value = finalInstructions;
+            // 自动填写到付款参数输入框
+            paymentRemarkInput.value = finalInstructions;
             
-            console.log('✅ [updateCodRemark] 备注已更新:', finalInstructions);
+            console.log('✅ [updateCodRemark] 付款参数已更新:', finalInstructions);
         }
 
         // 验证货到付款表单
