@@ -1054,6 +1054,61 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* 单独显示的分类样式 */
+        .separate-categories-container {
+            margin-top: 12px;
+            padding: 12px;
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 8px;
+            border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+        }
+        
+        .separate-categories-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #333);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .separate-categories-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .separate-category-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--tg-theme-button-color, #0088cc);
+            border-radius: 16px;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-button-color, #0088cc);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        
+        .separate-category-btn:hover {
+            background: var(--tg-theme-button-color, #0088cc);
+            color: var(--tg-theme-button-text-color, #fff);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 136, 204, 0.2);
+        }
+        
+        .separate-category-btn.active {
+            background: var(--tg-theme-button-color, #0088cc);
+            color: var(--tg-theme-button-text-color, #fff);
+            box-shadow: 0 2px 4px rgba(0, 136, 204, 0.3);
+        }
+        
+        .separate-category-btn:active {
+            transform: translateY(0);
+        }
 
         /* 下单页面 */
         .checkout-steps {
@@ -1786,6 +1841,11 @@
                             <!-- 分类选项将通过JavaScript加载 -->
                         </select>
                     </div>
+                    
+                    <!-- 单独显示的分类按钮 -->
+                    <div id="separate-categories" class="separate-categories-container" style="display: none;">
+                        <!-- 单独显示的分类按钮将通过JavaScript加载 -->
+                    </div>
                 </div>
                 
                 <!-- 商品容器 -->
@@ -2076,13 +2136,15 @@
         
         // 分类数据
         let CATEGORIES = [
-            {id: 'all', name: '全部'},
-            {id: 'fruits', name: '水果'},
-            {id: 'dairy', name: '乳制品'},
-            {id: 'bakery', name: '面包'},
-            {id: 'meat', name: '肉类'},
-            {id: 'vegetables', name: '蔬菜'},
-            {id: 'beverages', name: '饮料'}
+            {id: 'all', name: '全部', separateDisplay: 0},
+            {id: 'fruits', name: '水果', separateDisplay: 0},
+            {id: 'dairy', name: '乳制品', separateDisplay: 0},
+            {id: 'bakery', name: '面包', separateDisplay: 0},
+            {id: 'meat', name: '肉类', separateDisplay: 0},
+            {id: 'vegetables', name: '蔬菜', separateDisplay: 0},
+            {id: 'beverages', name: '饮料', separateDisplay: 0},
+            {id: 'featured', name: '特色推荐', separateDisplay: 1},
+            {id: 'hot', name: '热销商品', separateDisplay: 1}
         ];
 
         // 购物车对象 {商品id: 数量}
@@ -2711,13 +2773,15 @@
                 
                 // 如果接口失败，使用默认分类
                 CATEGORIES = [
-                    {id: 'all', name: '全部'},
-                    {id: 'category_1', name: '水果'},
-                    {id: 'category_2', name: '乳制品'},
-                    {id: 'category_3', name: '面包'},
-                    {id: 'category_4', name: '肉类'},
-                    {id: 'category_5', name: '蔬菜'},
-                    {id: 'category_6', name: '饮料'}
+                    {id: 'all', name: '全部', separateDisplay: 0},
+                    {id: 'category_1', name: '水果', separateDisplay: 0},
+                    {id: 'category_2', name: '乳制品', separateDisplay: 0},
+                    {id: 'category_3', name: '面包', separateDisplay: 0},
+                    {id: 'category_4', name: '肉类', separateDisplay: 0},
+                    {id: 'category_5', name: '蔬菜', separateDisplay: 0},
+                    {id: 'category_6', name: '饮料', separateDisplay: 0},
+                    {id: 'featured', name: '特色推荐', separateDisplay: 1},
+                    {id: 'hot', name: '热销商品', separateDisplay: 1}
                 ];
                 renderCategories();
                 return CATEGORIES;
@@ -2741,13 +2805,26 @@
             }
             categorySelect.appendChild(allOption);
             
-            // 添加其他分类选项（过滤掉可能重复的"全部"选项）
+            // 分离普通分类和单独显示分类
+            const normalCategories = [];
+            const separateCategories = [];
+            
             CATEGORIES.forEach(cat => {
                 // 跳过名称为"全部"的分类，避免重复
                 if (cat.name === '全部' || cat.name === '全部分类') {
                     return;
                 }
                 
+                // 根据separateDisplay字段分类
+                if (cat.separateDisplay === 1) {
+                    separateCategories.push(cat);
+                } else {
+                    normalCategories.push(cat);
+                }
+            });
+            
+            // 添加普通分类到下拉框
+            normalCategories.forEach(cat => {
                 const option = document.createElement('option');
                 option.value = cat.id;
                 option.textContent = cat.name;
@@ -2756,12 +2833,95 @@
                 }
                 categorySelect.appendChild(option);
             });
+            
+            // 渲染单独显示的分类
+            renderSeparateCategories(separateCategories);
+        }
+        
+        // 渲染单独显示的分类
+        function renderSeparateCategories(separateCategories) {
+            console.log('🎯 [renderSeparateCategories] 开始渲染单独显示分类:', separateCategories);
+            
+            const separateCategoriesContainer = document.getElementById('separate-categories');
+            if (!separateCategoriesContainer) {
+                console.error('❌ [renderSeparateCategories] 找不到单独显示分类容器');
+                return;
+            }
+            
+            if (separateCategories.length === 0) {
+                console.log('📝 [renderSeparateCategories] 没有单独显示的分类，隐藏容器');
+                separateCategoriesContainer.style.display = 'none';
+                return;
+            }
+            
+            // 构建HTML
+            let html = `
+                <div class="separate-categories-title">
+                    ⭐ 特色分类
+                </div>
+                <div class="separate-categories-buttons">
+            `;
+            
+            separateCategories.forEach(cat => {
+                const isActive = cat.id === currentCategory ? 'active' : '';
+                html += `
+                    <button class="separate-category-btn ${isActive}" 
+                            onclick="selectSeparateCategory('${cat.id}')"
+                            data-category-id="${cat.id}">
+                        ${cat.name}
+                    </button>
+                `;
+            });
+            
+            html += '</div>';
+            
+            separateCategoriesContainer.innerHTML = html;
+            separateCategoriesContainer.style.display = 'block';
+            
+            console.log('✅ [renderSeparateCategories] 单独显示分类渲染完成，显示容器');
+        }
+        
+        // 选择单独显示的分类
+        function selectSeparateCategory(categoryId) {
+            console.log('🎯 [selectSeparateCategory] 选择单独显示分类:', categoryId);
+            
+            // 更新当前分类
+            currentCategory = categoryId;
+            
+            // 更新下拉框选择状态（重置为全部分类）
+            const categorySelect = document.getElementById('category-select');
+            if (categorySelect) {
+                categorySelect.value = '';
+            }
+            
+            // 更新单独显示分类按钮的激活状态
+            const allSeparateBtns = document.querySelectorAll('.separate-category-btn');
+            allSeparateBtns.forEach(btn => {
+                if (btn.dataset.categoryId === categoryId) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // 添加触觉反馈
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+            
+            // 获取该分类下的商品
+            selectCategory(categoryId);
         }
 
         // 分类下拉框变化事件
         function onCategoryChange() {
             const categorySelect = document.getElementById('category-select');
             const selectedCategoryId = categorySelect.value;
+            
+            // 清除单独显示分类的激活状态
+            const allSeparateBtns = document.querySelectorAll('.separate-category-btn');
+            allSeparateBtns.forEach(btn => btn.classList.remove('active'));
+            
             selectCategory(selectedCategoryId);
         }
 
