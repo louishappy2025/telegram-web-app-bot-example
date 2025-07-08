@@ -203,32 +203,60 @@ function renderSeparateCategories(separateCategories) {
 function selectSeparateCategory(categoryId) {
     console.log('🎯 [selectSeparateCategory] 选择单独显示分类:', categoryId);
     
-    // 更新当前分类
-    currentCategory = categoryId;
+    // 检查是否是重复点击已激活的分类
+    const isCurrentlyActive = currentCategory === categoryId;
     
-    // 更新下拉框选择状态（重置为全部分类）
-    const categorySelect = document.getElementById('category-select');
-    if (categorySelect) {
-        categorySelect.value = '';
-    }
-    
-    // 更新单独显示分类按钮的激活状态
-    const allSeparateBtns = document.querySelectorAll('.separate-category-btn');
-    allSeparateBtns.forEach(btn => {
-        if (btn.dataset.categoryId === categoryId) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
+    if (isCurrentlyActive) {
+        // 如果点击的是已激活的分类，则取消选择，回到全部分类
+        console.log('🔄 [selectSeparateCategory] 取消选择，回到全部分类');
+        currentCategory = '';
+        
+        // 更新下拉框选择状态为全部分类
+        const categorySelect = document.getElementById('category-select');
+        if (categorySelect) {
+            categorySelect.value = '';
         }
-    });
-    
-    // 添加触觉反馈
-    if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
-        Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        
+        // 清除所有单独显示分类按钮的激活状态
+        const allSeparateBtns = document.querySelectorAll('.separate-category-btn');
+        allSeparateBtns.forEach(btn => btn.classList.remove('active'));
+        
+        // 添加触觉反馈
+        if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+        
+        // 获取全部分类的商品
+        selectCategory('');
+    } else {
+        // 选择新的分类
+        console.log('✅ [selectSeparateCategory] 选择新分类:', categoryId);
+        currentCategory = categoryId;
+        
+        // 更新下拉框选择状态（重置为全部分类）
+        const categorySelect = document.getElementById('category-select');
+        if (categorySelect) {
+            categorySelect.value = '';
+        }
+        
+        // 更新单独显示分类按钮的激活状态
+        const allSeparateBtns = document.querySelectorAll('.separate-category-btn');
+        allSeparateBtns.forEach(btn => {
+            if (btn.dataset.categoryId === categoryId) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        
+        // 添加触觉反馈
+        if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+        
+        // 获取该分类下的商品
+        selectCategory(categoryId);
     }
-    
-    // 获取该分类下的商品
-    selectCategory(categoryId);
 }
 ```
 
@@ -281,10 +309,12 @@ let CATEGORIES = [
 - **状态管理**：选择状态在两种分类方式之间互斥
 - **触觉反馈**：在Telegram环境中提供触觉反馈
 - **响应式设计**：按钮自动换行，适应不同屏幕尺寸
+- **智能切换**：重复点击已激活分类可快速回到全部分类，避免用户需要手动切换
 
 ### 3. 交互逻辑
 - 选择单独显示分类时，下拉框重置为"全部分类"
 - 选择下拉框分类时，清除单独显示分类的激活状态
+- **重复点击取消**：再次点击已激活的单独显示分类时，取消筛选回到"全部分类"状态
 - 保持与现有分类选择逻辑的完全兼容
 
 ### 4. 动态适配
@@ -355,6 +385,11 @@ let CATEGORIES = [
 - "日用品" 显示在下拉框中
 - "特色推荐" 显示为独立按钮
 - 用户可以通过两种方式选择分类
+
+### 3. 交互行为
+- 首次点击"特色推荐"按钮：激活该分类，按钮变为激活状态
+- 再次点击"特色推荐"按钮：取消筛选，回到"全部分类"状态
+- 点击下拉框中的其他分类：清除按钮激活状态，切换到选中分类
 
 ## 性能优化
 

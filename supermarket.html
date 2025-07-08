@@ -2027,8 +2027,8 @@
 
     <script>
         // API基础URL配置
-        // const API_BASE_URL = 'https://dhcs.cc';
-        const API_BASE_URL = 'https://www.supermarket.com/sapi';
+        const API_BASE_URL = 'https://dhcs.cc';
+        // const API_BASE_URL = 'https://www.supermarket.com/sapi';
         console.log('📋 [SCRIPT] API URL:', API_BASE_URL);
         
         // 获取Telegram用户信息
@@ -2885,32 +2885,60 @@
         function selectSeparateCategory(categoryId) {
             console.log('🎯 [selectSeparateCategory] 选择单独显示分类:', categoryId);
             
-            // 更新当前分类
-            currentCategory = categoryId;
+            // 检查是否是重复点击已激活的分类
+            const isCurrentlyActive = currentCategory === categoryId;
             
-            // 更新下拉框选择状态（重置为全部分类）
-            const categorySelect = document.getElementById('category-select');
-            if (categorySelect) {
-                categorySelect.value = '';
-            }
-            
-            // 更新单独显示分类按钮的激活状态
-            const allSeparateBtns = document.querySelectorAll('.separate-category-btn');
-            allSeparateBtns.forEach(btn => {
-                if (btn.dataset.categoryId === categoryId) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
+            if (isCurrentlyActive) {
+                // 如果点击的是已激活的分类，则取消选择，回到全部分类
+                console.log('🔄 [selectSeparateCategory] 取消选择，回到全部分类');
+                currentCategory = '';
+                
+                // 更新下拉框选择状态为全部分类
+                const categorySelect = document.getElementById('category-select');
+                if (categorySelect) {
+                    categorySelect.value = '';
                 }
-            });
-            
-            // 添加触觉反馈
-            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
-                Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                
+                // 清除所有单独显示分类按钮的激活状态
+                const allSeparateBtns = document.querySelectorAll('.separate-category-btn');
+                allSeparateBtns.forEach(btn => btn.classList.remove('active'));
+                
+                // 添加触觉反馈
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                    Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                }
+                
+                // 获取全部分类的商品
+                selectCategory('');
+            } else {
+                // 选择新的分类
+                console.log('✅ [selectSeparateCategory] 选择新分类:', categoryId);
+                currentCategory = categoryId;
+                
+                // 更新下拉框选择状态（重置为全部分类）
+                const categorySelect = document.getElementById('category-select');
+                if (categorySelect) {
+                    categorySelect.value = '';
+                }
+                
+                // 更新单独显示分类按钮的激活状态
+                const allSeparateBtns = document.querySelectorAll('.separate-category-btn');
+                allSeparateBtns.forEach(btn => {
+                    if (btn.dataset.categoryId === categoryId) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                // 添加触觉反馈
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                    Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                }
+                
+                // 获取该分类下的商品
+                selectCategory(categoryId);
             }
-            
-            // 获取该分类下的商品
-            selectCategory(categoryId);
         }
 
         // 分类下拉框变化事件
