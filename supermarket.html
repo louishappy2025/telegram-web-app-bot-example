@@ -1298,6 +1298,80 @@
             cursor: not-allowed;
         }
         
+        /* 属性选择器中的数量控制 */
+        .attribute-quantity-section {
+            margin-top: 20px;
+            padding: 16px;
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 8px;
+            border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+        }
+        
+        .attribute-quantity-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #333);
+            margin-bottom: 12px;
+        }
+        
+        .attribute-quantity-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+        
+        .attribute-qty-btn {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+            border-radius: 8px;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #333);
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .attribute-qty-btn:hover {
+            border-color: var(--tg-theme-button-color, #0088cc);
+            background: var(--tg-theme-button-color, #0088cc);
+            color: var(--tg-theme-button-text-color, #fff);
+            transform: translateY(-1px);
+        }
+        
+        .attribute-qty-btn:active {
+            transform: translateY(0);
+        }
+        
+        .attribute-qty-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .attribute-qty-btn:disabled:hover {
+            border-color: var(--tg-theme-hint-color, #e0e0e0);
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #333);
+        }
+        
+        .attribute-quantity-display {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #333);
+            min-width: 40px;
+            text-align: center;
+            padding: 8px 12px;
+            background: var(--tg-theme-bg-color, #fff);
+            border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+            border-radius: 6px;
+        }
+        
         /* 商品卡片中的属性显示 */
         .product-attributes-info {
             font-size: 12px;
@@ -2247,12 +2321,22 @@
             
             <div id="attribute-groups-container"></div>
             
+            <!-- 数量选择器 -->
+            <div class="attribute-quantity-section">
+                <div class="attribute-quantity-title">数量</div>
+                <div class="attribute-quantity-controls">
+                    <button class="attribute-qty-btn attribute-qty-decrease" onclick="changeAttributeQuantity(-1)">−</button>
+                    <span class="attribute-quantity-display" id="attribute-quantity">1</span>
+                    <button class="attribute-qty-btn attribute-qty-increase" onclick="changeAttributeQuantity(1)">＋</button>
+                </div>
+            </div>
+            
             <div class="attributes-modal-footer">
                 <button class="attributes-modal-btn attributes-modal-btn-cancel" onclick="hideAttributeSelector()">
                     取消
                 </button>
                 <button class="attributes-modal-btn attributes-modal-btn-confirm" onclick="confirmAttributeSelection()">
-                    确定
+                    <span id="confirm-btn-text">确定</span>
                 </button>
             </div>
         </div>
@@ -3716,6 +3800,59 @@
                 changeQty(productId, delta);
             }
         }
+        
+        // 处理商品从购物车移除（智能处理属性）
+        async function handleRemoveFromCart(productId, delta = -1) {
+            console.log(`[handleRemoveFromCart] 商品ID:${productId} 变化:${delta}`);
+            
+            // 检查购物车中是否有该商品的属性组合
+            const productCartItems = Object.keys(cart).filter(cartKey => {
+                if (cartKey == productId) return true; // 无属性商品
+                if (cartKey.startsWith(productId + ':')) return true; // 有属性商品
+                return false;
+            });
+            
+            console.log(`[handleRemoveFromCart] 购物车中的商品项:`, productCartItems);
+            
+            // 如果只有一个购物车项（无属性或只有一种属性组合）
+            if (productCartItems.length === 1) {
+                const cartKey = productCartItems[0];
+                cart[cartKey] = (cart[cartKey] || 0) + delta;
+                if (cart[cartKey] <= 0) {
+                    delete cart[cartKey];
+                }
+                
+                // 保存到本地存储
+                saveCartToStorage();
+                
+                // 重新渲染
+                renderProducts();
+                renderCart();
+                updateMainButton();
+                
+                console.log('[handleRemoveFromCart] 直接减少数量:', cart);
+                return;
+            }
+            
+            // 如果有多个属性组合，获取商品属性并显示选择器
+            const product = getProductById(productId);
+            if (!product) {
+                console.error('[handleRemoveFromCart] 未找到商品:', productId);
+                return;
+            }
+            
+            const attributes = await fetchProductAttributes(productId);
+            
+            // 显示属性选择器（减少模式）
+            if (attributes && Object.keys(attributes).length > 0) {
+                console.log('[handleRemoveFromCart] 多个属性组合，显示选择器');
+                showAttributeSelector(productId, delta);
+            } else {
+                // 如果没有属性，直接减少第一个项目
+                const cartKey = productCartItems[0];
+                changeQty(parseInt(cartKey), delta);
+            }
+        }
 
         // 渲染购物车
         function renderCart() {
@@ -4872,8 +5009,8 @@
                     if (delta > 0) {
                         handleAddToCart(productId, delta);
                     } else {
-                        // 减少按钮直接调用changeQty
-                        changeQty(productId, delta);
+                        // 减少按钮：检查是否有属性组合
+                        handleRemoveFromCart(productId, delta);
                     }
                 }
                 // 处理购物车中的按钮点击
@@ -4910,6 +5047,7 @@
         let currentAttributeSelection = {
             productId: null,
             delta: 1,
+            quantity: 1,
             selectedAttributes: {}
         };
         
@@ -4935,14 +5073,24 @@
             currentAttributeSelection = {
                 productId: productId,
                 delta: delta,
+                quantity: Math.abs(delta), // 初始数量为delta的绝对值
                 selectedAttributes: getDefaultAttributes(attributes)
             };
+            
+            // 更新模态框标题
+            updateModalTitle(delta);
             
             // 渲染商品信息
             renderProductInfo(product);
             
             // 渲染属性选择器
             renderAttributeGroups(attributes);
+            
+            // 初始化数量显示
+            updateAttributeQuantityDisplay();
+            
+            // 更新确认按钮文字
+            updateConfirmButtonText();
             
             // 更新价格显示
             updateAttributePrice();
@@ -4968,6 +5116,7 @@
             currentAttributeSelection = {
                 productId: null,
                 delta: 1,
+                quantity: 1,
                 selectedAttributes: {}
             };
             
@@ -5092,11 +5241,77 @@
             console.log('💰 [updateAttributePrice] 基础价格:', basePrice, '调整:', adjustment, '最终价格:', finalPrice);
         }
         
+        // 属性选择器中的数量控制
+        function changeAttributeQuantity(delta) {
+            const newQuantity = currentAttributeSelection.quantity + delta;
+            
+            // 限制数量范围（1-99）
+            if (newQuantity < 1 || newQuantity > 99) {
+                return;
+            }
+            
+            currentAttributeSelection.quantity = newQuantity;
+            
+            // 更新显示
+            updateAttributeQuantityDisplay();
+            updateAttributePrice();
+            updateConfirmButtonText();
+            
+            // 添加触觉反馈
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+            
+            console.log('🔢 [changeAttributeQuantity] 数量更新:', currentAttributeSelection.quantity);
+        }
+        
+        // 更新属性数量显示
+        function updateAttributeQuantityDisplay() {
+            const quantityDisplay = document.getElementById('attribute-quantity');
+            const decreaseBtn = document.querySelector('.attribute-qty-decrease');
+            
+            quantityDisplay.textContent = currentAttributeSelection.quantity;
+            
+            // 控制减少按钮的禁用状态
+            decreaseBtn.disabled = currentAttributeSelection.quantity <= 1;
+        }
+        
+        // 更新确认按钮文字
+        function updateConfirmButtonText() {
+            const confirmBtn = document.getElementById('confirm-btn-text');
+            const quantity = currentAttributeSelection.quantity;
+            const isRemoving = currentAttributeSelection.delta < 0;
+            
+            if (isRemoving) {
+                if (quantity === 1) {
+                    confirmBtn.textContent = '确定移除';
+                } else {
+                    confirmBtn.textContent = `确定移除 (${quantity}件)`;
+                }
+            } else {
+                if (quantity === 1) {
+                    confirmBtn.textContent = '确定';
+                } else {
+                    confirmBtn.textContent = `确定 (${quantity}件)`;
+                }
+            }
+        }
+        
+        // 更新模态框标题
+        function updateModalTitle(delta) {
+            const titleElement = document.querySelector('.attributes-modal-title');
+            if (delta < 0) {
+                titleElement.textContent = '选择要移除的商品规格';
+            } else {
+                titleElement.textContent = '选择商品规格';
+            }
+        }
+        
         // 确认属性选择
         function confirmAttributeSelection() {
             console.log('✅ [confirmAttributeSelection] 确认属性选择:', currentAttributeSelection);
             
-            const { productId, delta, selectedAttributes } = currentAttributeSelection;
+            const { productId, delta, quantity, selectedAttributes } = currentAttributeSelection;
             
             // 生成属性哈希
             const attributeHash = generateAttributeHash(productId, selectedAttributes);
@@ -5104,8 +5319,11 @@
             // 使用属性哈希作为购物车键
             const cartKey = attributeHash || productId;
             
+            // 根据原始delta决定是增加还是减少
+            const actualDelta = delta > 0 ? quantity : -quantity;
+            
             // 添加到购物车
-            cart[cartKey] = (cart[cartKey] || 0) + delta;
+            cart[cartKey] = (cart[cartKey] || 0) + actualDelta;
             if (cart[cartKey] <= 0) {
                 delete cart[cartKey];
             }
@@ -5124,7 +5342,20 @@
             hideAttributeSelector();
             
             // 显示成功提示
-            showToast('✅ 已添加到购物车');
+            const isRemoving = delta < 0;
+            if (isRemoving) {
+                if (quantity === 1) {
+                    showToast('✅ 已从购物车移除');
+                } else {
+                    showToast(`✅ 已移除${quantity}件`);
+                }
+            } else {
+                if (quantity === 1) {
+                    showToast('✅ 已添加到购物车');
+                } else {
+                    showToast(`✅ 已添加${quantity}件到购物车`);
+                }
+            }
         }
 
         // 返回顶部功能
