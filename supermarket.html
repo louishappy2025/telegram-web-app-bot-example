@@ -6739,9 +6739,395 @@
             }
         }
         
-        // 将测试函数暴露到全局
+        // 订单管理工具函数
+        // 使用示例：
+        // OrderManager.getDetail(123) - 获取订单详情
+        // OrderManager.getByStatus(0) - 获取指定状态的订单
+        // OrderManager.items.get(123) - 获取订单的所有订单项
+        // OrderManager.update(123, {orderStatus: 1}) - 更新订单状态
+        const OrderManager = {
+            // 获取订单详情
+            getDetail: getOrderDetail,
+            // 获取订单列表
+            getList: getOrderList,
+            // 根据用户ID获取订单
+            getByUserId: getOrdersByUserId,
+            // 根据Telegram用户ID获取订单
+            getByTelegramId: getOrdersByTelegramId,
+            // 根据状态获取订单
+            getByStatus: getOrdersByStatus,
+            // 更新订单
+            update: updateOrder,
+            // 删除订单
+            delete: deleteOrder,
+            // 确认收货
+            confirmReceipt: confirmReceipt,
+            // 提交支付凭证
+            submitPaymentVoucher: confirmPaymentVoucher,
+            // 订单项操作
+            items: {
+                get: getOrderItems,
+                getDetail: getOrderItemDetail,
+                add: addOrderItem,
+                update: updateOrderItem,
+                delete: deleteOrderItem,
+                batchAdd: batchAddOrderItems
+            }
+        };
+
+        // 将函数暴露到全局作用域
         if (typeof window !== 'undefined') {
+            // 测试函数
             window.testOrderSubmissionData = testOrderSubmissionData;
+            
+            // 订单管理器
+            window.OrderManager = OrderManager;
+            
+            // 单独的API函数
+            window.getOrderDetail = getOrderDetail;
+            window.getOrderList = getOrderList;
+            window.getOrdersByUserId = getOrdersByUserId;
+            window.getOrdersByTelegramId = getOrdersByTelegramId;
+            window.getOrdersByStatus = getOrdersByStatus;
+            window.updateOrder = updateOrder;
+            window.deleteOrder = deleteOrder;
+            window.getOrderItems = getOrderItems;
+            window.getOrderItemDetail = getOrderItemDetail;
+            window.addOrderItem = addOrderItem;
+            window.updateOrderItem = updateOrderItem;
+            window.deleteOrderItem = deleteOrderItem;
+            window.batchAddOrderItems = batchAddOrderItems;
+        }
+
+        // 获取订单详情
+        async function getOrderDetail(orderId) {
+            try {
+                console.log('🔄 [getOrderDetail] 获取订单详情，订单ID:', orderId);
+                
+                const response = await fetch(`${API_BASE_URL}/order/${orderId}`, {
+                    method: 'GET',
+                    headers: getRequestHeaders()
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [getOrderDetail] 订单详情获取成功:', result);
+                
+                return result;
+                
+            } catch (error) {
+                console.error('❌ [getOrderDetail] 获取订单详情失败:', error);
+                throw error;
+            }
+        }
+
+        // 获取订单列表（简单列表）
+        async function getOrderList() {
+            try {
+                console.log('🔄 [getOrderList] 获取订单列表...');
+                
+                const response = await fetch(`${API_BASE_URL}/order/list`, {
+                    method: 'GET',
+                    headers: getRequestHeaders()
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [getOrderList] 订单列表获取成功:', result);
+                
+                return result;
+                
+            } catch (error) {
+                console.error('❌ [getOrderList] 获取订单列表失败:', error);
+                throw error;
+            }
+        }
+
+        // 根据用户ID获取订单
+        async function getOrdersByUserId(userId) {
+            try {
+                console.log('🔄 [getOrdersByUserId] 根据用户ID获取订单，用户ID:', userId);
+                
+                const response = await fetch(`${API_BASE_URL}/order/user/${userId}`, {
+                    method: 'GET',
+                    headers: getRequestHeaders()
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [getOrdersByUserId] 用户订单获取成功:', result);
+                
+                return result;
+                
+            } catch (error) {
+                console.error('❌ [getOrdersByUserId] 根据用户ID获取订单失败:', error);
+                throw error;
+            }
+        }
+
+        // 根据Telegram用户ID获取订单
+        async function getOrdersByTelegramId(telegramId) {
+            try {
+                console.log('🔄 [getOrdersByTelegramId] 根据Telegram用户ID获取订单，Telegram ID:', telegramId);
+                
+                const response = await fetch(`${API_BASE_URL}/order/telegram/${telegramId}`, {
+                    method: 'GET',
+                    headers: getRequestHeaders()
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [getOrdersByTelegramId] Telegram用户订单获取成功:', result);
+                
+                return result;
+                
+            } catch (error) {
+                console.error('❌ [getOrdersByTelegramId] 根据Telegram用户ID获取订单失败:', error);
+                throw error;
+            }
+        }
+
+        // 根据订单状态获取订单
+        async function getOrdersByStatus(orderStatus) {
+            try {
+                console.log('🔄 [getOrdersByStatus] 根据订单状态获取订单，状态:', orderStatus);
+                
+                const response = await fetch(`${API_BASE_URL}/order/status/${orderStatus}`, {
+                    method: 'GET',
+                    headers: getRequestHeaders()
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [getOrdersByStatus] 状态订单获取成功:', result);
+                
+                return result;
+                
+            } catch (error) {
+                console.error('❌ [getOrdersByStatus] 根据订单状态获取订单失败:', error);
+                throw error;
+            }
+        }
+
+        // 更新订单
+        async function updateOrder(orderId, updateData) {
+            try {
+                console.log('🔄 [updateOrder] 更新订单，订单ID:', orderId, '更新数据:', updateData);
+                
+                const response = await fetch(`${API_BASE_URL}/order/${orderId}`, {
+                    method: 'PUT',
+                    headers: getRequestHeaders(),
+                    body: JSON.stringify(updateData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [updateOrder] 订单更新成功:', result);
+                
+                return result;
+                
+            } catch (error) {
+                console.error('❌ [updateOrder] 更新订单失败:', error);
+                throw error;
+            }
+        }
+
+        // 删除订单
+        async function deleteOrder(orderId) {
+            try {
+                console.log('🔄 [deleteOrder] 删除订单，订单ID:', orderId);
+                
+                const response = await fetch(`${API_BASE_URL}/order/${orderId}`, {
+                    method: 'DELETE',
+                    headers: getRequestHeaders()
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [deleteOrder] 订单删除成功:', result);
+                
+                return result;
+                
+            } catch (error) {
+                console.error('❌ [deleteOrder] 删除订单失败:', error);
+                throw error;
+            }
+        }
+
+        // 订单项相关API
+
+        // 获取订单的所有订单项
+        async function getOrderItems(orderId) {
+            try {
+                console.log('🔄 [getOrderItems] 获取订单项，订单ID:', orderId);
+                
+                const response = await fetch(`${API_BASE_URL}/order/${orderId}/items`, {
+                    method: 'GET',
+                    headers: getRequestHeaders()
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [getOrderItems] 订单项获取成功:', result);
+                
+                return result;
+                
+            } catch (error) {
+                console.error('❌ [getOrderItems] 获取订单项失败:', error);
+                throw error;
+            }
+        }
+
+        // 获取特定订单项详情
+        async function getOrderItemDetail(orderId, itemId) {
+            try {
+                console.log('🔄 [getOrderItemDetail] 获取订单项详情，订单ID:', orderId, '项目ID:', itemId);
+                
+                const response = await fetch(`${API_BASE_URL}/order/${orderId}/items/${itemId}`, {
+                    method: 'GET',
+                    headers: getRequestHeaders()
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [getOrderItemDetail] 订单项详情获取成功:', result);
+                
+                return result;
+                
+            } catch (error) {
+                console.error('❌ [getOrderItemDetail] 获取订单项详情失败:', error);
+                throw error;
+            }
+        }
+
+        // 为订单添加订单项
+        async function addOrderItem(orderId, itemData) {
+            try {
+                console.log('🔄 [addOrderItem] 添加订单项，订单ID:', orderId, '项目数据:', itemData);
+                
+                const response = await fetch(`${API_BASE_URL}/order/${orderId}/items`, {
+                    method: 'POST',
+                    headers: getRequestHeaders(),
+                    body: JSON.stringify(itemData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [addOrderItem] 订单项添加成功:', result);
+                
+                return result;
+                
+            } catch (error) {
+                console.error('❌ [addOrderItem] 添加订单项失败:', error);
+                throw error;
+            }
+        }
+
+        // 更新订单项
+        async function updateOrderItem(orderId, itemId, updateData) {
+            try {
+                console.log('🔄 [updateOrderItem] 更新订单项，订单ID:', orderId, '项目ID:', itemId, '更新数据:', updateData);
+                
+                const response = await fetch(`${API_BASE_URL}/order/${orderId}/items/${itemId}`, {
+                    method: 'PUT',
+                    headers: getRequestHeaders(),
+                    body: JSON.stringify(updateData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [updateOrderItem] 订单项更新成功:', result);
+                
+                return result;
+                
+            } catch (error) {
+                console.error('❌ [updateOrderItem] 更新订单项失败:', error);
+                throw error;
+            }
+        }
+
+        // 删除订单项
+        async function deleteOrderItem(orderId, itemId) {
+            try {
+                console.log('🔄 [deleteOrderItem] 删除订单项，订单ID:', orderId, '项目ID:', itemId);
+                
+                const response = await fetch(`${API_BASE_URL}/order/${orderId}/items/${itemId}`, {
+                    method: 'DELETE',
+                    headers: getRequestHeaders()
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [deleteOrderItem] 订单项删除成功:', result);
+                
+                return result;
+                
+            } catch (error) {
+                console.error('❌ [deleteOrderItem] 删除订单项失败:', error);
+                throw error;
+            }
+        }
+
+        // 批量添加订单项
+        async function batchAddOrderItems(orderId, itemsData) {
+            try {
+                console.log('🔄 [batchAddOrderItems] 批量添加订单项，订单ID:', orderId, '项目数据:', itemsData);
+                
+                const response = await fetch(`${API_BASE_URL}/order/${orderId}/items/batch`, {
+                    method: 'POST',
+                    headers: getRequestHeaders(),
+                    body: JSON.stringify(itemsData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [batchAddOrderItems] 批量添加订单项成功:', result);
+                
+                return result;
+                
+            } catch (error) {
+                console.error('❌ [batchAddOrderItems] 批量添加订单项失败:', error);
+                throw error;
+            }
         }
 
 
@@ -6750,4 +7136,4 @@
     <!-- 返回顶部按钮 -->
     <button id="back-to-top" class="back-to-top" title="返回顶部" aria-label="返回顶部"></button>
 </body>
-</html> 
+</html>
