@@ -1109,6 +1109,215 @@
         .separate-category-btn:active {
             transform: translateY(0);
         }
+        
+        /* 商品属性选择器样式 */
+        .product-attributes-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .attributes-modal-content {
+            background: var(--tg-theme-bg-color, #fff);
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .attributes-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+        }
+        
+        .attributes-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #333);
+        }
+        
+        .attributes-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--tg-theme-hint-color, #999);
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .attributes-modal-close:hover {
+            color: var(--tg-theme-text-color, #333);
+        }
+        
+        .product-info-section {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 8px;
+        }
+        
+        .product-info-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--tg-theme-bg-color, #fff);
+            font-size: 24px;
+        }
+        
+        .product-info-details {
+            flex: 1;
+        }
+        
+        .product-info-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #333);
+            margin-bottom: 4px;
+        }
+        
+        .product-info-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--tg-theme-button-color, #0088cc);
+        }
+        
+        .attribute-group {
+            margin-bottom: 20px;
+        }
+        
+        .attribute-group-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #333);
+            margin-bottom: 8px;
+        }
+        
+        .attribute-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .attribute-option {
+            padding: 8px 12px;
+            border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+            border-radius: 6px;
+            background: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #333);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            position: relative;
+        }
+        
+        .attribute-option:hover {
+            border-color: var(--tg-theme-button-color, #0088cc);
+            background: var(--tg-theme-button-color, #0088cc);
+            color: var(--tg-theme-button-text-color, #fff);
+        }
+        
+        .attribute-option.selected {
+            border-color: var(--tg-theme-button-color, #0088cc);
+            background: var(--tg-theme-button-color, #0088cc);
+            color: var(--tg-theme-button-text-color, #fff);
+        }
+        
+        .attribute-option-price {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-left: 4px;
+        }
+        
+        .attributes-modal-footer {
+            display: flex;
+            gap: 12px;
+            padding-top: 20px;
+            border-top: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+        }
+        
+        .attributes-modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .attributes-modal-btn-cancel {
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            color: var(--tg-theme-text-color, #333);
+        }
+        
+        .attributes-modal-btn-cancel:hover {
+            background: var(--tg-theme-hint-color, #e0e0e0);
+        }
+        
+        .attributes-modal-btn-confirm {
+            background: var(--tg-theme-button-color, #0088cc);
+            color: var(--tg-theme-button-text-color, #fff);
+        }
+        
+        .attributes-modal-btn-confirm:hover {
+            background: var(--tg-theme-button-color, #0077bb);
+        }
+        
+        .attributes-modal-btn-confirm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* 商品卡片中的属性显示 */
+        .product-attributes-info {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #666);
+            margin-top: 4px;
+            line-height: 1.2;
+        }
+        
+        .product-has-attributes {
+            position: relative;
+        }
+        
+        .product-has-attributes::after {
+            content: "⚙️";
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            font-size: 12px;
+            opacity: 0.7;
+        }
 
         /* 下单页面 */
         .checkout-steps {
@@ -2020,6 +2229,35 @@
         </div>
     </div>
 
+    <!-- 商品属性选择器模态框 -->
+    <div id="product-attributes-modal" class="product-attributes-modal" style="display: none;">
+        <div class="attributes-modal-content">
+            <div class="attributes-modal-header">
+                <div class="attributes-modal-title">选择商品规格</div>
+                <button class="attributes-modal-close" onclick="hideAttributeSelector()">×</button>
+            </div>
+            
+            <div class="product-info-section">
+                <div class="product-info-image" id="attr-product-image"></div>
+                <div class="product-info-details">
+                    <div class="product-info-name" id="attr-product-name"></div>
+                    <div class="product-info-price" id="attr-product-price"></div>
+                </div>
+            </div>
+            
+            <div id="attribute-groups-container"></div>
+            
+            <div class="attributes-modal-footer">
+                <button class="attributes-modal-btn attributes-modal-btn-cancel" onclick="hideAttributeSelector()">
+                    取消
+                </button>
+                <button class="attributes-modal-btn attributes-modal-btn-confirm" onclick="confirmAttributeSelection()">
+                    确定
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 返回顶部按钮 -->
     <button id="back-to-top" class="back-to-top"></button>
     
@@ -2147,9 +2385,15 @@
             {id: 'hot', name: '热销商品', separateDisplay: 1}
         ];
 
-        // 购物车对象 {商品id: 数量}
+        // 购物车对象 {商品id: 数量} 或 {商品id_属性哈希: 数量}
         let cart = {};
         let currentCategory = 'all';
+        
+        // 商品属性缓存 {商品id: 属性数据}
+        let PRODUCT_ATTRIBUTES = {};
+        
+        // 商品属性选择状态 {商品id: 选中的属性组合}
+        let selectedAttributes = {};
         
         // 商品分页数据
         let goodsLastId = null;
@@ -2651,6 +2895,121 @@
             );
             
             return iconKey ? DEFAULT_ICONS[iconKey] : DEFAULT_ICONS.default;
+        }
+        
+        // 获取商品属性
+        async function fetchProductAttributes(productId) {
+            console.log('🔄 [fetchProductAttributes] 获取商品属性，商品ID:', productId);
+            
+            // 检查缓存
+            if (PRODUCT_ATTRIBUTES[productId]) {
+                console.log('✅ [fetchProductAttributes] 从缓存获取属性:', PRODUCT_ATTRIBUTES[productId]);
+                return PRODUCT_ATTRIBUTES[productId];
+            }
+            
+            try {
+                const apiUrl = `${API_BASE_URL}/goods/${productId}/attributes/grouped`;
+                console.log('🌐 [fetchProductAttributes] 请求URL:', apiUrl);
+                
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const attributes = await response.json();
+                console.log('✅ [fetchProductAttributes] 属性获取成功:', attributes);
+                
+                // 缓存属性数据
+                PRODUCT_ATTRIBUTES[productId] = attributes;
+                
+                return attributes;
+                
+            } catch (error) {
+                console.error('❌ [fetchProductAttributes] 获取商品属性失败:', error);
+                
+                // 返回空对象，表示没有属性
+                PRODUCT_ATTRIBUTES[productId] = {};
+                return {};
+            }
+        }
+        
+        // 获取商品的默认属性组合
+        function getDefaultAttributes(attributes) {
+            const defaultAttrs = {};
+            
+            Object.keys(attributes).forEach(attrName => {
+                const attrValues = attributes[attrName];
+                // 查找默认值
+                const defaultValue = attrValues.find(attr => attr.isDefault === 1);
+                if (defaultValue) {
+                    defaultAttrs[attrName] = defaultValue.attributeValue;
+                } else if (attrValues.length > 0) {
+                    // 如果没有默认值，选择第一个
+                    defaultAttrs[attrName] = attrValues[0].attributeValue;
+                }
+            });
+            
+            return defaultAttrs;
+        }
+        
+        // 计算属性组合的价格调整
+        function calculateAttributePriceAdjustment(productId, selectedAttrs) {
+            const attributes = PRODUCT_ATTRIBUTES[productId];
+            if (!attributes || !selectedAttrs) return 0;
+            
+            let totalAdjustment = 0;
+            
+            Object.keys(selectedAttrs).forEach(attrName => {
+                const attrValue = selectedAttrs[attrName];
+                const attrOptions = attributes[attrName];
+                
+                if (attrOptions) {
+                    const selectedOption = attrOptions.find(opt => opt.attributeValue === attrValue);
+                    if (selectedOption) {
+                        totalAdjustment += parseFloat(selectedOption.priceAdjustment || 0);
+                    }
+                }
+            });
+            
+            return totalAdjustment;
+        }
+        
+        // 生成属性组合的哈希值
+        function generateAttributeHash(productId, attributes) {
+            if (!attributes || Object.keys(attributes).length === 0) {
+                return null;
+            }
+            
+            // 按属性名称排序，生成一致的哈希
+            const sortedKeys = Object.keys(attributes).sort();
+            const attrString = sortedKeys.map(key => `${key}=${attributes[key]}`).join('|');
+            
+            return `${productId}:${attrString}`;
+        }
+        
+        // 解析属性哈希值
+        function parseAttributeHash(hash) {
+            if (!hash || !hash.includes(':')) return { productId: null, attributes: {} };
+            
+            const [productId, attrString] = hash.split(':', 2);
+            const attributes = {};
+            
+            if (attrString) {
+                attrString.split('|').forEach(pair => {
+                    const [key, value] = pair.split('=', 2);
+                    if (key && value) {
+                        attributes[key] = value;
+                    }
+                });
+            }
+            
+            return { productId: parseInt(productId), attributes };
         }
 
         // 检测 fetch 是否可用
@@ -3219,7 +3578,19 @@
             
             // 使用PRODUCTS数组（已经通过API过滤）
             const list = PRODUCTS.map(p => {
-                const qty = cart[p.id] || 0;
+                // 计算商品在购物车中的总数量（包括所有属性组合）
+                let totalQty = 0;
+                Object.keys(cart).forEach(cartKey => {
+                    if (cartKey == p.id) {
+                        // 无属性商品
+                        totalQty += cart[cartKey];
+                    } else if (cartKey.startsWith(p.id + ':')) {
+                        // 有属性商品
+                        totalQty += cart[cartKey];
+                    }
+                });
+                
+                const qty = totalQty;
                 
                 // 生成商品图片HTML
                 let imageHtml;
@@ -3321,37 +3692,90 @@
             renderCart();
             updateMainButton(); // 更新MainButton状态
         }
+        
+        // 处理商品加入购物车（支持属性选择）
+        async function handleAddToCart(productId, delta = 1) {
+            console.log(`[handleAddToCart] 商品ID:${productId} 变化:${delta}`);
+            
+            const product = getProductById(productId);
+            if (!product) {
+                console.error('[handleAddToCart] 未找到商品:', productId);
+                return;
+            }
+            
+            // 获取商品属性
+            const attributes = await fetchProductAttributes(productId);
+            
+            // 如果商品有属性，显示属性选择器
+            if (attributes && Object.keys(attributes).length > 0) {
+                console.log('[handleAddToCart] 商品有属性，显示选择器');
+                showAttributeSelector(productId, delta);
+            } else {
+                // 如果商品没有属性，直接加入购物车
+                console.log('[handleAddToCart] 商品无属性，直接加入购物车');
+                changeQty(productId, delta);
+            }
+        }
 
         // 渲染购物车
         function renderCart() {
             console.log('[renderCart] 渲染购物车', cart);
-            const items = Object.keys(cart).map(id => {
-                const p = getProductById(id);
+            const items = Object.keys(cart).map(cartKey => {
+                // 解析购物车键，获取商品ID和属性信息
+                const { productId, attributes } = parseAttributeHash(cartKey);
+                const actualProductId = productId || parseInt(cartKey);
+                
+                const p = getProductById(actualProductId);
                 if (!p) {
+                    console.warn('[renderCart] 未找到商品:', actualProductId);
                     return ''; // 如果找不到商品，返回空字符串
                 }
+                
+                // 计算包含属性调整的价格
+                const basePrice = p.price;
+                const priceAdjustment = calculateAttributePriceAdjustment(actualProductId, attributes);
+                const finalPrice = basePrice + priceAdjustment;
+                
+                // 生成属性显示文本
+                let attributeText = '';
+                if (attributes && Object.keys(attributes).length > 0) {
+                    const attrTexts = Object.keys(attributes).map(key => `${key}: ${attributes[key]}`);
+                    attributeText = `<div class="cart-item-attributes" style="font-size: 11px; color: #666; margin-top: 2px;">${attrTexts.join(', ')}</div>`;
+                }
+                
                 return `
                     <div class="cart-item">
                         <div class="cart-item-info">
                             <div class="cart-item-name">${p.name} ${p.salesCount > 100 ? '🔥' : p.salesCount === 0 ? '🆕' : ''}</div>
-                            <div class="cart-item-price">$${p.price.toFixed(2)} × ${cart[id]}</div>
+                            ${attributeText}
+                            <div class="cart-item-price">$${finalPrice.toFixed(2)} × ${cart[cartKey]}</div>
                         </div>
                         <div class="cart-item-actions">
-                            <button class="qty-btn qty-decrease" data-product-id="${p.id}">-</button>
-                            <span class="quantity">${cart[id]}</span>
-                            <button class="qty-btn qty-increase" data-product-id="${p.id}">+</button>
+                            <button class="qty-btn qty-decrease" data-cart-key="${cartKey}">-</button>
+                            <span class="quantity">${cart[cartKey]}</span>
+                            <button class="qty-btn qty-increase" data-cart-key="${cartKey}">+</button>
                         </div>
                     </div>
                 `;
             }).filter(item => item !== '').join(''); // 过滤掉空字符串
+            
             document.getElementById('cart-list').innerHTML = items || '<div style="text-align:center;color:#aaa;padding:30px 0;">购物车为空</div>';
+            
+            // 计算总价
             let total = 0;
-            Object.keys(cart).forEach(id=>{
-                const p = getProductById(id);
+            Object.keys(cart).forEach(cartKey => {
+                const { productId, attributes } = parseAttributeHash(cartKey);
+                const actualProductId = productId || parseInt(cartKey);
+                const p = getProductById(actualProductId);
+                
                 if (p) {
-                    total += p.price * cart[id];
+                    const basePrice = p.price;
+                    const priceAdjustment = calculateAttributePriceAdjustment(actualProductId, attributes);
+                    const finalPrice = basePrice + priceAdjustment;
+                    total += finalPrice * cart[cartKey];
                 }
             });
+            
             document.getElementById('cart-total').innerText = items ? `总计：$${total.toFixed(2)}` : '';
             console.log('[renderCart] 总价', total);
         }
@@ -3594,15 +4018,35 @@
         // 渲染下单页摘要
         function renderCheckoutSummary() {
             let total = 0;
-            let summary = Object.keys(cart).map(id => {
-                const p = getProductById(id);
+            let summary = Object.keys(cart).map(cartKey => {
+                // 解析购物车键，获取商品ID和属性信息
+                const { productId, attributes } = parseAttributeHash(cartKey);
+                const actualProductId = productId || parseInt(cartKey);
+                
+                const p = getProductById(actualProductId);
                 if (!p) {
                     return '';
                 }
-                const qty = cart[id];
-                total += p.price * qty;
-                return `<div>${p.name} × ${qty} = $${(p.price*qty).toFixed(2)}</div>`;
+                
+                const qty = cart[cartKey];
+                
+                // 计算包含属性调整的价格
+                const basePrice = p.price;
+                const priceAdjustment = calculateAttributePriceAdjustment(actualProductId, attributes);
+                const finalPrice = basePrice + priceAdjustment;
+                
+                total += finalPrice * qty;
+                
+                // 生成属性显示文本
+                let attributeText = '';
+                if (attributes && Object.keys(attributes).length > 0) {
+                    const attrTexts = Object.keys(attributes).map(key => `${key}: ${attributes[key]}`);
+                    attributeText = ` (${attrTexts.join(', ')})`;
+                }
+                
+                return `<div>${p.name}${attributeText} × ${qty} = $${(finalPrice*qty).toFixed(2)}</div>`;
             }).filter(item => item !== '').join('');
+            
             document.getElementById('checkout-summary').innerHTML = summary ? summary+`<div style='margin-top:8px;font-weight:bold;'>总计：$${total.toFixed(2)}</div>` : '<div style="color:#aaa;">购物车为空</div>';
             console.log('[renderCheckoutSummary] 购物车摘要', cart, '总价', total);
         }
@@ -4412,7 +4856,7 @@
                 if (!button) return;
                 
                 const productCard = button.closest('.product-card');
-                const productId = parseInt(button.dataset.productId);
+                const cartItem = button.closest('.cart-item');
                 const delta = button.classList.contains('qty-increase') ? 1 : -1;
                 
                 // 添加clicking类，禁用hover效果
@@ -4420,8 +4864,38 @@
                     productCard.classList.add('clicking');
                 }
                 
-                // 执行数量变更
-                changeQty(productId, delta);
+                // 处理商品卡片中的按钮点击
+                if (button.dataset.productId) {
+                    const productId = parseInt(button.dataset.productId);
+                    
+                    // 如果是增加按钮，使用handleAddToCart（支持属性选择）
+                    if (delta > 0) {
+                        handleAddToCart(productId, delta);
+                    } else {
+                        // 减少按钮直接调用changeQty
+                        changeQty(productId, delta);
+                    }
+                }
+                // 处理购物车中的按钮点击
+                else if (button.dataset.cartKey) {
+                    const cartKey = button.dataset.cartKey;
+                    
+                    // 直接修改购物车数量
+                    cart[cartKey] = (cart[cartKey] || 0) + delta;
+                    if (cart[cartKey] <= 0) {
+                        delete cart[cartKey];
+                    }
+                    
+                    // 保存到本地存储
+                    saveCartToStorage();
+                    
+                    // 重新渲染
+                    renderProducts();
+                    renderCart();
+                    updateMainButton();
+                    
+                    console.log('🛒 [购物车按钮] 购物车更新:', cart);
+                }
                 
                 // 短暂延迟后移除clicking类
                 setTimeout(() => {
@@ -4430,6 +4904,227 @@
                     }
                 }, 200);
             });
+        }
+        
+        // 当前属性选择器状态
+        let currentAttributeSelection = {
+            productId: null,
+            delta: 1,
+            selectedAttributes: {}
+        };
+        
+        // 显示属性选择器
+        async function showAttributeSelector(productId, delta = 1) {
+            console.log('🎯 [showAttributeSelector] 显示属性选择器，商品ID:', productId, '数量变化:', delta);
+            
+            const product = getProductById(productId);
+            if (!product) {
+                console.error('❌ [showAttributeSelector] 未找到商品:', productId);
+                return;
+            }
+            
+            // 获取商品属性
+            const attributes = await fetchProductAttributes(productId);
+            if (!attributes || Object.keys(attributes).length === 0) {
+                console.log('📝 [showAttributeSelector] 商品无属性，直接加入购物车');
+                changeQty(productId, delta);
+                return;
+            }
+            
+            // 设置当前选择状态
+            currentAttributeSelection = {
+                productId: productId,
+                delta: delta,
+                selectedAttributes: getDefaultAttributes(attributes)
+            };
+            
+            // 渲染商品信息
+            renderProductInfo(product);
+            
+            // 渲染属性选择器
+            renderAttributeGroups(attributes);
+            
+            // 更新价格显示
+            updateAttributePrice();
+            
+            // 显示模态框
+            const modal = document.getElementById('product-attributes-modal');
+            modal.style.display = 'flex';
+            
+            // 添加触觉反馈
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+        }
+        
+        // 隐藏属性选择器
+        function hideAttributeSelector() {
+            console.log('🔄 [hideAttributeSelector] 隐藏属性选择器');
+            
+            const modal = document.getElementById('product-attributes-modal');
+            modal.style.display = 'none';
+            
+            // 重置选择状态
+            currentAttributeSelection = {
+                productId: null,
+                delta: 1,
+                selectedAttributes: {}
+            };
+            
+            // 添加触觉反馈
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+        }
+        
+        // 渲染商品信息
+        function renderProductInfo(product) {
+            const imageContainer = document.getElementById('attr-product-image');
+            const nameContainer = document.getElementById('attr-product-name');
+            const priceContainer = document.getElementById('attr-product-price');
+            
+            // 设置商品图片
+            if (product.imageUrl) {
+                imageContainer.innerHTML = `<img src="${product.imageUrl}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 8px;">`;
+            } else {
+                imageContainer.innerHTML = product.image;
+            }
+            
+            // 设置商品名称
+            nameContainer.textContent = product.name;
+            
+            // 设置基础价格（会在updateAttributePrice中更新）
+            priceContainer.textContent = `$${product.price.toFixed(2)}`;
+        }
+        
+        // 渲染属性分组
+        function renderAttributeGroups(attributes) {
+            const container = document.getElementById('attribute-groups-container');
+            container.innerHTML = '';
+            
+            Object.keys(attributes).forEach(attrName => {
+                const attrOptions = attributes[attrName];
+                
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'attribute-group';
+                
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'attribute-group-title';
+                titleDiv.textContent = attrName;
+                
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'attribute-options';
+                
+                attrOptions.forEach(option => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'attribute-option';
+                    optionDiv.dataset.attrName = attrName;
+                    optionDiv.dataset.attrValue = option.attributeValue;
+                    
+                    // 设置选项文本
+                    let optionText = option.attributeValue;
+                    if (option.priceAdjustment && option.priceAdjustment !== 0) {
+                        const adjustmentText = option.priceAdjustment > 0 ? `+$${option.priceAdjustment.toFixed(2)}` : `-$${Math.abs(option.priceAdjustment).toFixed(2)}`;
+                        optionText += `<span class="attribute-option-price">${adjustmentText}</span>`;
+                    }
+                    optionDiv.innerHTML = optionText;
+                    
+                    // 设置默认选中状态
+                    if (currentAttributeSelection.selectedAttributes[attrName] === option.attributeValue) {
+                        optionDiv.classList.add('selected');
+                    }
+                    
+                    // 添加点击事件
+                    optionDiv.addEventListener('click', () => {
+                        selectAttributeOption(attrName, option.attributeValue);
+                    });
+                    
+                    optionsDiv.appendChild(optionDiv);
+                });
+                
+                groupDiv.appendChild(titleDiv);
+                groupDiv.appendChild(optionsDiv);
+                container.appendChild(groupDiv);
+            });
+        }
+        
+        // 选择属性选项
+        function selectAttributeOption(attrName, attrValue) {
+            console.log('🎯 [selectAttributeOption] 选择属性:', attrName, '=', attrValue);
+            
+            // 更新选择状态
+            currentAttributeSelection.selectedAttributes[attrName] = attrValue;
+            
+            // 更新UI状态
+            const allOptions = document.querySelectorAll(`[data-attr-name="${attrName}"]`);
+            allOptions.forEach(option => {
+                if (option.dataset.attrValue === attrValue) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+            
+            // 更新价格显示
+            updateAttributePrice();
+            
+            // 添加触觉反馈
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+        }
+        
+        // 更新属性价格显示
+        function updateAttributePrice() {
+            const product = getProductById(currentAttributeSelection.productId);
+            if (!product) return;
+            
+            const basePrice = product.price;
+            const adjustment = calculateAttributePriceAdjustment(
+                currentAttributeSelection.productId,
+                currentAttributeSelection.selectedAttributes
+            );
+            const finalPrice = basePrice + adjustment;
+            
+            const priceContainer = document.getElementById('attr-product-price');
+            priceContainer.textContent = `$${finalPrice.toFixed(2)}`;
+            
+            console.log('💰 [updateAttributePrice] 基础价格:', basePrice, '调整:', adjustment, '最终价格:', finalPrice);
+        }
+        
+        // 确认属性选择
+        function confirmAttributeSelection() {
+            console.log('✅ [confirmAttributeSelection] 确认属性选择:', currentAttributeSelection);
+            
+            const { productId, delta, selectedAttributes } = currentAttributeSelection;
+            
+            // 生成属性哈希
+            const attributeHash = generateAttributeHash(productId, selectedAttributes);
+            
+            // 使用属性哈希作为购物车键
+            const cartKey = attributeHash || productId;
+            
+            // 添加到购物车
+            cart[cartKey] = (cart[cartKey] || 0) + delta;
+            if (cart[cartKey] <= 0) {
+                delete cart[cartKey];
+            }
+            
+            console.log('🛒 [confirmAttributeSelection] 购物车更新:', cart);
+            
+            // 保存到本地存储
+            saveCartToStorage();
+            
+            // 重新渲染
+            renderProducts();
+            renderCart();
+            updateMainButton();
+            
+            // 隐藏模态框
+            hideAttributeSelector();
+            
+            // 显示成功提示
+            showToast('✅ 已添加到购物车');
         }
 
         // 返回顶部功能
