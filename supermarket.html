@@ -2562,15 +2562,19 @@
             const validCart = {};
             
             // 检查每个购物车商品是否还存在
-            originalCartKeys.forEach(id => {
-                const product = getProductById(id);
+            originalCartKeys.forEach(cartKey => {
+                // 解析购物车键，获取实际的商品ID
+                const { productId, attributes } = parseAttributeHash(cartKey);
+                const actualProductId = productId || parseInt(cartKey);
+                
+                const product = getProductById(actualProductId);
                 if (product) {
                     // 商品存在，保留
-                    validCart[id] = cart[id];
+                    validCart[cartKey] = cart[cartKey];
                 } else {
                     // 商品不存在，记录为无效ID
-                    invalidIds.push(id);
-                    console.warn(`🗑️ [cleanupInvalidCartItems] 发现无效商品ID: ${id}，数量: ${cart[id]}`);
+                    invalidIds.push(cartKey);
+                    console.warn(`🗑️ [cleanupInvalidCartItems] 发现无效商品ID: ${cartKey}，实际商品ID: ${actualProductId}，数量: ${cart[cartKey]}`);
                 }
             });
             
@@ -2622,21 +2626,25 @@
         function validateCartIntegrity() {
             console.log('🔍 [validateCartIntegrity] 验证购物车完整性...');
             
-            const cartIds = Object.keys(cart);
+            const cartKeys = Object.keys(cart);
             const report = {
-                total: cartIds.length,
+                total: cartKeys.length,
                 valid: 0,
                 invalid: 0,
                 invalidIds: []
             };
             
-            cartIds.forEach(id => {
-                const product = getProductById(id);
+            cartKeys.forEach(cartKey => {
+                // 解析购物车键，获取实际的商品ID
+                const { productId, attributes } = parseAttributeHash(cartKey);
+                const actualProductId = productId || parseInt(cartKey);
+                
+                const product = getProductById(actualProductId);
                 if (product) {
                     report.valid++;
                 } else {
                     report.invalid++;
-                    report.invalidIds.push(id);
+                    report.invalidIds.push(cartKey);
                 }
             });
             
@@ -5328,7 +5336,7 @@
                 delete cart[cartKey];
             }
             
-            console.log('🛒 [confirmAttributeSelection] 购物车更新:', cart);
+            console.log('🛒 [confirmAttributeSelection] 购物车更新后:', cart);
             
             // 保存到本地存储
             saveCartToStorage();
@@ -6678,6 +6686,48 @@
             
             return errors;
         }
+
+        // 测试购物车属性功能的函数（用于调试）
+        function testCartAttributeFeature() {
+            console.log('🧪 [testCartAttributeFeature] 开始测试购物车属性功能...');
+            
+            // 清空购物车
+            cart = {};
+            
+            // 模拟添加带属性的商品
+            const productId = 1;
+            const attributes1 = { '温度': '冰' };
+            const attributes2 = { '温度': '不冰' };
+            
+            const hash1 = generateAttributeHash(productId, attributes1);
+            const hash2 = generateAttributeHash(productId, attributes2);
+            
+            console.log('🔑 [testCartAttributeFeature] 哈希1:', hash1);
+            console.log('🔑 [testCartAttributeFeature] 哈希2:', hash2);
+            
+            // 添加商品到购物车
+            cart[hash1] = 2; // 冰，2件
+            cart[hash2] = 3; // 不冰，3件
+            
+            console.log('🛒 [testCartAttributeFeature] 测试购物车:', cart);
+            
+            // 测试清理功能
+            cleanupInvalidCartItems(false);
+            
+            console.log('🛒 [testCartAttributeFeature] 清理后购物车:', cart);
+            
+            // 验证完整性
+            const report = validateCartIntegrity();
+            console.log('📊 [testCartAttributeFeature] 完整性报告:', report);
+            
+            // 渲染购物车
+            renderCart();
+            
+            console.log('✅ [testCartAttributeFeature] 测试完成');
+        }
+        
+        // 将测试函数暴露到全局作用域，方便在控制台调用
+        window.testCartAttributeFeature = testCartAttributeFeature;
     </script>
 
     <!-- 返回顶部按钮 -->
