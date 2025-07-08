@@ -6728,6 +6728,148 @@
         
         // 将测试函数暴露到全局作用域，方便在控制台调用
         window.testCartAttributeFeature = testCartAttributeFeature;
+
+        // 简单的调试函数 - 模拟用户操作
+        function debugCartAttributeIssue() {
+            console.log('🐛 [debugCartAttributeIssue] 开始调试购物车属性问题...');
+            
+            // 清空购物车
+            cart = {};
+            console.log('🛒 [debugCartAttributeIssue] 1. 清空购物车:', cart);
+            
+            // 模拟第一次操作：选择"冰"，添加2件
+            const productId = 1;
+            const attributes1 = { '温度': '冰' };
+            const hash1 = generateAttributeHash(productId, attributes1);
+            cart[hash1] = 2;
+            console.log('🛒 [debugCartAttributeIssue] 2. 添加冰商品2件:', cart);
+            console.log('🔑 [debugCartAttributeIssue] 2. 生成的哈希:', hash1);
+            
+            // 模拟第二次操作：选择"不冰"，添加3件
+            const attributes2 = { '温度': '不冰' };
+            const hash2 = generateAttributeHash(productId, attributes2);
+            cart[hash2] = 3;
+            console.log('🛒 [debugCartAttributeIssue] 3. 添加不冰商品3件:', cart);
+            console.log('🔑 [debugCartAttributeIssue] 3. 生成的哈希:', hash2);
+            
+            // 验证购物车状态
+            console.log('🛒 [debugCartAttributeIssue] 4. 最终购物车状态:', cart);
+            console.log('📊 [debugCartAttributeIssue] 4. 购物车项目数:', Object.keys(cart).length);
+            
+            // 检查清理函数是否会影响
+            console.log('🧹 [debugCartAttributeIssue] 5. 测试清理函数...');
+            cleanupInvalidCartItems(false);
+            console.log('🛒 [debugCartAttributeIssue] 5. 清理后购物车:', cart);
+            
+            // 渲染购物车
+            renderCart();
+            
+            return cart;
+        }
+        
+        // 将调试函数暴露到全局
+        window.debugCartAttributeIssue = debugCartAttributeIssue;
+        
+        // 直接测试购物车属性逻辑
+        function testDirectCartLogic() {
+            console.log('🧪 [testDirectCartLogic] 开始直接测试购物车逻辑...');
+            
+            // 步骤1：清空购物车
+            cart = {};
+            console.log('1️⃣ 清空购物车:', cart);
+            
+            // 步骤2：模拟用户选择"冰"，添加2件
+            const selection1 = {
+                productId: 1,
+                selectedAttributes: { '温度': '冰' },
+                quantity: 2
+            };
+            
+            const hash1 = generateAttributeHash(selection1.productId, selection1.selectedAttributes);
+            cart[hash1] = selection1.quantity;
+            console.log('2️⃣ 添加冰商品:', { hash: hash1, quantity: selection1.quantity });
+            console.log('2️⃣ 购物车状态:', JSON.stringify(cart));
+            
+            // 步骤3：模拟用户选择"不冰"，添加3件
+            const selection2 = {
+                productId: 1,
+                selectedAttributes: { '温度': '不冰' },
+                quantity: 3
+            };
+            
+            const hash2 = generateAttributeHash(selection2.productId, selection2.selectedAttributes);
+            cart[hash2] = selection2.quantity;
+            console.log('3️⃣ 添加不冰商品:', { hash: hash2, quantity: selection2.quantity });
+            console.log('3️⃣ 购物车状态:', JSON.stringify(cart));
+            
+            // 步骤4：验证结果
+            const cartKeys = Object.keys(cart);
+            console.log('4️⃣ 购物车键列表:', cartKeys);
+            console.log('4️⃣ 购物车项目数:', cartKeys.length);
+            console.log('4️⃣ 总商品数量:', Object.values(cart).reduce((sum, qty) => sum + qty, 0));
+            
+            // 步骤5：验证哈希是否不同
+            console.log('5️⃣ 哈希验证:');
+            console.log('   - 冰商品哈希:', hash1);
+            console.log('   - 不冰商品哈希:', hash2);
+            console.log('   - 哈希是否不同:', hash1 !== hash2);
+            
+            return {
+                cart: cart,
+                hash1: hash1,
+                hash2: hash2,
+                success: cartKeys.length === 2 && hash1 !== hash2
+            };
+        }
+        
+        window.testDirectCartLogic = testDirectCartLogic;
+        
+        // 最简单的测试 - 直接模拟用户操作
+        function testSimpleCartFlow() {
+            console.log('🎯 [testSimpleCartFlow] 模拟用户操作流程...');
+            
+            // 清空购物车
+            cart = {};
+            
+            // 模拟用户操作1：选择"冰"，添加2件
+            console.log('👆 用户操作1：选择"冰"，添加2件');
+            currentAttributeSelection = {
+                productId: 1,
+                delta: 1,
+                quantity: 2,
+                selectedAttributes: { '温度': '冰' }
+            };
+            confirmAttributeSelection();
+            console.log('📊 操作1后购物车:', JSON.stringify(cart));
+            
+            // 模拟用户操作2：选择"不冰"，添加3件
+            console.log('👆 用户操作2：选择"不冰"，添加3件');
+            currentAttributeSelection = {
+                productId: 1,
+                delta: 1,
+                quantity: 3,
+                selectedAttributes: { '温度': '不冰' }
+            };
+            confirmAttributeSelection();
+            console.log('📊 操作2后购物车:', JSON.stringify(cart));
+            
+            // 验证结果
+            const keys = Object.keys(cart);
+            const totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+            
+            console.log('✅ 最终结果:');
+            console.log('   - 购物车项目数:', keys.length);
+            console.log('   - 总商品数量:', totalItems);
+            console.log('   - 购物车详情:', cart);
+            
+            // 检查是否符合预期
+            const expected = keys.length === 2 && totalItems === 5;
+            console.log('   - 结果是否正确:', expected ? '✅ 正确' : '❌ 错误');
+            
+            return { cart, expected };
+        }
+        
+        window.testSimpleCartFlow = testSimpleCartFlow;
     </script>
 
     <!-- 返回顶部按钮 -->
