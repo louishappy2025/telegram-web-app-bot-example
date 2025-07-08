@@ -4385,19 +4385,40 @@
                 console.log('🔄 [submitOrder] 开始提交订单...');
                 
                 // 构建订单项数据
-                const orderItems = Object.keys(cart).map(id => {
-                    const p = getProductById(id);
+                const orderItems = Object.keys(cart).map(cartKey => {
+                    // 解析购物车键，获取实际的商品ID和属性信息
+                    const { productId, attributes } = parseAttributeHash(cartKey);
+                    const actualProductId = productId || parseInt(cartKey);
+                    
+                    const p = getProductById(actualProductId);
                     if (!p) {
-                        console.error(`[submitOrder] 未找到商品ID: ${id}`);
-                        throw new Error(`商品数据错误：找不到ID为${id}的商品`);
+                        console.error(`[submitOrder] 未找到商品ID: ${actualProductId} (购物车键: ${cartKey})`);
+                        throw new Error(`商品数据错误：找不到ID为${actualProductId}的商品`);
                     }
-                    return {
+                    
+                    // 计算包含属性调整的价格
+                    const basePrice = p.price;
+                    const priceAdjustment = calculateAttributePriceAdjustment(actualProductId, attributes);
+                    const finalPrice = basePrice + priceAdjustment;
+                    
+                    // 构建订单项
+                    const orderItem = {
                         goodsId: p.id,
                         goodsName: p.name,
                         goodsImageUrl: p.imageUrl || p.icon || p.image,
-                        price: p.price,
-                        quantity: cart[id]
+                        price: finalPrice, // 使用包含属性调整的价格
+                        quantity: cart[cartKey]
                     };
+                    
+                    // 如果有属性，添加属性信息
+                    if (attributes && Object.keys(attributes).length > 0) {
+                        orderItem.attributes = attributes;
+                        // 在商品名称后添加属性说明
+                        const attrTexts = Object.keys(attributes).map(key => `${key}: ${attributes[key]}`);
+                        orderItem.goodsName = `${p.name} (${attrTexts.join(', ')})`;
+                    }
+                    
+                    return orderItem;
                 });
                 
                 // 构建请求数据
@@ -6586,10 +6607,19 @@
         // 获取购物车总金额
         function getCartTotal() {
             let total = 0;
-            Object.keys(cart).forEach(id => {
-                const product = getProductById(id);
+            Object.keys(cart).forEach(cartKey => {
+                // 解析购物车键，获取实际的商品ID和属性信息
+                const { productId, attributes } = parseAttributeHash(cartKey);
+                const actualProductId = productId || parseInt(cartKey);
+                
+                const product = getProductById(actualProductId);
                 if (product) {
-                    total += product.price * cart[id];
+                    // 计算包含属性调整的价格
+                    const basePrice = product.price;
+                    const priceAdjustment = calculateAttributePriceAdjustment(actualProductId, attributes);
+                    const finalPrice = basePrice + priceAdjustment;
+                    
+                    total += finalPrice * cart[cartKey];
                 }
             });
             return total;
@@ -6647,6 +6677,71 @@
             });
             
             return errors;
+        }
+
+        // 测试订单提交数据构建（调试用）
+        function testOrderSubmissionData() {
+            console.log('🧪 [testOrderSubmissionData] 测试订单提交数据构建...');
+            
+            if (Object.keys(cart).length === 0) {
+                console.log('❌ 购物车为空，无法测试');
+                return;
+            }
+            
+            try {
+                // 使用与实际提交相同的逻辑构建订单项
+                const orderItems = Object.keys(cart).map(cartKey => {
+                    // 解析购物车键，获取实际的商品ID和属性信息
+                    const { productId, attributes } = parseAttributeHash(cartKey);
+                    const actualProductId = productId || parseInt(cartKey);
+                    
+                    const p = getProductById(actualProductId);
+                    if (!p) {
+                        console.error(`[testOrderSubmissionData] 未找到商品ID: ${actualProductId} (购物车键: ${cartKey})`);
+                        throw new Error(`商品数据错误：找不到ID为${actualProductId}的商品`);
+                    }
+                    
+                    // 计算包含属性调整的价格
+                    const basePrice = p.price;
+                    const priceAdjustment = calculateAttributePriceAdjustment(actualProductId, attributes);
+                    const finalPrice = basePrice + priceAdjustment;
+                    
+                    // 构建订单项
+                    const orderItem = {
+                        goodsId: p.id,
+                        goodsName: p.name,
+                        goodsImageUrl: p.imageUrl || p.icon || p.image,
+                        price: finalPrice, // 使用包含属性调整的价格
+                        quantity: cart[cartKey]
+                    };
+                    
+                    // 如果有属性，添加属性信息
+                    if (attributes && Object.keys(attributes).length > 0) {
+                        orderItem.attributes = attributes;
+                        // 在商品名称后添加属性说明
+                        const attrTexts = Object.keys(attributes).map(key => `${key}: ${attributes[key]}`);
+                        orderItem.goodsName = `${p.name} (${attrTexts.join(', ')})`;
+                    }
+                    
+                    console.log(`📦 [testOrderSubmissionData] 订单项: 购物车键=${cartKey}, 商品ID=${actualProductId}, 属性=`, attributes, '最终价格=', finalPrice);
+                    
+                    return orderItem;
+                });
+                
+                console.log('✅ [testOrderSubmissionData] 订单项构建成功:', orderItems);
+                console.log('📊 [testOrderSubmissionData] 总金额:', orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2));
+                
+                return orderItems;
+                
+            } catch (error) {
+                console.error('❌ [testOrderSubmissionData] 订单项构建失败:', error);
+                return null;
+            }
+        }
+        
+        // 将测试函数暴露到全局
+        if (typeof window !== 'undefined') {
+            window.testOrderSubmissionData = testOrderSubmissionData;
         }
 
 
