@@ -2991,17 +2991,13 @@
         
         // 获取商品属性
         async function fetchProductAttributes(productId) {
-            console.log('🔄 [fetchProductAttributes] 获取商品属性，商品ID:', productId);
-            
             // 检查缓存
             if (PRODUCT_ATTRIBUTES[productId]) {
-                console.log('✅ [fetchProductAttributes] 从缓存获取属性:', PRODUCT_ATTRIBUTES[productId]);
                 return PRODUCT_ATTRIBUTES[productId];
             }
             
             try {
                 const apiUrl = `${API_BASE_URL}/goods/${productId}/attributes/grouped`;
-                console.log('🌐 [fetchProductAttributes] 请求URL:', apiUrl);
                 
                 const response = await fetch(apiUrl, {
                     method: 'GET',
@@ -3015,7 +3011,6 @@
                 }
                 
                 const attributes = await response.json();
-                console.log('✅ [fetchProductAttributes] 属性获取成功:', attributes);
                 
                 // 缓存属性数据
                 PRODUCT_ATTRIBUTES[productId] = attributes;
@@ -3787,8 +3782,6 @@
         
         // 处理商品加入购物车（支持属性选择）
         async function handleAddToCart(productId, delta = 1) {
-            console.log(`[handleAddToCart] 商品ID:${productId} 变化:${delta}`);
-            
             const product = getProductById(productId);
             if (!product) {
                 console.error('[handleAddToCart] 未找到商品:', productId);
@@ -3800,27 +3793,21 @@
             
             // 如果商品有属性，显示属性选择器
             if (attributes && Object.keys(attributes).length > 0) {
-                console.log('[handleAddToCart] 商品有属性，显示选择器');
                 showAttributeSelector(productId, delta);
             } else {
                 // 如果商品没有属性，直接加入购物车
-                console.log('[handleAddToCart] 商品无属性，直接加入购物车');
                 changeQty(productId, delta);
             }
         }
         
         // 处理商品从购物车移除（智能处理属性）
         async function handleRemoveFromCart(productId, delta = -1) {
-            console.log(`[handleRemoveFromCart] 商品ID:${productId} 变化:${delta}`);
-            
             // 检查购物车中是否有该商品的属性组合
             const productCartItems = Object.keys(cart).filter(cartKey => {
                 if (cartKey == productId) return true; // 无属性商品
                 if (cartKey.startsWith(productId + ':')) return true; // 有属性商品
                 return false;
             });
-            
-            console.log(`[handleRemoveFromCart] 购物车中的商品项:`, productCartItems);
             
             // 如果只有一个购物车项（无属性或只有一种属性组合）
             if (productCartItems.length === 1) {
@@ -3837,12 +3824,10 @@
                 renderProducts();
                 renderCart();
                 updateMainButton();
-                
-                console.log('[handleRemoveFromCart] 直接减少数量:', cart);
                 return;
             }
             
-            // 如果有多个属性组合，获取商品属性并显示选择器
+            // 如果有多个属性组合，显示属性选择器
             const product = getProductById(productId);
             if (!product) {
                 console.error('[handleRemoveFromCart] 未找到商品:', productId);
@@ -3851,9 +3836,8 @@
             
             const attributes = await fetchProductAttributes(productId);
             
-            // 显示属性选择器（减少模式）
+            // 显示属性选择器
             if (attributes && Object.keys(attributes).length > 0) {
-                console.log('[handleRemoveFromCart] 多个属性组合，显示选择器');
                 showAttributeSelector(productId, delta);
             } else {
                 // 如果没有属性，直接减少第一个项目
@@ -5061,8 +5045,6 @@
         
         // 显示属性选择器
         async function showAttributeSelector(productId, delta = 1) {
-            console.log('🎯 [showAttributeSelector] 显示属性选择器，商品ID:', productId, '数量变化:', delta);
-            
             const product = getProductById(productId);
             if (!product) {
                 console.error('❌ [showAttributeSelector] 未找到商品:', productId);
@@ -5077,16 +5059,22 @@
                 return;
             }
             
+            // 获取默认属性
+            const defaultAttributes = getDefaultAttributes(attributes);
+            
+            // 根据默认属性生成购物车键，获取当前数量
+            const defaultCartKey = generateAttributeHash(productId, defaultAttributes) || productId;
+            const currentQuantity = cart[defaultCartKey] || 0;
+            
             // 设置当前选择状态
             currentAttributeSelection = {
                 productId: productId,
-                delta: delta,
-                quantity: Math.abs(delta), // 初始数量为delta的绝对值
-                selectedAttributes: getDefaultAttributes(attributes)
+                quantity: currentQuantity, // 使用当前购物车中的数量
+                selectedAttributes: defaultAttributes
             };
             
             // 更新模态框标题
-            updateModalTitle(delta);
+            updateModalTitle();
             
             // 渲染商品信息
             renderProductInfo(product);
@@ -5115,16 +5103,13 @@
         
         // 隐藏属性选择器
         function hideAttributeSelector() {
-            console.log('🔄 [hideAttributeSelector] 隐藏属性选择器');
-            
             const modal = document.getElementById('product-attributes-modal');
             modal.style.display = 'none';
             
             // 重置选择状态
             currentAttributeSelection = {
                 productId: null,
-                delta: 1,
-                quantity: 1,
+                quantity: 0,
                 selectedAttributes: {}
             };
             
@@ -5207,10 +5192,17 @@
         
         // 选择属性选项
         function selectAttributeOption(attrName, attrValue) {
-            console.log('🎯 [selectAttributeOption] 选择属性:', attrName, '=', attrValue);
-            
             // 更新选择状态
             currentAttributeSelection.selectedAttributes[attrName] = attrValue;
+            
+            // 根据新的属性组合，获取购物车中的当前数量
+            const cartKey = generateAttributeHash(currentAttributeSelection.productId, currentAttributeSelection.selectedAttributes);
+            const currentQuantity = cart[cartKey] || 0;
+            
+            // 更新数量显示
+            currentAttributeSelection.quantity = currentQuantity;
+            updateAttributeQuantityDisplay();
+            updateConfirmButtonText();
             
             // 更新UI状态
             const allOptions = document.querySelectorAll(`[data-attr-name="${attrName}"]`);
@@ -5253,8 +5245,8 @@
         function changeAttributeQuantity(delta) {
             const newQuantity = currentAttributeSelection.quantity + delta;
             
-            // 限制数量范围（1-99）
-            if (newQuantity < 1 || newQuantity > 99) {
+            // 限制数量范围（0-99）
+            if (newQuantity < 0 || newQuantity > 99) {
                 return;
             }
             
@@ -5269,8 +5261,6 @@
             if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
                 Telegram.WebApp.HapticFeedback.impactOccurred('light');
             }
-            
-            console.log('🔢 [changeAttributeQuantity] 数量更新:', currentAttributeSelection.quantity);
         }
         
         // 更新属性数量显示
@@ -5281,62 +5271,43 @@
             quantityDisplay.textContent = currentAttributeSelection.quantity;
             
             // 控制减少按钮的禁用状态
-            decreaseBtn.disabled = currentAttributeSelection.quantity <= 1;
+            decreaseBtn.disabled = currentAttributeSelection.quantity <= 0;
         }
         
         // 更新确认按钮文字
         function updateConfirmButtonText() {
             const confirmBtn = document.getElementById('confirm-btn-text');
             const quantity = currentAttributeSelection.quantity;
-            const isRemoving = currentAttributeSelection.delta < 0;
             
-            if (isRemoving) {
-                if (quantity === 1) {
-                    confirmBtn.textContent = '确定移除';
-                } else {
-                    confirmBtn.textContent = `确定移除 (${quantity}件)`;
-                }
+            if (quantity === 0) {
+                confirmBtn.textContent = '确定';
+            } else if (quantity === 1) {
+                confirmBtn.textContent = '确定 (1件)';
             } else {
-                if (quantity === 1) {
-                    confirmBtn.textContent = '确定';
-                } else {
-                    confirmBtn.textContent = `确定 (${quantity}件)`;
-                }
+                confirmBtn.textContent = `确定 (${quantity}件)`;
             }
         }
         
         // 更新模态框标题
-        function updateModalTitle(delta) {
+        function updateModalTitle() {
             const titleElement = document.querySelector('.attributes-modal-title');
-            if (delta < 0) {
-                titleElement.textContent = '选择要移除的商品规格';
-            } else {
-                titleElement.textContent = '选择商品规格';
-            }
+            titleElement.textContent = '选择商品规格';
         }
         
         // 确认属性选择
         function confirmAttributeSelection() {
-            console.log('✅ [confirmAttributeSelection] 确认属性选择:', currentAttributeSelection);
+            const { productId, selectedAttributes, quantity } = currentAttributeSelection;
             
-            const { productId, delta, quantity, selectedAttributes } = currentAttributeSelection;
+            // 生成购物车键
+            const cartKey = generateAttributeHash(productId, selectedAttributes) || productId;
             
-            // 生成属性哈希
-            const attributeHash = generateAttributeHash(productId, selectedAttributes);
-            
-            // 使用属性哈希作为购物车键
-            const cartKey = attributeHash || productId;
-            
-            // 根据原始delta决定是增加还是减少
-            const actualDelta = delta > 0 ? quantity : -quantity;
-            
-            // 添加到购物车
-            cart[cartKey] = (cart[cartKey] || 0) + actualDelta;
-            if (cart[cartKey] <= 0) {
+            // 简单逻辑：直接设置购物车中该属性组合的数量
+            if (quantity > 0) {
+                cart[cartKey] = quantity;
+            } else {
+                // 如果数量为0，从购物车中删除该项
                 delete cart[cartKey];
             }
-            
-            console.log('🛒 [confirmAttributeSelection] 购物车更新后:', cart);
             
             // 保存到本地存储
             saveCartToStorage();
@@ -5350,19 +5321,10 @@
             hideAttributeSelector();
             
             // 显示成功提示
-            const isRemoving = delta < 0;
-            if (isRemoving) {
-                if (quantity === 1) {
-                    showToast('✅ 已从购物车移除');
-                } else {
-                    showToast(`✅ 已移除${quantity}件`);
-                }
+            if (quantity > 0) {
+                showToast(`✅ 已设置为${quantity}件`);
             } else {
-                if (quantity === 1) {
-                    showToast('✅ 已添加到购物车');
-                } else {
-                    showToast(`✅ 已添加${quantity}件到购物车`);
-                }
+                showToast(`✅ 已从购物车移除`);
             }
         }
 
@@ -6687,189 +6649,7 @@
             return errors;
         }
 
-        // 测试购物车属性功能的函数（用于调试）
-        function testCartAttributeFeature() {
-            console.log('🧪 [testCartAttributeFeature] 开始测试购物车属性功能...');
-            
-            // 清空购物车
-            cart = {};
-            
-            // 模拟添加带属性的商品
-            const productId = 1;
-            const attributes1 = { '温度': '冰' };
-            const attributes2 = { '温度': '不冰' };
-            
-            const hash1 = generateAttributeHash(productId, attributes1);
-            const hash2 = generateAttributeHash(productId, attributes2);
-            
-            console.log('🔑 [testCartAttributeFeature] 哈希1:', hash1);
-            console.log('🔑 [testCartAttributeFeature] 哈希2:', hash2);
-            
-            // 添加商品到购物车
-            cart[hash1] = 2; // 冰，2件
-            cart[hash2] = 3; // 不冰，3件
-            
-            console.log('🛒 [testCartAttributeFeature] 测试购物车:', cart);
-            
-            // 测试清理功能
-            cleanupInvalidCartItems(false);
-            
-            console.log('🛒 [testCartAttributeFeature] 清理后购物车:', cart);
-            
-            // 验证完整性
-            const report = validateCartIntegrity();
-            console.log('📊 [testCartAttributeFeature] 完整性报告:', report);
-            
-            // 渲染购物车
-            renderCart();
-            
-            console.log('✅ [testCartAttributeFeature] 测试完成');
-        }
-        
-        // 将测试函数暴露到全局作用域，方便在控制台调用
-        window.testCartAttributeFeature = testCartAttributeFeature;
 
-        // 简单的调试函数 - 模拟用户操作
-        function debugCartAttributeIssue() {
-            console.log('🐛 [debugCartAttributeIssue] 开始调试购物车属性问题...');
-            
-            // 清空购物车
-            cart = {};
-            console.log('🛒 [debugCartAttributeIssue] 1. 清空购物车:', cart);
-            
-            // 模拟第一次操作：选择"冰"，添加2件
-            const productId = 1;
-            const attributes1 = { '温度': '冰' };
-            const hash1 = generateAttributeHash(productId, attributes1);
-            cart[hash1] = 2;
-            console.log('🛒 [debugCartAttributeIssue] 2. 添加冰商品2件:', cart);
-            console.log('🔑 [debugCartAttributeIssue] 2. 生成的哈希:', hash1);
-            
-            // 模拟第二次操作：选择"不冰"，添加3件
-            const attributes2 = { '温度': '不冰' };
-            const hash2 = generateAttributeHash(productId, attributes2);
-            cart[hash2] = 3;
-            console.log('🛒 [debugCartAttributeIssue] 3. 添加不冰商品3件:', cart);
-            console.log('🔑 [debugCartAttributeIssue] 3. 生成的哈希:', hash2);
-            
-            // 验证购物车状态
-            console.log('🛒 [debugCartAttributeIssue] 4. 最终购物车状态:', cart);
-            console.log('📊 [debugCartAttributeIssue] 4. 购物车项目数:', Object.keys(cart).length);
-            
-            // 检查清理函数是否会影响
-            console.log('🧹 [debugCartAttributeIssue] 5. 测试清理函数...');
-            cleanupInvalidCartItems(false);
-            console.log('🛒 [debugCartAttributeIssue] 5. 清理后购物车:', cart);
-            
-            // 渲染购物车
-            renderCart();
-            
-            return cart;
-        }
-        
-        // 将调试函数暴露到全局
-        window.debugCartAttributeIssue = debugCartAttributeIssue;
-        
-        // 直接测试购物车属性逻辑
-        function testDirectCartLogic() {
-            console.log('🧪 [testDirectCartLogic] 开始直接测试购物车逻辑...');
-            
-            // 步骤1：清空购物车
-            cart = {};
-            console.log('1️⃣ 清空购物车:', cart);
-            
-            // 步骤2：模拟用户选择"冰"，添加2件
-            const selection1 = {
-                productId: 1,
-                selectedAttributes: { '温度': '冰' },
-                quantity: 2
-            };
-            
-            const hash1 = generateAttributeHash(selection1.productId, selection1.selectedAttributes);
-            cart[hash1] = selection1.quantity;
-            console.log('2️⃣ 添加冰商品:', { hash: hash1, quantity: selection1.quantity });
-            console.log('2️⃣ 购物车状态:', JSON.stringify(cart));
-            
-            // 步骤3：模拟用户选择"不冰"，添加3件
-            const selection2 = {
-                productId: 1,
-                selectedAttributes: { '温度': '不冰' },
-                quantity: 3
-            };
-            
-            const hash2 = generateAttributeHash(selection2.productId, selection2.selectedAttributes);
-            cart[hash2] = selection2.quantity;
-            console.log('3️⃣ 添加不冰商品:', { hash: hash2, quantity: selection2.quantity });
-            console.log('3️⃣ 购物车状态:', JSON.stringify(cart));
-            
-            // 步骤4：验证结果
-            const cartKeys = Object.keys(cart);
-            console.log('4️⃣ 购物车键列表:', cartKeys);
-            console.log('4️⃣ 购物车项目数:', cartKeys.length);
-            console.log('4️⃣ 总商品数量:', Object.values(cart).reduce((sum, qty) => sum + qty, 0));
-            
-            // 步骤5：验证哈希是否不同
-            console.log('5️⃣ 哈希验证:');
-            console.log('   - 冰商品哈希:', hash1);
-            console.log('   - 不冰商品哈希:', hash2);
-            console.log('   - 哈希是否不同:', hash1 !== hash2);
-            
-            return {
-                cart: cart,
-                hash1: hash1,
-                hash2: hash2,
-                success: cartKeys.length === 2 && hash1 !== hash2
-            };
-        }
-        
-        window.testDirectCartLogic = testDirectCartLogic;
-        
-        // 最简单的测试 - 直接模拟用户操作
-        function testSimpleCartFlow() {
-            console.log('🎯 [testSimpleCartFlow] 模拟用户操作流程...');
-            
-            // 清空购物车
-            cart = {};
-            
-            // 模拟用户操作1：选择"冰"，添加2件
-            console.log('👆 用户操作1：选择"冰"，添加2件');
-            currentAttributeSelection = {
-                productId: 1,
-                delta: 1,
-                quantity: 2,
-                selectedAttributes: { '温度': '冰' }
-            };
-            confirmAttributeSelection();
-            console.log('📊 操作1后购物车:', JSON.stringify(cart));
-            
-            // 模拟用户操作2：选择"不冰"，添加3件
-            console.log('👆 用户操作2：选择"不冰"，添加3件');
-            currentAttributeSelection = {
-                productId: 1,
-                delta: 1,
-                quantity: 3,
-                selectedAttributes: { '温度': '不冰' }
-            };
-            confirmAttributeSelection();
-            console.log('📊 操作2后购物车:', JSON.stringify(cart));
-            
-            // 验证结果
-            const keys = Object.keys(cart);
-            const totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-            
-            console.log('✅ 最终结果:');
-            console.log('   - 购物车项目数:', keys.length);
-            console.log('   - 总商品数量:', totalItems);
-            console.log('   - 购物车详情:', cart);
-            
-            // 检查是否符合预期
-            const expected = keys.length === 2 && totalItems === 5;
-            console.log('   - 结果是否正确:', expected ? '✅ 正确' : '❌ 错误');
-            
-            return { cart, expected };
-        }
-        
-        window.testSimpleCartFlow = testSimpleCartFlow;
     </script>
 
     <!-- 返回顶部按钮 -->
