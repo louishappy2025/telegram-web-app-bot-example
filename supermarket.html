@@ -1302,34 +1302,37 @@
         /* 属性选择器中的数量控制 */
         .attribute-quantity-section {
             margin-top: 12px;
-            padding: 12px;
+            padding: 10px 12px;
             background: var(--tg-theme-secondary-bg-color, #f8f9fa);
             border-radius: 8px;
             border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
         
         .attribute-quantity-title {
             font-size: 14px;
             font-weight: 600;
             color: var(--tg-theme-text-color, #333);
-            margin-bottom: 8px;
+            margin: 0;
+            flex-shrink: 0;
         }
         
         .attribute-quantity-controls {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 12px;
+            gap: 10px;
         }
         
         .attribute-qty-btn {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
             border-radius: 6px;
             background: var(--tg-theme-bg-color, #fff);
             color: var(--tg-theme-text-color, #333);
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -1362,12 +1365,12 @@
         }
         
         .attribute-quantity-display {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             color: var(--tg-theme-text-color, #333);
-            min-width: 36px;
+            min-width: 32px;
             text-align: center;
-            padding: 6px 10px;
+            padding: 4px 8px;
             background: var(--tg-theme-bg-color, #fff);
             border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
             border-radius: 6px;
