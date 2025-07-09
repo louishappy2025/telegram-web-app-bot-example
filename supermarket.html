@@ -2471,6 +2471,13 @@
         // 商品属性选择状态 {商品id: 选中的属性组合}
         let selectedAttributes = {};
         
+        // 图片缓存管理
+        const IMAGE_CACHE_KEY = 'supermarket_image_cache';
+        const IMAGE_CACHE_VERSION_KEY = 'supermarket_image_cache_version';
+        const CURRENT_IMAGE_CACHE_VERSION = '1.0';
+        const IMAGE_CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7天缓存时间
+        let imageCache = {};
+        
         // 商品分页数据
         let goodsLastId = null;
         let goodsHasMore = true;
@@ -2483,6 +2490,238 @@
             goodsHasMore = true;
             goodsLoading = false;
             PRODUCTS = [];
+        }
+
+        // 图片缓存管理函数
+        
+        // 加载图片缓存
+        function loadImageCache() {
+            try {
+                // 检查缓存版本
+                const savedVersion = localStorage.getItem(IMAGE_CACHE_VERSION_KEY);
+                if (savedVersion !== CURRENT_IMAGE_CACHE_VERSION) {
+                    console.log(`🔄 [loadImageCache] 图片缓存版本更新: ${savedVersion} -> ${CURRENT_IMAGE_CACHE_VERSION}`);
+                    clearImageCache();
+                    localStorage.setItem(IMAGE_CACHE_VERSION_KEY, CURRENT_IMAGE_CACHE_VERSION);
+                    return;
+                }
+                
+                const savedCache = localStorage.getItem(IMAGE_CACHE_KEY);
+                if (savedCache) {
+                    imageCache = JSON.parse(savedCache);
+                    
+                    // 清理过期的缓存
+                    const now = Date.now();
+                    let cleanedCount = 0;
+                    Object.keys(imageCache).forEach(url => {
+                        if (now - imageCache[url].timestamp > IMAGE_CACHE_DURATION) {
+                            delete imageCache[url];
+                            cleanedCount++;
+                        }
+                    });
+                    
+                    if (cleanedCount > 0) {
+                        console.log(`🧹 [loadImageCache] 清理了${cleanedCount}个过期图片缓存`);
+                        saveImageCache();
+                    }
+                    
+                    console.log(`📂 [loadImageCache] 加载图片缓存，共${Object.keys(imageCache).length}张图片`);
+                } else {
+                    console.log('📂 [loadImageCache] 没有找到图片缓存');
+                }
+            } catch (error) {
+                console.error('❌ [loadImageCache] 加载图片缓存失败:', error);
+                imageCache = {};
+            }
+        }
+        
+        // 保存图片缓存
+        function saveImageCache() {
+            try {
+                localStorage.setItem(IMAGE_CACHE_KEY, JSON.stringify(imageCache));
+                console.log(`💾 [saveImageCache] 图片缓存已保存，共${Object.keys(imageCache).length}张图片`);
+            } catch (error) {
+                console.error('❌ [saveImageCache] 保存图片缓存失败:', error);
+                // 如果存储空间不足，清理一些旧缓存
+                if (error.name === 'QuotaExceededError') {
+                    cleanOldImageCache();
+                }
+            }
+        }
+        
+        // 清理图片缓存
+        function clearImageCache() {
+            try {
+                imageCache = {};
+                localStorage.removeItem(IMAGE_CACHE_KEY);
+                console.log('🗑️ [clearImageCache] 图片缓存已清除');
+            } catch (error) {
+                console.error('❌ [clearImageCache] 清除图片缓存失败:', error);
+            }
+        }
+        
+        // 清理旧的图片缓存（保留最新的50张）
+        function cleanOldImageCache() {
+            try {
+                const entries = Object.entries(imageCache);
+                // 按时间戳排序，保留最新的50张图片
+                entries.sort((a, b) => b[1].timestamp - a[1].timestamp);
+                
+                const newCache = {};
+                entries.slice(0, 50).forEach(([url, data]) => {
+                    newCache[url] = data;
+                });
+                
+                const removedCount = entries.length - 50;
+                imageCache = newCache;
+                saveImageCache();
+                
+                console.log(`🧹 [cleanOldImageCache] 清理了${removedCount}个旧图片缓存，保留最新50张`);
+            } catch (error) {
+                console.error('❌ [cleanOldImageCache] 清理旧图片缓存失败:', error);
+            }
+        }
+        
+        // 获取缓存的图片数据URL
+        function getCachedImageDataUrl(imageUrl) {
+            if (!imageUrl || !imageCache[imageUrl]) {
+                return null;
+            }
+            
+            const cached = imageCache[imageUrl];
+            const now = Date.now();
+            
+            // 检查是否过期
+            if (now - cached.timestamp > IMAGE_CACHE_DURATION) {
+                delete imageCache[imageUrl];
+                saveImageCache();
+                return null;
+            }
+            
+            return cached.dataUrl;
+        }
+        
+        // 缓存图片为Base64数据URL
+        async function cacheImageAsDataUrl(imageUrl) {
+            if (!imageUrl || imageCache[imageUrl]) {
+                return; // 已经缓存或无效URL
+            }
+            
+            try {
+                console.log('📥 [cacheImageAsDataUrl] 开始缓存图片:', imageUrl);
+                
+                // 使用fetch获取图片
+                const response = await fetch(imageUrl, {
+                    mode: 'cors',
+                    cache: 'force-cache' // 优先使用浏览器缓存
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const blob = await response.blob();
+                
+                // 检查文件大小（限制为2MB）
+                if (blob.size > 2 * 1024 * 1024) {
+                    console.warn('⚠️ [cacheImageAsDataUrl] 图片过大，跳过缓存:', imageUrl);
+                    return;
+                }
+                
+                // 转换为Base64数据URL
+                const dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+                
+                // 保存到缓存
+                imageCache[imageUrl] = {
+                    dataUrl: dataUrl,
+                    timestamp: Date.now(),
+                    size: blob.size
+                };
+                
+                saveImageCache();
+                console.log('✅ [cacheImageAsDataUrl] 图片缓存成功:', imageUrl);
+                
+            } catch (error) {
+                console.error('❌ [cacheImageAsDataUrl] 缓存图片失败:', imageUrl, error);
+            }
+        }
+        
+        // 预加载并缓存图片
+        function preloadAndCacheImage(imageUrl) {
+            if (!imageUrl || imageCache[imageUrl]) {
+                return Promise.resolve();
+            }
+            
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous'; // 允许跨域
+                
+                img.onload = async () => {
+                    try {
+                        // 图片加载成功后，异步缓存
+                        await cacheImageAsDataUrl(imageUrl);
+                    } catch (error) {
+                        console.error('❌ [preloadAndCacheImage] 缓存失败:', error);
+                    }
+                    resolve();
+                };
+                
+                img.onerror = () => {
+                    console.warn('⚠️ [preloadAndCacheImage] 图片加载失败:', imageUrl);
+                    resolve();
+                };
+                
+                img.src = imageUrl;
+            });
+        }
+        
+        // 批量预加载商品图片
+        async function batchPreloadImages(products) {
+            if (!products || products.length === 0) {
+                return;
+            }
+            
+            console.log(`📥 [batchPreloadImages] 开始批量预加载${products.length}张商品图片`);
+            
+            // 过滤出需要预加载的图片URL
+            const imageUrls = products
+                .map(p => p.imageUrl)
+                .filter(url => url && !imageCache[url]);
+            
+            if (imageUrls.length === 0) {
+                console.log('📥 [batchPreloadImages] 所有图片都已缓存，无需预加载');
+                return;
+            }
+            
+            console.log(`📥 [batchPreloadImages] 需要预加载${imageUrls.length}张新图片`);
+            
+            // 分批预加载，避免同时加载太多图片
+            const batchSize = 3;
+            for (let i = 0; i < imageUrls.length; i += batchSize) {
+                const batch = imageUrls.slice(i, i + batchSize);
+                
+                // 并行加载当前批次的图片
+                const promises = batch.map(url => preloadAndCacheImage(url));
+                
+                try {
+                    await Promise.allSettled(promises);
+                    console.log(`📥 [batchPreloadImages] 批次 ${Math.floor(i/batchSize) + 1} 预加载完成`);
+                    
+                    // 批次间稍作延迟，避免过于密集的请求
+                    if (i + batchSize < imageUrls.length) {
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    }
+                } catch (error) {
+                    console.error('❌ [batchPreloadImages] 批次预加载失败:', error);
+                }
+            }
+            
+            console.log('✅ [batchPreloadImages] 批量预加载完成');
         }
 
         // 付款方式数据
@@ -2932,6 +3171,11 @@
                 if (Object.keys(cart).length > 0) {
                     cleanupInvalidCartItems(false);
                 }
+                
+                // 异步预加载新商品的图片（不阻塞主流程）
+                setTimeout(() => {
+                    batchPreloadImages(newProducts);
+                }, 500);
                 
                 return PRODUCTS;
                 
@@ -3720,12 +3964,23 @@
                 // 生成商品图片HTML
                 let imageHtml;
                 if (p.imageUrl) {
+                    // 检查是否有缓存的图片
+                    const cachedDataUrl = getCachedImageDataUrl(p.imageUrl);
+                    const imageSrc = cachedDataUrl || p.imageUrl;
+                    
+                    // 如果使用原始URL，异步预加载并缓存
+                    if (!cachedDataUrl) {
+                        // 延迟执行，避免阻塞渲染
+                        setTimeout(() => preloadAndCacheImage(p.imageUrl), 100);
+                    }
+                    
                     // 如果有图片URL，显示图片，使用contain确保完整显示图片内容
                     imageHtml = `
-                        <img src="${p.imageUrl}" 
+                        <img src="${imageSrc}" 
                              alt="${p.name}" 
                              style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px;"
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                             data-original-url="${p.imageUrl}">
                         <div style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: 60px; color: var(--tg-theme-hint-color, #999);">
                             ${p.image}
                         </div>
@@ -4756,6 +5011,9 @@
             // 从本地存储恢复购物车数据
             loadCartFromStorage();
             
+            // 加载图片缓存
+            loadImageCache();
+            
             // 在商品数据加载完成后，再次清理购物车以确保数据一致性（静默清理）
             cleanupInvalidCartItems(false);
             
@@ -4794,7 +5052,30 @@
                     forceClean: forceCleanupCart,
                     show: () => console.log('当前购物车:', cart)
                 };
+                
+                window.debugImageCache = {
+                    show: () => {
+                        const cacheInfo = {
+                            count: Object.keys(imageCache).length,
+                            totalSize: Object.values(imageCache).reduce((sum, item) => sum + (item.size || 0), 0),
+                            items: Object.keys(imageCache).map(url => ({
+                                url,
+                                size: imageCache[url].size,
+                                cached: new Date(imageCache[url].timestamp).toLocaleString()
+                            }))
+                        };
+                        console.log('📷 [图片缓存信息]', cacheInfo);
+                        return cacheInfo;
+                    },
+                    clear: clearImageCache,
+                    cleanOld: cleanOldImageCache,
+                    preload: preloadAndCacheImage,
+                    batchPreload: () => batchPreloadImages(PRODUCTS),
+                    get: getCachedImageDataUrl
+                };
+                
                 console.log('🔧 [调试工具] 购物车调试函数已暴露到 window.debugCart');
+                console.log('🔧 [调试工具] 图片缓存调试函数已暴露到 window.debugImageCache');
             }
         }
 
