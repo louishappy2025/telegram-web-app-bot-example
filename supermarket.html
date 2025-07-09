@@ -2341,8 +2341,8 @@
 
     <script>
         // API基础URL配置
-        // const API_BASE_URL = 'https://dhcs.cc';
-        const API_BASE_URL = 'https://www.supermarket.com/sapi';
+        const API_BASE_URL = 'https://dhcs.cc';
+        // const API_BASE_URL = 'https://www.supermarket.com/sapi';
         console.log('📋 [SCRIPT] API URL:', API_BASE_URL);
         
         // 获取Telegram用户信息
@@ -4359,13 +4359,17 @@
                         payMethod: order.payMethod,
                         payMethodName: payMap[order.payMethod] || order.payMethod,
                         total: order.totalAmount,
-                        items: orderData.orderItems.map(item => ({
-                            id: item.goodsId,
-                            name: item.goodsName,
-                            qty: item.quantity,
-                            price: item.price,
-                            imageUrl: item.goodsImageUrl || item.goodsIcon
-                        })),
+                        items: orderData.orderItems.map(item => {
+                            // 处理订单项数据结构：API返回的是 {orderItem: {...}, attributes: [...]} 结构
+                            const orderItem = item.orderItem || item; // 兼容不同的数据结构
+                            return {
+                                id: orderItem.goodsId,
+                                name: orderItem.goodsName,
+                                qty: orderItem.quantity,
+                                price: orderItem.actualPrice || orderItem.price, // 优先使用实际价格
+                                imageUrl: orderItem.goodsImageUrl || orderItem.goodsIcon
+                            };
+                        }),
                         orderStatus: order.orderStatus,
                         payStatus: order.payStatus,
                         createTime: order.createTime,
@@ -4777,13 +4781,17 @@
                     payMethod: order.payMethod,
                     payMethodName: paymentMethodName,
                     total: order.totalAmount,
-                    items: result.orderItems.map(item => ({
-                        id: item.goodsId,
-                        name: item.goodsName,
-                        qty: item.quantity,
-                        price: item.price,
-                        imageUrl: item.goodsImageUrl || item.goodsIcon
-                    })),
+                    items: result.orderItems.map(item => {
+                        // 处理订单项数据结构：API返回的是 {orderItem: {...}, attributes: [...]} 结构
+                        const orderItem = item.orderItem || item; // 兼容不同的数据结构
+                        return {
+                            id: orderItem.goodsId,
+                            name: orderItem.goodsName,
+                            qty: orderItem.quantity,
+                            price: orderItem.actualPrice || orderItem.price, // 优先使用实际价格
+                            imageUrl: orderItem.goodsImageUrl || orderItem.goodsIcon
+                        };
+                    }),
                     orderStatus: order.orderStatus,
                     payStatus: order.payStatus,
                     createTime: order.createTime,
