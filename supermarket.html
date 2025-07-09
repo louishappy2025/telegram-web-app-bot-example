@@ -2280,14 +2280,6 @@
 
         <!-- 订单页面 -->
         <div id="orders" class="tab-content">
-            <!-- PC端手动刷新按钮（已废弃 - 现在PC端和移动端都使用下拉刷新） -->
-            <!-- 💡 由于使用了 disableVerticalSwipes()，PC端现在也支持下拉刷新，不再需要手动按钮 -->
-            <div class="pc-refresh-controls" id="pc-refresh-controls" style="display: none;">
-                <button class="pc-refresh-btn" onclick="refreshOrders()">
-                    <span class="refresh-icon">🔄</span>
-                    刷新订单
-            </button>
-        </div>
         
             <!-- 自动刷新状态指示器 -->
             <div id="order-auto-refresh-indicator" style="display: none; text-align: center; padding: 8px; background: var(--tg-theme-secondary-bg-color, #f8f9fa); border-radius: 6px; margin-bottom: 12px; font-size: 12px; color: var(--tg-theme-hint-color, #6c757d);">
@@ -2349,8 +2341,8 @@
 
     <script>
         // API基础URL配置
-        // const API_BASE_URL = 'https://dhcs.cc';
-        const API_BASE_URL = 'https://www.supermarket.com/sapi';
+        const API_BASE_URL = 'https://dhcs.cc';
+        // const API_BASE_URL = 'https://www.supermarket.com/sapi';
         console.log('📋 [SCRIPT] API URL:', API_BASE_URL);
         
         // 获取Telegram用户信息
@@ -2483,6 +2475,15 @@
         let goodsLastId = null;
         let goodsHasMore = true;
         let goodsLoading = false;
+        
+        // 重置商品分页状态
+        function resetProductsPagination() {
+            console.log('🔄 [resetProductsPagination] 重置商品分页状态');
+            goodsLastId = null;
+            goodsHasMore = true;
+            goodsLoading = false;
+            PRODUCTS = [];
+        }
 
         // 付款方式数据
         let PAYMENT_METHODS = [];
@@ -2824,9 +2825,7 @@
                 if (isRefresh) {
                     goodsLastId = null;
                     goodsHasMore = true;
-                    if (isRefresh) {
-                        PRODUCTS = [];
-                    }
+                    PRODUCTS = [];
                 }
                 
                 // 如果没有更多数据且不是刷新，直接返回
@@ -3401,7 +3400,11 @@
 
         // 选择分类
         async function selectCategory(categoryId) {
+            console.log('🔄 [selectCategory] 切换分类:', categoryId);
             currentCategory = categoryId;
+            
+            // 重置分页状态
+            resetProductsPagination();
             
             // 重新获取该分类下的商品
             try {
@@ -3529,11 +3532,19 @@
                 // 商品页面上拉加载
                 if (currentTab === 'products' && !isLoadingProducts && goodsHasMore && !goodsLoading) {
                     if (scrollTop + clientHeight >= scrollHeight - 100) {
+                        console.log('🔄 [initInfiniteScroll] 触发商品上拉加载:', {
+                            goodsHasMore,
+                            goodsLoading,
+                            isLoadingProducts,
+                            currentProductsCount: PRODUCTS.length,
+                            goodsLastId
+                        });
+                        
                         isLoadingProducts = true;
                         try {
                             await loadMoreProducts();
                         } catch (error) {
-                            console.error('商品上拉加载失败:', error);
+                            console.error('❌ [initInfiniteScroll] 商品上拉加载失败:', error);
                         } finally {
                             isLoadingProducts = false;
                         }
@@ -3593,6 +3604,9 @@
                     currentSearchKeyword = keyword;
                     console.log('🔍 [handleSearchInput] 搜索关键词:', keyword);
                     
+                    // 重置分页状态
+                    resetProductsPagination();
+                    
                     try {
                         await fetchProducts(true, keyword); // 刷新商品列表并搜索
                         renderProducts();
@@ -3606,9 +3620,13 @@
 
         // 清除搜索
         async function clearSearch() {
+            console.log('🔄 [clearSearch] 清除搜索');
             document.getElementById('search-input').value = '';
             document.getElementById('clear-search-btn').style.display = 'none';
             currentSearchKeyword = '';
+            
+            // 重置分页状态
+            resetProductsPagination();
             
             try {
                 await fetchProducts(true, ''); // 重新加载所有商品
@@ -3621,9 +3639,18 @@
 
         // 加载更多商品
         async function loadMoreProducts() {
+            console.log('🔄 [loadMoreProducts] 开始加载更多商品:', {
+                goodsLoading,
+                goodsHasMore,
+                currentProductsCount: PRODUCTS.length,
+                goodsLastId,
+                currentSearchKeyword
+            });
+            
             if (goodsLoading || !goodsHasMore) {
-                    return;
-                }
+                console.log('🔄 [loadMoreProducts] 跳过加载:', { goodsLoading, goodsHasMore });
+                return;
+            }
 
             // 更新按钮状态
             const loadMoreBtn = document.getElementById('load-more-btn');
@@ -3635,7 +3662,18 @@
             }
             
             try {
+                const oldProductsCount = PRODUCTS.length;
                 await fetchProducts(false, currentSearchKeyword);
+                const newProductsCount = PRODUCTS.length;
+                
+                console.log('📊 [loadMoreProducts] 加载完成:', {
+                    oldCount: oldProductsCount,
+                    newCount: newProductsCount,
+                    addedCount: newProductsCount - oldProductsCount,
+                    goodsHasMore,
+                    goodsLastId
+                });
+                
                 renderProducts();
             } catch (error) {
                 console.error('❌ [loadMoreProducts] 加载更多商品失败:', error);
@@ -4667,11 +4705,7 @@
                     renderOrders();
                 }
                 
-                // 🎯 统一的刷新处理逻辑（PC端和移动端现在表现一致）
-                // 由于使用了 disableVerticalSwipes()，PC端和移动端都可以使用下拉刷新
-                const pcRefreshControls = document.getElementById('pc-refresh-controls');
-                // 显示PC端手动刷新按钮
-                if (pcRefreshControls) pcRefreshControls.style.display = 'block';
+
                 
                 // 启动订单自动刷新
                 startOrderAutoRefresh();
@@ -5469,179 +5503,18 @@
             return colorMap[status] || '#6c757d';
         }
 
-        // 支付凭证上传相关功能
-        let voucherUploadData = {}; // 存储每个订单的上传数据
 
-        // 选择支付凭证文件（已废弃 - 订单列表不再支持上传支付凭证）
-        function selectVoucherFile(orderId) {
-            console.log('🔄 [selectVoucherFile] 选择支付凭证文件，订单ID:', orderId);
-            
-            // 添加触觉反馈
-            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
-                Telegram.WebApp.HapticFeedback.impactOccurred('light');
-            }
-            
-            const fileInput = document.getElementById(`voucher-file-${orderId}`);
-            if (fileInput) {
-                fileInput.click();
-            }
-        }
 
-        // 处理文件选择（已废弃 - 订单列表不再支持上传支付凭证）
-        function handleVoucherFileSelect(orderId, inputElement) {
-            const file = inputElement.files[0];
-            if (!file) {
-                console.log('🔄 [handleVoucherFileSelect] 没有选择文件');
-                    return;
-                }
 
-            console.log('🔄 [handleVoucherFileSelect] 开始上传文件:', file.name);
-            
-            // 验证文件类型
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-            if (!allowedTypes.includes(file.type)) {
-                alert('请选择有效的图片文件（JPG、PNG、GIF）');
-                inputElement.value = ''; // 清空文件选择
-                return;
-            }
-            
-            // 验证文件大小（10MB限制）
-            const maxSize = 10 * 1024 * 1024; // 10MB
-            if (file.size > maxSize) {
-                alert('图片文件大小不能超过10MB');
-                inputElement.value = ''; // 清空文件选择
-                return;
-            }
-            
-            // 开始上传
-            uploadVoucherImage(orderId, file);
-        }
 
-        // 上传支付凭证图片（已废弃 - 订单列表不再支持上传支付凭证）
-        async function uploadVoucherImage(orderId, file) {
-            console.log('🔄 [uploadVoucherImage] 开始上传图片，订单ID:', orderId);
-            
-            // 显示加载状态
-            showVoucherLoading(orderId, true);
-            
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('folder', 'payment');
-                
-                console.log('📤 [uploadVoucherImage] 发送上传请求...');
-                
-                const response = await fetch(`${API_BASE_URL}/api/v1/file/upload/image`, {
-                    method: 'POST',
-                    headers: getRequestHeaders(true), // 传递true表示是FormData请求
-                    body: formData
-                });
-                
-                console.log('📡 [uploadVoucherImage] 响应状态:', response.status, response.statusText);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                console.log('✅ [uploadVoucherImage] 上传响应:', result);
-                
-                if (result.code === 200 && result.data && result.data.length > 0) {
-                    const imageUrl = result.data[0];
-                    console.log('✅ [uploadVoucherImage] 图片上传成功，URL:', imageUrl);
-                    
-                    // 保存上传数据
-                    voucherUploadData[orderId] = {
-                        imageUrl: imageUrl,
-                        file: file
-                    };
-                    
-                    // 显示图片预览
-                    showVoucherPreview(orderId, imageUrl);
-                    
-                    // 添加触觉反馈
-                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
-                        Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-                    }
-                    
-                } else {
-                    throw new Error(result.message || '上传失败');
-                }
-                
-            } catch (error) {
-                console.error('❌ [uploadVoucherImage] 上传失败:', error);
-                
-                // 显示错误提示
-                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
-                    Telegram.WebApp.showAlert('图片上传失败：' + error.message);
-                } else {
-                    alert('图片上传失败：' + error.message);
-                }
-                
-                // 清空文件选择
-                const fileInput = document.getElementById(`voucher-file-${orderId}`);
-                if (fileInput) {
-                    fileInput.value = '';
-                }
-                
-            } finally {
-                // 隐藏加载状态
-                showVoucherLoading(orderId, false);
-            }
-        }
-
-        // 显示/隐藏加载状态（已废弃 - 订单列表不再支持上传支付凭证）
-        function showVoucherLoading(orderId, show) {
-            const loadingElement = document.getElementById(`voucher-loading-${orderId}`);
-            const uploadBtn = document.querySelector(`#voucher-section-${orderId} .voucher-upload-btn`);
-            
-            if (loadingElement) {
-                loadingElement.style.display = show ? 'flex' : 'none';
-            }
-            
-            if (uploadBtn) {
-                uploadBtn.disabled = show;
-            }
-        }
-
-        // 显示图片预览（已废弃 - 订单列表不再支持上传支付凭证）
-        function showVoucherPreview(orderId, imageUrl) {
-            console.log('🔄 [showVoucherPreview] 显示图片预览，订单ID:', orderId, 'URL:', imageUrl);
-            
-            const previewElement = document.getElementById(`voucher-preview-${orderId}`);
-            const imageElement = document.getElementById(`voucher-image-${orderId}`);
-            
-            if (previewElement && imageElement) {
-                imageElement.src = imageUrl;
-                previewElement.style.display = 'block';
-                
-                console.log('✅ [showVoucherPreview] 图片预览显示完成');
-            }
-        }
-
-        // 确认提交支付凭证（已废弃 - 订单列表不再支持上传支付凭证）
+        // 确认提交支付凭证（用于下单页面）
         async function confirmPaymentVoucher(orderId) {
             console.log('🔄 [confirmPaymentVoucher] 确认提交支付凭证，订单ID:', orderId);
             
-            const uploadData = voucherUploadData[orderId];
-            if (!uploadData || !uploadData.imageUrl) {
-                console.error('❌ [confirmPaymentVoucher] 没有找到上传的图片数据');
-                alert('请先上传支付凭证图片');
-                    return;
-                }
-
-            // 添加触觉反馈
-            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
-                Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-            }
-            
-            // 显示加载状态
-            showVoucherLoading(orderId, true);
-            
             try {
                 const requestData = {
-                    paymentUrl: uploadData.imageUrl,
-                    remark: `用户上传支付凭证，文件名：${uploadData.file.name}`
+                    paymentUrl: paymentVoucherData.imageUrl,
+                    remark: `用户上传支付凭证，文件名：${paymentVoucherData.file.name}`
                 };
                 
                 console.log('📤 [confirmPaymentVoucher] 发送提交请求:', requestData);
@@ -5671,9 +5544,6 @@
                         orders[orderIndex].updateTime = result.data.updateTime || new Date().toISOString();
                     }
                     
-                    // 清理上传数据
-                    delete voucherUploadData[orderId];
-                    
                     // 重新渲染订单列表
                     renderOrders();
                     
@@ -5684,7 +5554,7 @@
                         alert('✅ 支付凭证提交成功！订单已标记为已支付。');
                     }
                     
-                    } else {
+                } else {
                     throw new Error(result.message || '提交失败');
                 }
                 
@@ -5697,10 +5567,6 @@
                 } else {
                     alert('支付凭证提交失败：' + error.message);
                 }
-                
-            } finally {
-                // 隐藏加载状态
-                showVoucherLoading(orderId, false);
             }
         }
 
@@ -6437,11 +6303,7 @@
             console.log('✅ [resetPaymentVoucher] 支付凭证重置完成');
         }
 
-        // 重置付款参数（已废弃 - 后端自动生成）
-        function resetPaymentRemark() {
-            // 已废弃，保留空函数以兼容现有代码
-            console.log('🔄 [resetPaymentRemark] 已废弃 - 后端自动生成付款参数');
-        }
+
 
         // 货到付款相关变量
         let codExchangeRate = { USD: 4000 }; // 汇率：1美元 = 4000柬埔寨币
@@ -6478,10 +6340,7 @@
             console.log('✅ [resetCodForm] 货到付款表单重置完成');
         }
 
-        // 货币选择变化事件（已废弃，保留空函数以兼容）
-        function onCodCurrencyChange() {
-            // 已废弃，新版本不需要货币选择
-        }
+
 
         // 验证数字输入（只允许数字和小数点）
         function validateNumberInput(event) {
@@ -6625,11 +6484,7 @@
             return total;
         }
 
-        // 更新货到付款付款参数（已废弃 - 后端自动生成）
-        function updateCodRemark() {
-            // 已废弃，保留空函数以兼容现有代码
-            console.log('🔄 [updateCodRemark] 已废弃 - 后端自动生成付款参数');
-        }
+
 
         // 验证货到付款表单
         function validateCodForm() {
@@ -6775,6 +6630,26 @@
             }
         };
 
+        // 调试函数：显示商品分页状态
+        function debugProductsPagination() {
+            console.log('📊 [debugProductsPagination] 商品分页状态:', {
+                goodsLastId,
+                goodsHasMore,
+                goodsLoading,
+                currentProductsCount: PRODUCTS.length,
+                currentCategory,
+                currentSearchKeyword
+            });
+            return {
+                goodsLastId,
+                goodsHasMore,
+                goodsLoading,
+                currentProductsCount: PRODUCTS.length,
+                currentCategory,
+                currentSearchKeyword
+            };
+        }
+
         // 将函数暴露到全局作用域
         if (typeof window !== 'undefined') {
             // 测试函数
@@ -6797,6 +6672,10 @@
             window.updateOrderItem = updateOrderItem;
             window.deleteOrderItem = deleteOrderItem;
             window.batchAddOrderItems = batchAddOrderItems;
+            
+            // 调试函数
+            window.debugProductsPagination = debugProductsPagination;
+            window.resetProductsPagination = resetProductsPagination;
         }
 
         // 获取订单详情
