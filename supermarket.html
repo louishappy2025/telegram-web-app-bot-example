@@ -4362,12 +4362,34 @@
                         items: orderData.orderItems.map(item => {
                             // 处理订单项数据结构：API返回的是 {orderItem: {...}, attributes: [...]} 结构
                             const orderItem = item.orderItem || item; // 兼容不同的数据结构
+                            
+                            // 处理属性信息
+                            let attributeText = '';
+                            if (item.attributeTexts && item.attributeTexts.length > 0) {
+                                // 优先使用已格式化的属性文本
+                                attributeText = item.attributeTexts.join(', ');
+                            } else if (item.attributes && item.attributes.length > 0) {
+                                // 如果没有格式化文本，则手动构建
+                                const attrTexts = item.attributes.map(attr => {
+                                    const adjustment = attr.priceAdjustment || 0;
+                                    if (adjustment > 0) {
+                                        return `${attr.attributeValue}(+${adjustment.toFixed(2)})`;
+                                    } else if (adjustment < 0) {
+                                        return `${attr.attributeValue}(${adjustment.toFixed(2)})`;
+                                    } else {
+                                        return attr.attributeValue;
+                                    }
+                                });
+                                attributeText = attrTexts.join(', ');
+                            }
+                            
                             return {
                                 id: orderItem.goodsId,
                                 name: orderItem.goodsName,
                                 qty: orderItem.quantity,
                                 price: orderItem.actualPrice || orderItem.price, // 优先使用实际价格
-                                imageUrl: orderItem.goodsImageUrl || orderItem.goodsIcon
+                                imageUrl: orderItem.goodsImageUrl || orderItem.goodsIcon,
+                                attributes: attributeText // 添加属性文本
                             };
                         }),
                         orderStatus: order.orderStatus,
@@ -4527,7 +4549,14 @@
                         <div>🕒 ${o.createTime ? new Date(o.createTime).toLocaleString() : '未知时间'}</div>
                         </div>
                     <div style='margin:8px 0;padding:8px;background:#f8f9fa;border-radius:4px;'>
-                        ${o.items.map(it=>`${it.name} × ${it.qty} = $${(it.price*it.qty).toFixed(2)}`).join('<br>')}
+                        ${o.items.map(it=>{
+                            // 构建商品显示文本
+                            let itemText = it.name;
+                            if (it.attributes && it.attributes.trim()) {
+                                itemText += ` (${it.attributes})`;
+                            }
+                            return `${itemText} × ${it.qty} = $${(it.price*it.qty).toFixed(2)}`;
+                        }).join('<br>')}
                                 </div>
                     <div style='font-weight:bold;text-align:right;color:#0088cc;font-size:16px;'>
                         总计：$${o.total.toFixed(2)}
@@ -4784,12 +4813,34 @@
                     items: result.orderItems.map(item => {
                         // 处理订单项数据结构：API返回的是 {orderItem: {...}, attributes: [...]} 结构
                         const orderItem = item.orderItem || item; // 兼容不同的数据结构
+                        
+                        // 处理属性信息
+                        let attributeText = '';
+                        if (item.attributeTexts && item.attributeTexts.length > 0) {
+                            // 优先使用已格式化的属性文本
+                            attributeText = item.attributeTexts.join(', ');
+                        } else if (item.attributes && item.attributes.length > 0) {
+                            // 如果没有格式化文本，则手动构建
+                            const attrTexts = item.attributes.map(attr => {
+                                const adjustment = attr.priceAdjustment || 0;
+                                if (adjustment > 0) {
+                                    return `${attr.attributeValue}(+${adjustment.toFixed(2)})`;
+                                } else if (adjustment < 0) {
+                                    return `${attr.attributeValue}(${adjustment.toFixed(2)})`;
+                                } else {
+                                    return attr.attributeValue;
+                                }
+                            });
+                            attributeText = attrTexts.join(', ');
+                        }
+                        
                         return {
                             id: orderItem.goodsId,
                             name: orderItem.goodsName,
                             qty: orderItem.quantity,
                             price: orderItem.actualPrice || orderItem.price, // 优先使用实际价格
-                            imageUrl: orderItem.goodsImageUrl || orderItem.goodsIcon
+                            imageUrl: orderItem.goodsImageUrl || orderItem.goodsIcon,
+                            attributes: attributeText // 添加属性文本
                         };
                     }),
                     orderStatus: order.orderStatus,
