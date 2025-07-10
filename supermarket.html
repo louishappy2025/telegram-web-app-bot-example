@@ -141,15 +141,13 @@
 
         .category-form-group {
             display: flex;
-            align-items: center;
-            gap: 6px;
+            flex-direction: column;
+            gap: 8px;
             width: 100%;
             box-sizing: border-box;
         }
 
         .category-form-group label {
-            flex-shrink: 0;
-            width: 75px;
             font-weight: 600;
             color: var(--tg-theme-text-color, #333);
             margin-bottom: 0;
@@ -157,11 +155,10 @@
         }
 
         .category-select {
-            flex: 1;
-            min-width: 0;
-            padding: 8px 12px;
+            width: 100%;
+            padding: 12px 16px;
             border: 2px solid transparent;
-            border-radius: 10px;
+            border-radius: 12px;
             background: linear-gradient(#f8fafc, #f8fafc) padding-box,
                         linear-gradient(135deg, #e2e8f0, #cbd5e1) border-box;
             color: #374151;
@@ -195,53 +192,92 @@
             color: var(--tg-theme-text-color, #333);
         }
 
-        /* 热销商品筛选按钮样式 */
-        .hot-filter-container {
+        /* 左右分栏布局 */
+        .products-layout {
             display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            margin: 12px 0 0 0;
+            gap: 16px;
+            margin-top: 16px;
+            flex-direction: row;
         }
 
-        .hot-filter-btn {
-            display: inline-flex;
+        /* 左侧分类边栏 */
+        .categories-sidebar {
+            width: 150px;
+            flex-shrink: 0;
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 12px;
+            padding: 10px;
+            position: fixed;
+            top: 190px; /* 固定头部高度(含搜索框) + 一些间距 */
+            left: 16px;
+            bottom: 20px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #ccc transparent;
+            -webkit-overflow-scrolling: touch;
+            z-index: 100;
+            max-height: calc(100vh - 140px);
+        }
+
+        .sidebar-section {
+            margin-bottom: 6px;
+        }
+
+        .sidebar-section:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 右侧商品区域 */
+        .products-main {
+            flex: 1;
+            min-width: 0;
+            margin-left: 166px; /* 左侧分类栏宽度 + 间距 */
+        }
+
+        /* 热销商品筛选按钮样式 - 侧边栏版本 */
+        .hot-filter-btn.sidebar-btn {
+            display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
+            gap: 8px;
+            padding: 8px 10px;
             border: 2px solid transparent;
-            border-radius: 20px;
+            border-radius: 8px;
             background: linear-gradient(#f8fafc, #f8fafc) padding-box,
                         linear-gradient(135deg, #e2e8f0, #cbd5e1) border-box;
             color: #374151;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             user-select: none;
             outline: none;
-            height: 36px; /* 与独立分类按钮同高度 */
+            width: 100%;
+            justify-content: flex-start;
+            margin: 0;
+            min-height: 40px;
         }
 
-        .hot-filter-btn:hover {
+        .hot-filter-btn.sidebar-btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
-        .hot-filter-btn.active {
+        .hot-filter-btn.sidebar-btn.active {
             background: linear-gradient(135deg, #ff6b6b, #ee5a24) padding-box,
                         linear-gradient(135deg, #ff6b6b, #ee5a24) border-box;
             color: white;
             box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3);
         }
 
-        .hot-filter-btn.active:hover {
+        .hot-filter-btn.sidebar-btn.active:hover {
             box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
         }
 
         .hot-filter-icon {
-            font-size: 16px;
+            font-size: 11px;
             transition: transform 0.3s ease;
+            flex-shrink: 0;
         }
 
         .hot-filter-btn.active .hot-filter-icon {
@@ -249,7 +285,197 @@
         }
 
         .hot-filter-text {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            line-height: 1.1;
+            flex: 1;
+            min-width: 0; /* 允许文字收缩 */
+        }
+        
+        .hot-filter-chinese {
+            font-size: 13px;
             font-weight: 600;
+            color: #374151;
+        }
+        
+        .hot-filter-khmer {
+            font-size: 10px;
+            font-weight: 400;
+            color: #6b7280;
+            white-space: nowrap; /* 防止换行 */
+            overflow: hidden;
+            text-overflow: ellipsis; /* 超长时显示省略号 */
+        }
+        
+        .hot-filter-btn.active .hot-filter-chinese,
+        .hot-filter-btn.active .hot-filter-khmer {
+            color: white;
+        }
+
+        /* 移动端响应式 - 保持左右布局 */
+        @media (max-width: 768px) {
+            .products-layout {
+                flex-direction: row;
+                gap: 8px;
+                align-items: flex-start;
+            }
+            
+            .categories-sidebar {
+                width: 120px;
+                left: 12px;
+                padding: 8px;
+                max-height: calc(100vh - 130px);
+            }
+            
+            .products-main {
+                margin-left: 136px; /* 移动端分类栏宽度 + 间距 */
+            }
+            
+            /* 中等屏幕的热销按钮优化 */
+            .hot-filter-btn.sidebar-btn {
+                gap: 6px;
+                padding: 6px 8px;
+            }
+            
+            .hot-filter-btn.sidebar-btn .hot-filter-icon {
+                font-size: 10px;
+            }
+            
+            .hot-filter-btn.sidebar-btn .hot-filter-chinese {
+                font-size: 11px;
+                line-height: 1.1;
+            }
+            
+            .hot-filter-btn.sidebar-btn .hot-filter-khmer {
+                font-size: 8px;
+                line-height: 1.1;
+            }
+            
+        }
+        
+        /* 分类栏滚动条样式 */
+        .categories-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .categories-sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .categories-sidebar::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 2px;
+        }
+        
+        .categories-sidebar::-webkit-scrollbar-thumb:hover {
+            background: #999;
+            
+
+            
+            .sidebar-section {
+                margin-bottom: 12px;
+            }
+            
+            .separate-categories-buttons {
+                flex-direction: column;
+                gap: 4px;
+            }
+            
+            .separate-category-btn {
+                width: 100%;
+                font-size: 11px;
+                padding: 6px 8px;
+                min-height: 32px;
+            }
+            
+            .all-categories-container {
+                flex-direction: column;
+                gap: 4px;
+            }
+            
+            .all-category-btn {
+                width: 100%;
+                font-size: 11px;
+                padding: 6px 8px;
+                min-height: 32px;
+            }
+            
+            .products-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+                padding-bottom: 80px;
+            }
+            
+
+        }
+
+        @media (max-width: 480px) {
+            .categories-sidebar {
+                width: 100px;
+                left: 8px;
+                padding: 6px;
+                max-height: calc(100vh - 125px);
+            }
+            
+            .products-main {
+                margin-left: 112px; /* 小屏幕分类栏宽度 + 间距 */
+            }
+            
+            .separate-category-btn {
+                font-size: 10px;
+                padding: 4px 6px;
+                min-height: 28px;
+            }
+            
+            .separate-category-btn .category-chinese {
+                font-size: 10px;
+            }
+            
+            .separate-category-btn .category-khmer {
+                font-size: 8px;
+            }
+            
+            .all-category-btn {
+                font-size: 10px;
+                padding: 4px 6px;
+                min-height: 28px;
+            }
+            
+            .all-category-btn .category-chinese {
+                font-size: 10px;
+            }
+            
+            .all-category-btn .category-khmer {
+                font-size: 8px;
+            }
+            
+            .hot-filter-btn.sidebar-btn {
+                font-size: 10px;
+                padding: 4px 6px;
+                min-height: 28px;
+                gap: 4px; /* 减少图标和文字间距 */
+            }
+            
+            .hot-filter-btn.sidebar-btn .hot-filter-icon {
+                font-size: 9px; /* 移动端更小的图标 */
+            }
+            
+            .hot-filter-btn.sidebar-btn .hot-filter-chinese {
+                font-size: 9px;
+                line-height: 1.1;
+            }
+            
+            .hot-filter-btn.sidebar-btn .hot-filter-khmer {
+                font-size: 7px;
+                line-height: 1.1;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+                padding-bottom: 80px;
+            }
         }
 
         /* 下拉刷新样式 */
@@ -286,10 +512,10 @@
         .pull-refresh.refreshing .pull-refresh-indicator {
             opacity: 1;
             top: -40px;
-            animation: spin 1s linear infinite;
+            animation: pullRefreshSpin 1s linear infinite;
         }
 
-        @keyframes spin {
+        @keyframes pullRefreshSpin {
             from { transform: translateX(-50%) rotate(0deg); }
             to { transform: translateX(-50%) rotate(360deg); }
         }
@@ -425,7 +651,7 @@
         .products-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
+            gap: 12px;
             padding-bottom: 20px;
         }
 
@@ -1112,47 +1338,71 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* 单独显示的分类样式 - 与热销商品按钮统一样式 */
+        /* 单独显示的分类样式 - 侧边栏版本 */
         .separate-categories-container {
-            margin: 12px 0 0 0;
+            margin: 0;
             padding: 0;
             background: transparent;
             border: none;
             border-radius: 0;
         }
         
-        .separate-categories-title {
-            display: none;
-        }
+
         
         .separate-categories-buttons {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: flex-start;
-            align-items: center;
+            flex-direction: column;
+            gap: 6px;
+            margin: 0;
+            padding: 0;
         }
         
         .separate-category-btn {
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            justify-content: center;
-            padding: 8px 16px;
+            justify-content: flex-start;
+            padding: 8px 10px;
             border: 2px solid transparent;
-            border-radius: 20px;
+            border-radius: 8px;
             background: linear-gradient(#f8fafc, #f8fafc) padding-box,
                         linear-gradient(135deg, #e2e8f0, #cbd5e1) border-box;
             color: #374151;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             user-select: none;
             outline: none;
-            white-space: nowrap;
-            height: 36px; /* 与热销商品按钮同高度 */
-            min-width: auto;
+            width: 100%;
+            text-align: left;
+            margin: 0;
+            margin-bottom: 6px;
+            min-height: 40px;
+        }
+        
+        .separate-category-btn .category-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            line-height: 1.2;
+        }
+        
+        .separate-category-btn .category-chinese {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .separate-category-btn .category-khmer {
+            font-size: 10px;
+            font-weight: 400;
+            color: #6b7280;
+        }
+        
+        .separate-category-btn.active .category-chinese,
+        .separate-category-btn.active .category-khmer {
+            color: white;
         }
         
         .separate-category-btn:hover {
@@ -1169,6 +1419,78 @@
         
         .separate-category-btn.active:hover {
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 所有分类按钮样式 */
+        .all-categories-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .all-category-btn {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 8px 10px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            background: linear-gradient(#f8fafc, #f8fafc) padding-box,
+                        linear-gradient(135deg, #e2e8f0, #cbd5e1) border-box;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            user-select: none;
+            outline: none;
+            width: 100%;
+            text-align: left;
+            margin: 0;
+            min-height: 40px;
+        }
+        
+        .all-category-btn .category-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            line-height: 1.2;
+        }
+        
+        .all-category-btn .category-chinese {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .all-category-btn .category-khmer {
+            font-size: 10px;
+            font-weight: 400;
+            color: #6b7280;
+        }
+        
+        .all-category-btn.active .category-chinese,
+        .all-category-btn.active .category-khmer {
+            color: white;
+        }
+
+        .all-category-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .all-category-btn.active {
+            background: linear-gradient(135deg, #10b981, #059669) padding-box,
+                        linear-gradient(135deg, #10b981, #059669) border-box;
+            color: white;
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+        }
+
+        .all-category-btn.active:hover {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
         }
         
         /* 商品属性选择器样式 */
@@ -2145,12 +2467,57 @@
             transform: translateY(0);
             box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
         }
+        
+        /* 固定头部样式 */
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--tg-theme-bg-color, #fff);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            border-bottom: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+        }
+        
+        /* 为固定头部预留空间 */
+        .container {
+            padding-top: 130px; /* 只有标题和Tab的高度 */
+            transition: padding-top 0.3s ease;
+        }
+        
+        /* 当搜索框显示时增加顶部空间 */
+        .container.with-search {
+            padding-top: 180px;
+        }
+        
+
+        
+        /* 移动端调整 */
+        @media (max-width: 768px) {
+            .container {
+                padding-top: 120px;
+            }
+            
+            .container.with-search {
+                padding-top: 160px;
+            }
+            
+            .fixed-header .header {
+                padding: 8px 12px;
+            }
+            
+            .fixed-header .search-container {
+                margin: 0 12px 8px 12px;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="header" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0;">
+    <!-- 固定头部 -->
+    <div class="fixed-header">
+        <div class="header" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px;">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <img src="image.jpg" alt="超市Logo" class="logo" style="width: 40px; height: 40px;">
                 <h1 style="margin: 0; font-size: 18px; font-weight: 600;">大海超市外卖</h1>
@@ -2165,6 +2532,15 @@
             <button class="tab" onclick="switchTab('cart')">购物车</button>
             <button class="tab" onclick="switchTab('orders')">订单</button>
         </div>
+        
+        <!-- 搜索框 - 只在商品页面显示 -->
+        <div id="fixed-search-container" class="search-container" style="margin: 0 16px 12px 16px;">
+            <input type="text" id="fixed-search-input" class="search-input" placeholder="搜索商品..." onkeyup="handleSearchInput(event)">
+            <button onclick="clearSearch()" id="fixed-clear-search-btn" class="search-clear-btn">✕</button>
+        </div>
+    </div>
+    
+    <div class="container">
 
         <!-- 商品页面 -->
         <div id="products" class="tab-content active">
@@ -2174,52 +2550,53 @@
                     ↓
                 </div>
                 
-                <!-- 搜索框 -->
-                <div class="search-container">
-                    <input type="text" id="search-input" class="search-input" placeholder="搜索商品..." onkeyup="handleSearchInput(event)">
-                    <button onclick="clearSearch()" id="clear-search-btn" class="search-clear-btn">✕</button>
-                </div>
-                
-                <!-- 分类容器 -->
-                <div class="categories-container">
-                    <div class="category-form-group">
-                        <label for="category-select">商品分类：</label>
-                        <select id="category-select" class="category-select" onchange="onCategoryChange()">
-                            <option value="">全部分类</option>
-                            <!-- 分类选项将通过JavaScript加载 -->
-                        </select>
-                    </div>
-                    
-                    <!-- 分类按钮和热销商品按钮容器 -->
-                    <div class="filter-buttons-container" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px;">
+
+
+                <!-- 左右分栏布局 -->
+                <div class="products-layout">
+                    <!-- 左侧分类边栏 -->
+                    <div class="categories-sidebar">
+                        <!-- 热销商品筛选按钮 -->
+                        <div class="sidebar-section">
+                            <button id="hot-filter-btn" class="hot-filter-btn sidebar-btn" onclick="toggleHotFilter()">
+                                <span class="hot-filter-icon">🔥</span>
+                                <div class="hot-filter-text">
+                                    <div class="hot-filter-chinese">热销</div>
+                                    <div class="hot-filter-khmer">Bán chạy</div>
+                                </div>
+                            </button>
+                        </div>
+                        
                         <!-- 单独显示的分类按钮 -->
-                        <div id="separate-categories" class="separate-categories-container" style="display: none; margin: 0;">
+                        <div id="separate-categories" class="sidebar-section separate-categories-container" style="display: none;">
                             <!-- 单独显示的分类按钮将通过JavaScript加载 -->
                         </div>
                         
-                        <!-- 热销商品筛选按钮 -->
-                        <div class="hot-filter-container" style="margin: 0;">
-                            <button id="hot-filter-btn" class="hot-filter-btn" onclick="toggleHotFilter()">
-                                <span class="hot-filter-icon">🔥</span>
-                                <span class="hot-filter-text">热销商品</span>
+                        <!-- 所有分类按钮 -->
+                        <div class="sidebar-section">
+                            <div id="all-categories" class="all-categories-container">
+                                <!-- 所有分类按钮将通过JavaScript加载 -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧商品区域 -->
+                    <div class="products-main">
+                        <!-- 商品容器 -->
+                        <div class="products-container">
+                            <div class="products-grid" id="product-list">
+                                <!-- 商品将通过JavaScript加载 -->
+                            </div>
+                        </div>
+                        
+                        <!-- 加载更多按钮 -->
+                        <div id="products-load-more" class="load-more-container" style="display: none;">
+                            <button onclick="loadMoreProducts()" class="load-more-btn" id="load-more-btn">
+                                <span id="load-more-text">加载更多商品</span>
                             </button>
                         </div>
                     </div>
                 </div>
-                
-                <!-- 商品容器 -->
-                <div class="products-container">
-                    <div class="products-grid" id="product-list">
-                        <!-- 商品将通过JavaScript加载 -->
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 加载更多按钮 -->
-            <div id="products-load-more" class="load-more-container" style="display: none;">
-                <button onclick="loadMoreProducts()" class="load-more-btn" id="load-more-btn">
-                    <span id="load-more-text">加载更多商品</span>
-                </button>
             </div>
         </div>
 
@@ -2414,8 +2791,8 @@
 
     <script>
         // API基础URL配置
-        // const API_BASE_URL = 'https://dhcs.cc';
-        const API_BASE_URL = 'https://www.supermarket.com/sapi';
+        const API_BASE_URL = 'https://dhcs.cc';
+        // const API_BASE_URL = 'https://www.supermarket.com/sapi';
         console.log('📋 [SCRIPT] API URL:', API_BASE_URL);
         
         // 获取Telegram用户信息
@@ -2531,12 +2908,12 @@
             {id: 'vegetables', name: '蔬菜', separateDisplay: 0},
             {id: 'beverages', name: '饮料', separateDisplay: 0},
             {id: 'featured', name: '特色推荐', separateDisplay: 1},
-            {id: 'hot', name: '热销商品', separateDisplay: 1}
+                                  {id: 'hot', name: '热销', separateDisplay: 1}
         ];
 
         // 购物车对象 {商品id: 数量} 或 {商品id_属性哈希: 数量}
         let cart = {};
-        let currentCategory = 'all';
+        let currentCategory = ''; // 初始为空，表示显示全部商品
         let hotFilterActive = false; // 热销商品筛选状态
         
         // 商品属性缓存 {商品id: 属性数据}
@@ -2863,7 +3240,7 @@
                 }
                 
                 // 添加分类筛选
-                if (currentCategory && currentCategory !== 'all') {
+                if (currentCategory && currentCategory !== '') {
                     // 从 'category_1' 格式中提取数字
                     const categoryId = parseInt(currentCategory.replace('category_', ''));
                     if (!isNaN(categoryId)) {
@@ -3209,14 +3586,11 @@
                 }
                 console.log('✅ [fetchCategories] 分类数据获取成功:', categories);
                 
-                // 添加"全部"选项到分类列表开头
-                const allCategories = [
-                    {id: 'all', name: '全部'},
-                    ...categories.map(cat => ({
-                        ...cat,
-                        id: `category_${cat.id}` // 转换为分类ID格式
-                    }))
-                ];
+                // 直接使用从API获取的分类数据，不添加"全部"选项
+                const allCategories = categories.map(cat => ({
+                    ...cat,
+                    id: `category_${cat.id}` // 转换为分类ID格式
+                }));
                 
                 // 更新全局分类数据
                 CATEGORIES = allCategories;
@@ -3241,9 +3615,8 @@
                     console.error('🔧 [fetchCategories] 分类数据加载失败，使用默认分类');
                 }
                 
-                // 如果接口失败，使用默认分类
+                // 如果接口失败，使用默认分类（不包含"全部"）
                 CATEGORIES = [
-                    {id: 'all', name: '全部', separateDisplay: 0},
                     {id: 'category_1', name: '水果', separateDisplay: 0},
                     {id: 'category_2', name: '乳制品', separateDisplay: 0},
                     {id: 'category_3', name: '面包', separateDisplay: 0},
@@ -3251,40 +3624,20 @@
                     {id: 'category_5', name: '蔬菜', separateDisplay: 0},
                     {id: 'category_6', name: '饮料', separateDisplay: 0},
                     {id: 'featured', name: '特色推荐', separateDisplay: 1},
-                    {id: 'hot', name: '热销商品', separateDisplay: 1}
+                    {id: 'hot', name: '热销', separateDisplay: 1}
                 ];
                 renderCategories();
                 return CATEGORIES;
             }
         }
 
-        // 渲染分类
+                // 渲染分类
         function renderCategories() {
-            const categorySelect = document.getElementById('category-select');
-            if (!categorySelect) return;
-            
-            // 清空所有选项，重新构建
-            categorySelect.innerHTML = '';
-            
-            // 添加"全部分类"选项
-            const allOption = document.createElement('option');
-            allOption.value = '';
-            allOption.textContent = '全部分类';
-            if (!currentCategory || currentCategory === '') {
-                allOption.selected = true;
-            }
-            categorySelect.appendChild(allOption);
-            
             // 分离普通分类和单独显示分类
             const normalCategories = [];
             const separateCategories = [];
             
             CATEGORIES.forEach(cat => {
-                // 跳过名称为"全部"的分类，避免重复
-                if (cat.name === '全部' || cat.name === '全部分类') {
-                    return;
-                }
-                
                 // 根据separateDisplay字段分类
                 if (cat.separateDisplay === 1) {
                     separateCategories.push(cat);
@@ -3293,19 +3646,13 @@
                 }
             });
             
-            // 添加普通分类到下拉框
-            normalCategories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat.id;
-                option.textContent = cat.name;
-                if (cat.id === currentCategory) {
-                    option.selected = true;
-                }
-                categorySelect.appendChild(option);
-            });
-            
             // 渲染单独显示的分类
             renderSeparateCategories(separateCategories);
+            
+            // 渲染所有分类按钮
+            renderAllCategories(normalCategories);
+            
+
         }
         
         // 渲染单独显示的分类
@@ -3324,21 +3671,25 @@
                 return;
             }
             
-            // 构建HTML
-            let html = `
-                <div class="separate-categories-title">
-                    ⭐ 特色分类
-                </div>
-                <div class="separate-categories-buttons">
-            `;
+            // 构建HTML - 直接渲染按钮，不包含标题
+            let html = '<div class="separate-categories-buttons">';
             
             separateCategories.forEach(cat => {
                 const isActive = cat.id === currentCategory ? 'active' : '';
+                
+                // 根据"-"分割中文和柬埔寨文
+                const nameParts = cat.name.split('-');
+                const chineseName = nameParts[0]?.trim() || cat.name;
+                const khmerName = nameParts[1]?.trim() || '';
+                
                 html += `
                     <button class="separate-category-btn ${isActive}" 
                             onclick="selectSeparateCategory('${cat.id}')"
                             data-category-id="${cat.id}">
-                        ${cat.name}
+                        <div class="category-text">
+                            <div class="category-chinese">${chineseName}</div>
+                            ${khmerName ? `<div class="category-khmer">${khmerName}</div>` : ''}
+                        </div>
                     </button>
                 `;
             });
@@ -3350,7 +3701,104 @@
             
             console.log('✅ [renderSeparateCategories] 单独显示分类渲染完成，显示容器');
         }
+
+        // 渲染所有分类按钮
+        function renderAllCategories(normalCategories) {
+            console.log('🎯 [renderAllCategories] 开始渲染所有分类按钮:', normalCategories);
+            
+            const allCategoriesContainer = document.getElementById('all-categories');
+            if (!allCategoriesContainer) {
+                console.error('❌ [renderAllCategories] 找不到所有分类容器');
+                return;
+            }
+            
+            // 构建HTML，过滤掉"全部"分类
+            let html = '';
+            
+            normalCategories.forEach(cat => {
+                // 跳过"全部"分类
+                if (cat.name === '全部' || cat.id === 'all') {
+                    return;
+                }
+                
+                const isActive = cat.id === currentCategory ? 'active' : '';
+                
+                // 根据"-"分割中文和柬埔寨文
+                const nameParts = cat.name.split('-');
+                const chineseName = nameParts[0]?.trim() || cat.name;
+                const khmerName = nameParts[1]?.trim() || '';
+                
+                html += `
+                    <button class="all-category-btn ${isActive}" 
+                            onclick="selectAllCategory('${cat.id}')"
+                            data-category-id="${cat.id}">
+                        <div class="category-text">
+                            <div class="category-chinese">${chineseName}</div>
+                            ${khmerName ? `<div class="category-khmer">${khmerName}</div>` : ''}
+                        </div>
+                    </button>
+                `;
+            });
+            
+            allCategoriesContainer.innerHTML = html;
+            
+            console.log('✅ [renderAllCategories] 所有分类按钮渲染完成');
+        }
         
+
+        
+        // 选择所有分类按钮
+        function selectAllCategory(categoryId) {
+            console.log('🎯 [selectAllCategory] 选择分类:', categoryId);
+            
+            // 检查是否是重复点击已激活的分类
+            const isCurrentlyActive = currentCategory === categoryId;
+            
+            if (isCurrentlyActive) {
+                // 如果点击的是已激活的分类，则取消选择，回到全部分类
+                console.log('🔄 [selectAllCategory] 取消选择，回到全部分类');
+                currentCategory = '';
+                
+                // 清除所有分类按钮的激活状态
+                const allCategoryBtns = document.querySelectorAll('.all-category-btn');
+                allCategoryBtns.forEach(btn => btn.classList.remove('active'));
+                
+                // 清除所有单独显示分类按钮的激活状态
+                const allSeparateBtns = document.querySelectorAll('.separate-category-btn');
+                allSeparateBtns.forEach(btn => btn.classList.remove('active'));
+                
+                // 添加触觉反馈
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                    Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                }
+                
+                // 获取全部分类的商品
+                selectCategory('');
+            } else {
+                // 选择新的分类
+                console.log('✅ [selectAllCategory] 选择新分类:', categoryId);
+                currentCategory = categoryId;
+                
+                // 更新所有分类按钮状态
+                const allCategoryBtns = document.querySelectorAll('.all-category-btn');
+                allCategoryBtns.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.categoryId === categoryId);
+                });
+                
+                // 清除所有单独显示分类按钮的激活状态
+                const allSeparateBtns = document.querySelectorAll('.separate-category-btn');
+                allSeparateBtns.forEach(btn => btn.classList.remove('active'));
+                
+                // 添加触觉反馈
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                    Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                }
+                
+                // 获取对应分类的商品
+                selectCategory(categoryId);
+            }
+        }
+
         // 选择单独显示的分类
         function selectSeparateCategory(categoryId) {
             console.log('🎯 [selectSeparateCategory] 选择单独显示分类:', categoryId);
@@ -3363,11 +3811,9 @@
                 console.log('🔄 [selectSeparateCategory] 取消选择，回到全部分类');
                 currentCategory = '';
                 
-                // 更新下拉框选择状态为全部分类
-                const categorySelect = document.getElementById('category-select');
-                if (categorySelect) {
-                    categorySelect.value = '';
-                }
+                // 清除所有分类按钮的激活状态
+                const allCategoryBtns = document.querySelectorAll('.all-category-btn');
+                allCategoryBtns.forEach(btn => btn.classList.remove('active'));
                 
                 // 清除所有单独显示分类按钮的激活状态
                 const allSeparateBtns = document.querySelectorAll('.separate-category-btn');
@@ -3385,11 +3831,9 @@
                 console.log('✅ [selectSeparateCategory] 选择新分类:', categoryId);
                 currentCategory = categoryId;
                 
-                // 更新下拉框选择状态（重置为全部分类）
-                const categorySelect = document.getElementById('category-select');
-                if (categorySelect) {
-                    categorySelect.value = '';
-                }
+                // 清除所有分类按钮的激活状态
+                const allCategoryBtns = document.querySelectorAll('.all-category-btn');
+                allCategoryBtns.forEach(btn => btn.classList.remove('active'));
                 
                 // 更新单独显示分类按钮的激活状态
                 const allSeparateBtns = document.querySelectorAll('.separate-category-btn');
@@ -3410,18 +3854,8 @@
                 selectCategory(categoryId);
             }
         }
+        
 
-        // 分类下拉框变化事件
-        function onCategoryChange() {
-            const categorySelect = document.getElementById('category-select');
-            const selectedCategoryId = categorySelect.value;
-            
-            // 清除单独显示分类的激活状态
-            const allSeparateBtns = document.querySelectorAll('.separate-category-btn');
-            allSeparateBtns.forEach(btn => btn.classList.remove('active'));
-            
-            selectCategory(selectedCategoryId);
-        }
 
         // 选择分类
         async function selectCategory(categoryId) {
@@ -3445,17 +3879,8 @@
         function toggleHotFilter() {
             hotFilterActive = !hotFilterActive;
             
-            // 更新按钮状态
-            const hotFilterBtn = document.getElementById('hot-filter-btn');
-            const hotFilterText = document.querySelector('.hot-filter-text');
-            
-            if (hotFilterActive) {
-                hotFilterBtn.classList.add('active');
-                hotFilterText.textContent = '热销商品 ✓';
-            } else {
-                hotFilterBtn.classList.remove('active');
-                hotFilterText.textContent = '热销商品';
-            }
+            // 更新热销按钮状态
+            updateHotFilterButtons();
             
             // 重置分页状态
             resetProductsPagination();
@@ -3466,6 +3891,27 @@
             });
             
             console.log('🔥 [toggleHotFilter] 热销商品筛选状态:', hotFilterActive);
+        }
+        
+        // 更新热销按钮状态
+        function updateHotFilterButtons() {
+            // 更新热销按钮
+            const hotFilterBtn = document.getElementById('hot-filter-btn');
+            const hotFilterChinese = hotFilterBtn ? hotFilterBtn.querySelector('.hot-filter-chinese') : null;
+            
+            if (hotFilterBtn) {
+                if (hotFilterActive) {
+                    hotFilterBtn.classList.add('active');
+                    if (hotFilterChinese) {
+                        hotFilterChinese.textContent = '热销 ✓';
+                    }
+                } else {
+                    hotFilterBtn.classList.remove('active');
+                    if (hotFilterChinese) {
+                        hotFilterChinese.textContent = '热销';
+                    }
+                }
+            }
         }
 
         // 搜索相关变量
@@ -3641,7 +4087,7 @@
         // 处理搜索输入
         function handleSearchInput(event) {
             const keyword = event.target.value.trim();
-            const clearBtn = document.getElementById('clear-search-btn');
+            const clearBtn = document.getElementById('fixed-clear-search-btn');
             
             // 显示/隐藏清除按钮
             clearBtn.style.display = keyword ? 'block' : 'none';
@@ -3673,8 +4119,8 @@
         // 清除搜索
         async function clearSearch() {
             console.log('🔄 [clearSearch] 清除搜索');
-            document.getElementById('search-input').value = '';
-            document.getElementById('clear-search-btn').style.display = 'none';
+            document.getElementById('fixed-search-input').value = '';
+            document.getElementById('fixed-clear-search-btn').style.display = 'none';
             currentSearchKeyword = '';
             
             // 重置分页状态
@@ -4879,6 +5325,26 @@
             // 显示tab导航
             document.querySelector('.tabs').style.display = 'flex';
             
+            // 控制搜索框显示
+            const searchContainer = document.getElementById('fixed-search-container');
+            const container = document.querySelector('.container');
+            const categoriesSidebar = document.querySelector('.categories-sidebar');
+            if (searchContainer && container) {
+                const showSearch = tabName === 'products';
+                searchContainer.style.display = showSearch ? 'block' : 'none';
+                container.classList.toggle('with-search', showSearch);
+                
+                // 动态调整分类栏位置
+                if (categoriesSidebar) {
+                    const isMobile = window.innerWidth <= 768;
+                    if (showSearch) {
+                        categoriesSidebar.style.top = isMobile ? '170px' : '190px';
+                    } else {
+                        categoriesSidebar.style.top = isMobile ? '130px' : '140px';
+                    }
+                }
+            }
+            
             // 隐藏所有tab内容
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -4967,11 +5433,9 @@
             
             // 再获取商品数据
             try {
-                // 先获取全部商品数据，确保购物车可以正常显示
-                const originalCategory = currentCategory;
-                currentCategory = 'all'; // 临时设置为全部分类
+                // 获取全部商品数据，确保购物车可以正常显示
+                // currentCategory 初始为空字符串，表示获取全部商品
                 await fetchProducts(true); // 初始化时刷新商品列表
-                currentCategory = originalCategory; // 恢复原始分类
             } catch (error) {
                 console.error('❌ 获取商品失败:', error);
             }
@@ -4987,6 +5451,34 @@
             // 渲染页面内容
             renderProducts();
             renderCart();
+            
+            // 设置初始状态（商品页面显示搜索框）
+            const container = document.querySelector('.container');
+            const categoriesSidebar = document.querySelector('.categories-sidebar');
+            if (container) {
+                container.classList.add('with-search');
+            }
+            
+            // 设置分类栏初始位置
+            if (categoriesSidebar) {
+                const isMobile = window.innerWidth <= 768;
+                categoriesSidebar.style.top = isMobile ? '170px' : '190px';
+            }
+            
+            // 监听窗口大小变化，动态调整分类栏位置
+            window.addEventListener('resize', () => {
+                const categoriesSidebar = document.querySelector('.categories-sidebar');
+                const searchContainer = document.getElementById('fixed-search-container');
+                if (categoriesSidebar && searchContainer) {
+                    const isMobile = window.innerWidth <= 768;
+                    const showSearch = searchContainer.style.display !== 'none';
+                    if (showSearch) {
+                        categoriesSidebar.style.top = isMobile ? '170px' : '190px';
+                    } else {
+                        categoriesSidebar.style.top = isMobile ? '130px' : '140px';
+                    }
+                }
+            });
             
             // 初始化各种功能
             initTelegramWebApp();
@@ -7241,19 +7733,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 [DOMContentLoaded] 页面初始化开始');
             
-            // 初始化热销筛选按钮状态
-            const hotFilterBtn = document.getElementById('hot-filter-btn');
-            const hotFilterText = document.querySelector('.hot-filter-text');
+
             
-            if (hotFilterBtn && hotFilterText) {
-                if (hotFilterActive) {
-                    hotFilterBtn.classList.add('active');
-                    hotFilterText.textContent = '热销商品 ✓';
-                } else {
-                    hotFilterBtn.classList.remove('active');
-                    hotFilterText.textContent = '热销商品';
-                }
-            }
+            // 初始化热销筛选按钮状态
+            updateHotFilterButtons();
             
             console.log('✅ [DOMContentLoaded] 页面初始化完成');
         });
