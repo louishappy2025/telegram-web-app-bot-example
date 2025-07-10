@@ -195,6 +195,63 @@
             color: var(--tg-theme-text-color, #333);
         }
 
+        /* 热销商品筛选按钮样式 */
+        .hot-filter-container {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            margin: 12px 0 0 0;
+        }
+
+        .hot-filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border: 2px solid transparent;
+            border-radius: 20px;
+            background: linear-gradient(#f8fafc, #f8fafc) padding-box,
+                        linear-gradient(135deg, #e2e8f0, #cbd5e1) border-box;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            user-select: none;
+            outline: none;
+            height: 36px; /* 与独立分类按钮同高度 */
+        }
+
+        .hot-filter-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .hot-filter-btn.active {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24) padding-box,
+                        linear-gradient(135deg, #ff6b6b, #ee5a24) border-box;
+            color: white;
+            box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3);
+        }
+
+        .hot-filter-btn.active:hover {
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .hot-filter-icon {
+            font-size: 16px;
+            transition: transform 0.3s ease;
+        }
+
+        .hot-filter-btn.active .hot-filter-icon {
+            transform: scale(1.1);
+        }
+
+        .hot-filter-text {
+            font-weight: 600;
+        }
+
         /* 下拉刷新样式 */
         .pull-refresh {
             position: relative;
@@ -1055,9 +1112,9 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* 单独显示的分类样式 */
+        /* 单独显示的分类样式 - 与热销商品按钮统一样式 */
         .separate-categories-container {
-            margin: 8px 0;
+            margin: 12px 0 0 0;
             padding: 0;
             background: transparent;
             border: none;
@@ -1071,54 +1128,47 @@
         .separate-categories-buttons {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 8px;
             justify-content: flex-start;
+            align-items: center;
         }
         
         .separate-category-btn {
-            padding: 4px 12px;
-            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border: 2px solid transparent;
             border-radius: 20px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            font-size: 12px;
-            font-weight: 600;
+            background: linear-gradient(#f8fafc, #f8fafc) padding-box,
+                        linear-gradient(135deg, #e2e8f0, #cbd5e1) border-box;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            user-select: none;
+            outline: none;
             white-space: nowrap;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .separate-category-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.6s ease;
-        }
-        
-        .separate-category-btn:hover::before {
-            left: 100%;
+            height: 36px; /* 与热销商品按钮同高度 */
+            min-width: auto;
         }
         
         .separate-category-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
         
         .separate-category-btn.active {
-            background: linear-gradient(135deg, #ffd93d, #ff6b6b);
-            box-shadow: 0 3px 10px rgba(255, 107, 107, 0.4);
-            transform: scale(1.05);
+            background: linear-gradient(135deg, #667eea, #764ba2) padding-box,
+                        linear-gradient(135deg, #667eea, #764ba2) border-box;
+            color: white;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
         }
         
-        .separate-category-btn:active {
-            transform: translateY(0) scale(0.98);
+        .separate-category-btn.active:hover {
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
         
         /* 商品属性选择器样式 */
@@ -2140,9 +2190,20 @@
                         </select>
                     </div>
                     
-                    <!-- 单独显示的分类按钮 -->
-                    <div id="separate-categories" class="separate-categories-container" style="display: none;">
-                        <!-- 单独显示的分类按钮将通过JavaScript加载 -->
+                    <!-- 分类按钮和热销商品按钮容器 -->
+                    <div class="filter-buttons-container" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px;">
+                        <!-- 单独显示的分类按钮 -->
+                        <div id="separate-categories" class="separate-categories-container" style="display: none; margin: 0;">
+                            <!-- 单独显示的分类按钮将通过JavaScript加载 -->
+                        </div>
+                        
+                        <!-- 热销商品筛选按钮 -->
+                        <div class="hot-filter-container" style="margin: 0;">
+                            <button id="hot-filter-btn" class="hot-filter-btn" onclick="toggleHotFilter()">
+                                <span class="hot-filter-icon">🔥</span>
+                                <span class="hot-filter-text">热销商品</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -2476,6 +2537,7 @@
         // 购物车对象 {商品id: 数量} 或 {商品id_属性哈希: 数量}
         let cart = {};
         let currentCategory = 'all';
+        let hotFilterActive = false; // 热销商品筛选状态
         
         // 商品属性缓存 {商品id: 属性数据}
         let PRODUCT_ATTRIBUTES = {};
@@ -2807,6 +2869,11 @@
                     if (!isNaN(categoryId)) {
                         requestData.categoryId = categoryId;
                     }
+                }
+                
+                // 添加热销商品筛选
+                if (hotFilterActive) {
+                    requestData.salesCount = 100; // 销量 >= 100 的商品
                 }
                 
                 // 添加分页参数
@@ -3374,6 +3441,33 @@
             }
         }
 
+        // 切换热销商品筛选
+        function toggleHotFilter() {
+            hotFilterActive = !hotFilterActive;
+            
+            // 更新按钮状态
+            const hotFilterBtn = document.getElementById('hot-filter-btn');
+            const hotFilterText = document.querySelector('.hot-filter-text');
+            
+            if (hotFilterActive) {
+                hotFilterBtn.classList.add('active');
+                hotFilterText.textContent = '热销商品 ✓';
+            } else {
+                hotFilterBtn.classList.remove('active');
+                hotFilterText.textContent = '热销商品';
+            }
+            
+            // 重置分页状态
+            resetProductsPagination();
+            
+            // 刷新商品数据
+            fetchProducts(true).then(() => {
+                renderProducts();
+            });
+            
+            console.log('🔥 [toggleHotFilter] 热销商品筛选状态:', hotFilterActive);
+        }
+
         // 搜索相关变量
         let searchTimeout = null;
         let currentSearchKeyword = '';
@@ -3657,10 +3751,16 @@
 
         // 渲染商品列表
         function renderProducts() {
-            console.log('[renderProducts] 当前购物车', cart, '当前分类', currentCategory, '搜索关键词', currentSearchKeyword);
+            console.log('[renderProducts] 当前购物车', cart, '当前分类', currentCategory, '搜索关键词', currentSearchKeyword, '热销筛选', hotFilterActive);
             
             // 使用PRODUCTS数组（已经通过API过滤）
-            const list = PRODUCTS.map(p => {
+            // 如果启用了热销筛选，需要在本地也进行筛选（针对默认数据）
+            let filteredProducts = PRODUCTS;
+            if (hotFilterActive) {
+                filteredProducts = PRODUCTS.filter(p => (p.salesCount || 0) >= 100);
+            }
+            
+            const list = filteredProducts.map(p => {
                 // 计算商品在购物车中的总数量（包括所有属性组合）
                 let totalQty = 0;
                 Object.keys(cart).forEach(cartKey => {
@@ -3728,11 +3828,18 @@
                 document.getElementById('product-list').innerHTML = list;
                 } else {
                 // 显示空状态
+                let emptyMessage = '暂时没有商品';
+                if (currentSearchKeyword) {
+                    emptyMessage = `没有找到包含"${currentSearchKeyword}"的商品`;
+                } else if (hotFilterActive) {
+                    emptyMessage = '没有找到热销商品（销量≥100）';
+                }
+                
                 const emptyHtml = `
                     <div class="empty-state">
                         <div class="empty-state-icon">🛒</div>
                         <h3>没有找到商品</h3>
-                        <p>${currentSearchKeyword ? `没有找到包含"${currentSearchKeyword}"的商品` : '暂时没有商品'}</p>
+                        <p>${emptyMessage}</p>
                     </div>
                 `;
                 document.getElementById('product-list').innerHTML = emptyHtml;
@@ -7010,6 +7117,27 @@
                 throw error;
             }
         }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 [DOMContentLoaded] 页面初始化开始');
+            
+            // 初始化热销筛选按钮状态
+            const hotFilterBtn = document.getElementById('hot-filter-btn');
+            const hotFilterText = document.querySelector('.hot-filter-text');
+            
+            if (hotFilterBtn && hotFilterText) {
+                if (hotFilterActive) {
+                    hotFilterBtn.classList.add('active');
+                    hotFilterText.textContent = '热销商品 ✓';
+                } else {
+                    hotFilterBtn.classList.remove('active');
+                    hotFilterText.textContent = '热销商品';
+                }
+            }
+            
+            console.log('✅ [DOMContentLoaded] 页面初始化完成');
+        });
 
 
     </script>
