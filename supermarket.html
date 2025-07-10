@@ -2791,8 +2791,8 @@
 
     <script>
         // API基础URL配置
-        const API_BASE_URL = 'https://dhcs.cc';
-        // const API_BASE_URL = 'https://www.supermarket.com/sapi';
+        // const API_BASE_URL = 'https://dhcs.cc';
+        const API_BASE_URL = 'https://www.supermarket.com/sapi';
         console.log('📋 [SCRIPT] API URL:', API_BASE_URL);
         
         // 获取Telegram用户信息
@@ -4454,7 +4454,14 @@
                 }
             });
             
-            document.getElementById('cart-total').innerText = items ? `总计：$${total.toFixed(2)}` : '';
+            const cartTotalElement = document.getElementById('cart-total');
+            if (items && total > 0) {
+                cartTotalElement.innerText = `总计：$${total.toFixed(2)}`;
+                cartTotalElement.style.display = 'block';
+            } else {
+                cartTotalElement.innerText = '';
+                cartTotalElement.style.display = 'none';
+            }
             console.log('[renderCart] 总价', total);
         }
 
@@ -5650,8 +5657,8 @@
                             });
                         } else {
                         Telegram.WebApp.MainButton.setParams({
-                                text: '继续购物',
-                                is_visible: true
+                                text: '',
+                                is_visible: false
                             });
                         }
                         break;
@@ -5842,7 +5849,7 @@
             // 设置当前选择状态
             currentAttributeSelection = {
                 productId: productId,
-                quantity: currentQuantity, // 使用当前购物车中的数量
+                quantity: Math.max(1, currentQuantity), // 最少为1，如果购物车中有更多则使用购物车数量
                 selectedAttributes: defaultAttributes
             };
             
@@ -5972,8 +5979,8 @@
             const cartKey = generateAttributeHash(currentAttributeSelection.productId, currentAttributeSelection.selectedAttributes);
             const currentQuantity = cart[cartKey] || 0;
             
-            // 更新数量显示
-            currentAttributeSelection.quantity = currentQuantity;
+            // 更新数量显示（最少为1）
+            currentAttributeSelection.quantity = Math.max(1, currentQuantity);
             updateAttributeQuantityDisplay();
             updateConfirmButtonText();
             
@@ -6018,8 +6025,8 @@
         function changeAttributeQuantity(delta) {
             const newQuantity = currentAttributeSelection.quantity + delta;
             
-            // 限制数量范围（0-99）
-            if (newQuantity < 0 || newQuantity > 99) {
+            // 限制数量范围（1-99）
+            if (newQuantity < 1 || newQuantity > 99) {
                 return;
             }
             
@@ -6043,8 +6050,8 @@
             
             quantityDisplay.textContent = currentAttributeSelection.quantity;
             
-            // 控制减少按钮的禁用状态
-            decreaseBtn.disabled = currentAttributeSelection.quantity <= 0;
+            // 控制减少按钮的禁用状态（数量为1时禁用）
+            decreaseBtn.disabled = currentAttributeSelection.quantity <= 1;
         }
         
         // 更新确认按钮文字
@@ -6052,9 +6059,7 @@
             const confirmBtn = document.getElementById('confirm-btn-text');
             const quantity = currentAttributeSelection.quantity;
             
-            if (quantity === 0) {
-                confirmBtn.textContent = '确定';
-            } else if (quantity === 1) {
+            if (quantity === 1) {
                 confirmBtn.textContent = '确定 (1件)';
             } else {
                 confirmBtn.textContent = `确定 (${quantity}件)`;
@@ -6074,13 +6079,8 @@
             // 生成购物车键
             const cartKey = generateAttributeHash(productId, selectedAttributes) || productId;
             
-            // 简单逻辑：直接设置购物车中该属性组合的数量
-            if (quantity > 0) {
-                cart[cartKey] = quantity;
-            } else {
-                // 如果数量为0，从购物车中删除该项
-                delete cart[cartKey];
-            }
+            // 设置购物车中该属性组合的数量（最少为1）
+            cart[cartKey] = quantity;
             
             // 保存到本地存储
             saveCartToStorage();
@@ -6094,11 +6094,7 @@
             hideAttributeSelector();
             
             // 显示成功提示
-            if (quantity > 0) {
-                showToast(`✅ 已设置为${quantity}件`);
-            } else {
-                showToast(`✅ 已从购物车移除`);
-            }
+            showToast(`✅ 已设置为${quantity}件`);
         }
 
         // 返回顶部功能
