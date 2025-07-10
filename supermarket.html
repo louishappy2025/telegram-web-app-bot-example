@@ -4333,6 +4333,32 @@
                             ✅ 确认收货
                         </button>
                     </div>` : '';
+
+                // 为可取消的订单添加取消按钮（只有下单成功和正在备货状态可以取消）
+                const cancelButton = (o.orderStatus === 0 || o.orderStatus === 1) ? 
+                    `<div style='margin-top:12px;text-align:center;'>
+                        <button onclick="cancelOrder(${o.id})" style='
+                            padding:8px 16px;
+                            background:#dc3545;
+                            color:white;
+                            border:none;
+                            border-radius:6px;
+                            font-size:14px;
+                            font-weight:600;
+                            cursor:pointer;
+                            transition:all 0.2s;
+                            margin-left:8px;
+                        ' onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">
+                            ❌ 取消订单
+                        </button>
+                    </div>` : '';
+                
+                // 合并按钮区域
+                const actionButtons = confirmReceiptButton || cancelButton ? 
+                    `<div style='margin-top:12px;text-align:center;'>
+                        ${confirmReceiptButton.replace(/<div[^>]*>|<\/div>/g, '')}
+                        ${cancelButton.replace(/<div[^>]*>|<\/div>/g, '')}
+                    </div>` : '';
                 
                 // 移除支付凭证上传功能
                 
@@ -4369,7 +4395,7 @@
                     <div style='font-weight:bold;text-align:right;color:#0088cc;font-size:16px;'>
                         总计：$${o.total.toFixed(2)}
                         </div>
-                    ${confirmReceiptButton}
+                    ${actionButtons}
                 </div>`;
             }).join('');
             document.getElementById('orders-list').innerHTML = list || '<div style="text-align:center;color:#aaa;padding:30px 0;">暂无订单</div>';
@@ -4454,6 +4480,88 @@
                     Telegram.WebApp.showAlert('❌ 确认收货失败，请重试！');
                 } else {
                     alert('❌ 确认收货失败，请重试！');
+                }
+            }
+        }
+
+        // 取消订单功能
+        async function cancelOrder(orderId) {
+            try {
+                console.log('🔄 [cancelOrder] 开始取消订单，订单ID:', orderId);
+                
+                // 添加触觉反馈
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.HapticFeedback) {
+                    Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                }
+                
+                // 先确认用户是否真的要取消订单
+                const confirmMessage = '⚠️ 确定要取消这个订单吗？\n\n取消后将无法恢复，请谨慎操作。';
+                
+                let confirmed = false;
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showConfirm) {
+                    // 使用Telegram的确认框
+                    confirmed = await new Promise((resolve) => {
+                        Telegram.WebApp.showConfirm(confirmMessage, resolve);
+                    });
+                } else {
+                    // 使用浏览器的确认框
+                    confirmed = confirm(confirmMessage);
+                }
+                
+                if (!confirmed) {
+                    console.log('🚫 [cancelOrder] 用户取消了取消订单操作');
+                    return;
+                }
+                
+                // 调用取消订单API（更新订单状态为已取消）
+                const response = await fetch(`${API_BASE_URL}/order/${orderId}`, {
+                    method: 'PUT',
+                    headers: getRequestHeaders(),
+                    body: JSON.stringify({
+                        orderStatus: 4, // 4 = 已取消
+                        remark: '用户主动取消订单'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ [cancelOrder] 取消订单成功:', result);
+                
+                // 更新本地订单状态
+                const orderIndex = orders.findIndex(o => o.id === orderId);
+                if (orderIndex !== -1) {
+                    orders[orderIndex].orderStatus = 4; // 更新为已取消
+                    orders[orderIndex].updateTime = result.updateTime || new Date().toISOString();
+                }
+                
+                // 重新渲染订单列表
+                renderOrders();
+                
+                // 显示成功提示
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
+                    Telegram.WebApp.showAlert('✅ 订单已成功取消！');
+                } else {
+                    alert('✅ 订单已成功取消！');
+                }
+                
+            } catch (error) {
+                console.error('❌ [cancelOrder] 取消订单失败:', error);
+                
+                // 显示错误提示
+                let errorMessage = '❌ 取消订单失败，请重试！';
+                if (error.message.includes('400')) {
+                    errorMessage = '❌ 订单状态不允许取消！';
+                } else if (error.message.includes('404')) {
+                    errorMessage = '❌ 订单不存在！';
+                }
+                
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
+                    Telegram.WebApp.showAlert(errorMessage);
+                } else {
+                    alert(errorMessage);
                 }
             }
         }
@@ -6726,6 +6834,8 @@
             delete: deleteOrder,
             // 确认收货
             confirmReceipt: confirmReceipt,
+            // 取消订单
+            cancel: cancelOrder,
             // 提交支付凭证
             submitPaymentVoucher: confirmPaymentVoucher,
             // 订单项操作
