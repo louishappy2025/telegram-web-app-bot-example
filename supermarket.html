@@ -695,10 +695,11 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
+            gap: 8px;
             position: relative;
             z-index: 10;
             isolation: isolate;
+            min-height: 32px;
         }
 
         .product-image-container {
@@ -882,11 +883,11 @@
         .quantity-display {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            border-radius: 8px;
-            padding: 5px 10px;
+            border-radius: 6px;
+            padding: 4px 8px;
             font-weight: 700;
-            font-size: 13px;
-            min-width: 28px;
+            font-size: 12px;
+            min-width: 24px;
             text-align: center;
             border: none;
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
@@ -894,6 +895,12 @@
             position: relative;
             overflow: hidden;
             user-select: none;
+            flex-shrink: 0;
+        }
+        
+        .quantity-spacer {
+            min-width: 24px;
+            flex-shrink: 0;
         }
 
         .quantity-display::before {
@@ -2012,6 +2019,10 @@
                 font-size: 14px;
             }
             
+            .product-actions {
+                gap: 6px;
+            }
+            
             .product-actions button {
                 width: 28px;
                 height: 28px;
@@ -2020,9 +2031,14 @@
             }
             
             .quantity-display {
-                padding: 4px 8px;
-                font-size: 12px;
-                min-width: 24px;
+                padding: 3px 6px;
+                font-size: 11px;
+                min-width: 20px;
+                border-radius: 4px;
+            }
+            
+            .quantity-spacer {
+                min-width: 20px;
             }
         }
 
@@ -2052,6 +2068,28 @@
             
             .product-price {
                 font-size: 13px;
+            }
+            
+            .product-actions {
+                gap: 4px;
+            }
+            
+            .product-actions button {
+                width: 24px;
+                height: 24px;
+                font-size: 14px;
+                border-width: 1px;
+            }
+            
+            .quantity-display {
+                padding: 2px 4px;
+                font-size: 10px;
+                min-width: 18px;
+                border-radius: 3px;
+            }
+            
+            .quantity-spacer {
+                min-width: 18px;
             }
         }
 
@@ -4262,7 +4300,7 @@
                             <div class="product-price">$${p.price.toFixed(2)}</div>
                             <div class="product-actions">
                                 <button type="button" class="qty-btn qty-decrease" data-product-id="${p.id}" ${qty===0?'disabled':''}><span class="btn-icon">−</span></button>
-                                ${qty > 0 ? `<div class="quantity-display">${qty}</div>` : '<div style="flex: 1;"></div>'}
+                                ${qty > 0 ? `<div class="quantity-display">${qty}</div>` : '<div class="quantity-spacer"></div>'}
                                 <button type="button" class="qty-btn qty-increase" data-product-id="${p.id}"><span class="btn-icon">＋</span></button>
                             </div>
                         </div>
