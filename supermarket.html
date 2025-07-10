@@ -4334,8 +4334,8 @@
                         </button>
                     </div>` : '';
 
-                // 为可取消的订单添加取消按钮（只有下单成功和正在备货状态可以取消）
-                const cancelButton = (o.orderStatus === 0 || o.orderStatus === 1) ? 
+                // 为可取消的订单添加取消按钮（只有正在备货状态可以取消）
+                const cancelButton = (o.orderStatus === 1) ? 
                     `<div style='margin-top:12px;text-align:center;'>
                         <button onclick="cancelOrder(${o.id})" style='
                             padding:8px 16px;
@@ -4513,38 +4513,43 @@
                     return;
                 }
                 
-                // 调用取消订单API（更新订单状态为已取消）
-                const response = await fetch(`${API_BASE_URL}/order/${orderId}`, {
+                // 调用新的取消订单API
+                const cancelReason = encodeURIComponent('用户主动取消订单');
+                const response = await fetch(`${API_BASE_URL}/order/${orderId}/cancel?cancelReason=${cancelReason}`, {
                     method: 'PUT',
-                    headers: getRequestHeaders(),
-                    body: JSON.stringify({
-                        orderStatus: 4, // 4 = 已取消
-                        remark: '用户主动取消订单'
-                    })
+                    headers: getRequestHeaders()
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    // 获取错误响应内容
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.message || 'Unknown error'}`);
                 }
                 
                 const result = await response.json();
                 console.log('✅ [cancelOrder] 取消订单成功:', result);
                 
+                // 检查响应是否成功
+                if (!result.success) {
+                    throw new Error(result.message || '取消订单失败');
+                }
+                
                 // 更新本地订单状态
                 const orderIndex = orders.findIndex(o => o.id === orderId);
                 if (orderIndex !== -1) {
                     orders[orderIndex].orderStatus = 4; // 更新为已取消
-                    orders[orderIndex].updateTime = result.updateTime || new Date().toISOString();
+                    orders[orderIndex].updateTime = new Date().toISOString();
                 }
                 
                 // 重新渲染订单列表
                 renderOrders();
                 
                 // 显示成功提示
+                const successMessage = result.message || '✅ 订单已成功取消！';
                 if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
-                    Telegram.WebApp.showAlert('✅ 订单已成功取消！');
+                    Telegram.WebApp.showAlert(successMessage);
                 } else {
-                    alert('✅ 订单已成功取消！');
+                    alert(successMessage);
                 }
                 
             } catch (error) {
@@ -4552,10 +4557,14 @@
                 
                 // 显示错误提示
                 let errorMessage = '❌ 取消订单失败，请重试！';
-                if (error.message.includes('400')) {
+                if (error.message.includes('只有在接单状态下才可以取消')) {
+                    errorMessage = '❌ 只有在接单状态下才可以取消订单！';
+                } else if (error.message.includes('400')) {
                     errorMessage = '❌ 订单状态不允许取消！';
                 } else if (error.message.includes('404')) {
                     errorMessage = '❌ 订单不存在！';
+                } else if (error.message && error.message !== 'Unknown error') {
+                    errorMessage = `❌ ${error.message}`;
                 }
                 
                 if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
