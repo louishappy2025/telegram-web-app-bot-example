@@ -5066,9 +5066,19 @@
             }
         }
 
+        // 防重复提交状态
+        let isSubmittingOrder = false;
+        
         // 下单表单提交事件处理函数
         async function handleOrderFormSubmit(e) {
             e.preventDefault();
+            
+            // 防重复提交检查
+            if (isSubmittingOrder) {
+                console.log('🔒 [handleOrderFormSubmit] 订单正在提交中，忽略重复请求');
+                return;
+            }
+            
             if(Object.keys(cart).length===0) {
                 alert('购物车为空！');
                     return;
@@ -5114,6 +5124,25 @@
             }
             
             try {
+                // 设置提交状态，防止重复提交
+                isSubmittingOrder = true;
+                
+                // 禁用表单
+                const orderForm = document.getElementById('order-form');
+                if (orderForm) {
+                    orderForm.style.pointerEvents = 'none';
+                    orderForm.style.opacity = '0.7';
+                }
+                
+                // 如果在Telegram环境中，禁用MainButton
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.MainButton) {
+                    Telegram.WebApp.MainButton.setParams({
+                        text: '提交中...',
+                        is_visible: true
+                    });
+                    Telegram.WebApp.MainButton.disable();
+                }
+                
                 console.log('🔄 [submitOrder] 开始提交订单...');
                 
                 // 构建订单项数据
@@ -5302,6 +5331,25 @@
                     </div>
                 `;
                 
+                // 恢复提交状态
+                isSubmittingOrder = false;
+                
+                // 恢复表单状态
+                const restoreOrderForm = document.getElementById('order-form');
+                if (restoreOrderForm) {
+                    restoreOrderForm.style.pointerEvents = '';
+                    restoreOrderForm.style.opacity = '';
+                }
+                
+                // 恢复MainButton状态
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.MainButton) {
+                    Telegram.WebApp.MainButton.setParams({
+                        text: '提交订单',
+                        is_visible: true
+                    });
+                    Telegram.WebApp.MainButton.enable();
+                }
+                
                 setTimeout(()=>{
                     document.getElementById('order-form').reset();
                     document.getElementById('order-form').style.display = '';
@@ -5311,6 +5359,25 @@
                 
             } catch (error) {
                 console.error('❌ [submitOrder] 订单提交失败:', error);
+                
+                // 恢复提交状态
+                isSubmittingOrder = false;
+                
+                // 恢复表单状态
+                const errorOrderForm = document.getElementById('order-form');
+                if (errorOrderForm) {
+                    errorOrderForm.style.pointerEvents = '';
+                    errorOrderForm.style.opacity = '';
+                }
+                
+                // 恢复MainButton状态
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.MainButton) {
+                    Telegram.WebApp.MainButton.setParams({
+                        text: '提交订单',
+                        is_visible: true
+                    });
+                    Telegram.WebApp.MainButton.enable();
+                }
                 
                 // 静默处理错误，不显示弹窗，方便debug
                 console.error('🔧 [submitOrder] 订单提交失败');
