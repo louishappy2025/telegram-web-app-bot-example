@@ -192,18 +192,9 @@
             color: var(--tg-theme-text-color, #333);
         }
 
-        /* 左右分栏布局 */
-        .products-layout {
-            display: flex;
-            gap: 16px;
-            margin-top: 16px;
-            flex-direction: row;
-        }
-
         /* 左侧分类边栏 */
         .categories-sidebar {
             width: 150px;
-            flex-shrink: 0;
             background: var(--tg-theme-secondary-bg-color, #f8f9fa);
             border-radius: 12px;
             padding: 10px;
@@ -229,9 +220,8 @@
 
         /* 右侧商品区域 */
         .products-main {
-            flex: 1;
-            min-width: 0;
             margin-left: 166px; /* 左侧分类栏宽度 + 间距 */
+            padding-top: 16px;
         }
 
         /* 热销商品筛选按钮样式 - 侧边栏版本 */
@@ -315,12 +305,6 @@
 
         /* 移动端响应式 - 保持左右布局 */
         @media (max-width: 768px) {
-            .products-layout {
-                flex-direction: row;
-                gap: 8px;
-                align-items: flex-start;
-            }
-            
             .categories-sidebar {
                 width: 120px;
                 left: 12px;
@@ -2582,57 +2566,52 @@
 
         <!-- 商品页面 -->
         <div id="products" class="tab-content active">
-            <!-- 下拉刷新容器 -->
-            <div class="pull-refresh" id="pull-refresh-container">
-                <div class="pull-refresh-indicator" id="pull-refresh-indicator">
-                    ↓
+            <!-- 左侧分类边栏 (独立，不参与下拉刷新) -->
+            <div class="categories-sidebar">
+                <!-- 热销商品筛选按钮 -->
+                <div class="sidebar-section">
+                    <button id="hot-filter-btn" class="hot-filter-btn sidebar-btn" onclick="toggleHotFilter()">
+                        <span class="hot-filter-icon">🔥</span>
+                        <div class="hot-filter-text">
+                            <div class="hot-filter-chinese">热销</div>
+                            <div class="hot-filter-khmer">Bán chạy</div>
+                        </div>
+                    </button>
                 </div>
                 
-
-
-                <!-- 左右分栏布局 -->
-                <div class="products-layout">
-                    <!-- 左侧分类边栏 -->
-                    <div class="categories-sidebar">
-                        <!-- 热销商品筛选按钮 -->
-                        <div class="sidebar-section">
-                            <button id="hot-filter-btn" class="hot-filter-btn sidebar-btn" onclick="toggleHotFilter()">
-                                <span class="hot-filter-icon">🔥</span>
-                                <div class="hot-filter-text">
-                                    <div class="hot-filter-chinese">热销</div>
-                                    <div class="hot-filter-khmer">Bán chạy</div>
-                                </div>
-                            </button>
-                        </div>
-                        
-                        <!-- 单独显示的分类按钮 -->
-                        <div id="separate-categories" class="sidebar-section separate-categories-container" style="display: none;">
-                            <!-- 单独显示的分类按钮将通过JavaScript加载 -->
-                        </div>
-                        
-                        <!-- 所有分类按钮 -->
-                        <div class="sidebar-section">
-                            <div id="all-categories" class="all-categories-container">
-                                <!-- 所有分类按钮将通过JavaScript加载 -->
-                            </div>
+                <!-- 单独显示的分类按钮 -->
+                <div id="separate-categories" class="sidebar-section separate-categories-container" style="display: none;">
+                    <!-- 单独显示的分类按钮将通过JavaScript加载 -->
+                </div>
+                
+                <!-- 所有分类按钮 -->
+                <div class="sidebar-section">
+                    <div id="all-categories" class="all-categories-container">
+                        <!-- 所有分类按钮将通过JavaScript加载 -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧商品区域 (包含下拉刷新功能) -->
+            <div class="products-main">
+                <!-- 下拉刷新容器 -->
+                <div class="pull-refresh" id="pull-refresh-container">
+                    <div class="pull-refresh-indicator" id="pull-refresh-indicator">
+                        ↓
+                    </div>
+                    
+                    <!-- 商品容器 -->
+                    <div class="products-container">
+                        <div class="products-grid" id="product-list">
+                            <!-- 商品将通过JavaScript加载 -->
                         </div>
                     </div>
                     
-                    <!-- 右侧商品区域 -->
-                    <div class="products-main">
-                        <!-- 商品容器 -->
-                        <div class="products-container">
-                            <div class="products-grid" id="product-list">
-                                <!-- 商品将通过JavaScript加载 -->
-                            </div>
-                        </div>
-                        
-                        <!-- 加载更多按钮 -->
-                        <div id="products-load-more" class="load-more-container" style="display: none;">
-                            <button onclick="loadMoreProducts()" class="load-more-btn" id="load-more-btn">
-                                <span id="load-more-text">加载更多商品</span>
-                            </button>
-                        </div>
+                    <!-- 加载更多按钮 -->
+                    <div id="products-load-more" class="load-more-container" style="display: none;">
+                        <button onclick="loadMoreProducts()" class="load-more-btn" id="load-more-btn">
+                            <span id="load-more-text">加载更多商品</span>
+                        </button>
                     </div>
                 </div>
             </div>
