@@ -2808,8 +2808,8 @@
 
     <script>
         // API基础URL配置
-        // const API_BASE_URL = 'https://dhcs.cc';
-        const API_BASE_URL = 'https://www.supermarket.com/sapi';
+        const API_BASE_URL = 'https://dhcs.cc';
+        // const API_BASE_URL = 'https://www.supermarket.com/sapi';
         console.log('📋 [SCRIPT] API URL:', API_BASE_URL);
         
         // 获取Telegram用户信息
@@ -3947,21 +3947,22 @@
             };
             
             console.log('🔧 [initPullRefresh] 所有订单相关元素检查:', allOrdersElements);
-            // 商品页面下拉刷新
+            // 商品页面下拉刷新 - 只在右侧商品区域监听
             const productsContainer = document.getElementById('pull-refresh-container');
-            if (productsContainer) {
+            const productsMain = document.querySelector('.products-main');
+            if (productsContainer && productsMain) {
                 let productsStartY = 0;
                 let productsCurrentY = 0;
                 let productsPulling = false;
                 let productsRefreshing = false;
                 
-                productsContainer.addEventListener('touchstart', (e) => {
+                productsMain.addEventListener('touchstart', (e) => {
                     if (getCurrentTab() !== 'products' || window.scrollY > 0 || productsRefreshing) return;
                     productsStartY = e.touches[0].clientY;
                     productsPulling = false;
                 });
                 
-                productsContainer.addEventListener('touchmove', (e) => {
+                productsMain.addEventListener('touchmove', (e) => {
                     if (getCurrentTab() !== 'products' || window.scrollY > 0 || productsRefreshing) return;
                     
                     productsCurrentY = e.touches[0].clientY;
@@ -3985,7 +3986,7 @@
                     }
                 });
                 
-                productsContainer.addEventListener('touchend', async (e) => {
+                productsMain.addEventListener('touchend', async (e) => {
                     if (!productsPulling || productsRefreshing) return;
                     
                     const diff = productsCurrentY - productsStartY;
