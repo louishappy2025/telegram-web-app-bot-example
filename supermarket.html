@@ -208,6 +208,8 @@
             -webkit-overflow-scrolling: touch;
             z-index: 100;
             max-height: calc(100vh - 140px);
+            /* 确保独立的触摸滚动行为 */
+            touch-action: pan-y;
         }
 
         .sidebar-section {
@@ -222,6 +224,8 @@
         .products-main {
             margin-left: 166px; /* 左侧分类栏宽度 + 间距 */
             padding-top: 16px;
+            /* 允许垂直滚动和下拉刷新 */
+            touch-action: pan-y;
         }
 
         /* 热销商品筛选按钮样式 - 侧边栏版本 */
@@ -3935,6 +3939,27 @@
         let searchTimeout = null;
         let currentSearchKeyword = '';
 
+        // 初始化左侧分类栏滚动
+        function initCategoriesSidebar() {
+            const categoriesSidebar = document.querySelector('.categories-sidebar');
+            if (categoriesSidebar) {
+                // 确保左侧分类栏的滚动行为完全独立
+                categoriesSidebar.addEventListener('touchstart', (e) => {
+                    // 不阻止任何默认行为，让原生滚动正常工作
+                }, { passive: true });
+                
+                categoriesSidebar.addEventListener('touchmove', (e) => {
+                    // 不阻止任何默认行为，让原生滚动正常工作
+                }, { passive: true });
+                
+                categoriesSidebar.addEventListener('touchend', (e) => {
+                    // 不阻止任何默认行为，让原生滚动正常工作
+                }, { passive: true });
+                
+                console.log('✅ [initCategoriesSidebar] 左侧分类栏滚动已初始化');
+            }
+        }
+
         // 初始化下拉刷新
         function initPullRefresh() {
             console.log('🔧 [initPullRefresh] 开始初始化下拉刷新功能');
@@ -3960,7 +3985,7 @@
                     if (getCurrentTab() !== 'products' || window.scrollY > 0 || productsRefreshing) return;
                     productsStartY = e.touches[0].clientY;
                     productsPulling = false;
-                });
+                }, { passive: true });
                 
                 productsMain.addEventListener('touchmove', (e) => {
                     if (getCurrentTab() !== 'products' || window.scrollY > 0 || productsRefreshing) return;
@@ -3968,7 +3993,8 @@
                     productsCurrentY = e.touches[0].clientY;
                     const diff = productsCurrentY - productsStartY;
                     
-                    if (diff > 0 && diff < 150) {
+                    // 更严格的条件：只有在明确的下拉手势时才处理
+                    if (diff > 20 && diff < 150) { // 提高阈值到20px，减少误触
                         e.preventDefault();
                         productsPulling = true;
                         const pullDistance = Math.min(diff * 0.5, 80 * 1.5);
@@ -4026,7 +4052,7 @@
                         productsContainer.classList.remove('pulling');
                         productsContainer.style.transform = 'translateY(0)';
                     }
-                });
+                }, { passive: true });
             }
             
     
@@ -5574,6 +5600,8 @@
             
             // 初始化各种功能
             initTelegramWebApp();
+            console.log('🚀 [initPage] 准备初始化分类栏滚动...');
+            initCategoriesSidebar();
             console.log('🚀 [initPage] 准备初始化下拉刷新功能...');
             initPullRefresh();
             console.log('🚀 [initPage] 准备初始化上拉加载功能...');
