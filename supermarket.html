@@ -2891,11 +2891,43 @@
             return userInfo;
         }
 
+        /**
+         * 根据URL参数确定初始显示的tab
+         */
+        function getInitialTabFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // 支持多种参数名
+            const tabParam = urlParams.get('tab') || urlParams.get('page') || urlParams.get('view');
+            
+            if (!tabParam) {
+                return 'products'; // 默认显示商品页面
+            }
+            
+            // 参数值映射
+            const tabMapping = {
+                'order': 'products',
+                'products': 'products',
+                'goods': 'products',
+                'cart': 'cart',
+                'shopping_cart': 'cart',
+                'orders': 'orders',
+                'my_orders': 'orders',
+                'order_list': 'orders'
+            };
+            
+            const targetTab = tabMapping[tabParam.toLowerCase()] || 'products';
+            
+            console.log('🔍 [getInitialTabFromUrl] URL参数:', tabParam, '-> 目标tab:', targetTab);
+            return targetTab;
+        }
+
         // 获取Telegram用户信息
         function getTelegramUserInfo() {
             // 首先尝试从 Telegram API 获取用户信息
             if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
                 const user = Telegram.WebApp.initDataUnsafe.user;
+                console.log('测试打印')
                 const userInfo = {
                     id: user.id,
                     username: user.username,
@@ -5786,6 +5818,19 @@
                     }
                 }
             }
+            
+            // 根据URL参数设置初始tab（需要在页面完全初始化后执行）
+            const currentUserInfo = getTelegramUserInfo();
+            if (currentUserInfo) {
+                const initialTab = getInitialTabFromUrl();
+                if (initialTab !== 'products') {
+                    console.log('🔄 [initPage] 根据URL参数设置初始tab:', initialTab);
+                    // 延迟执行，确保页面完全渲染后再切换tab
+                    setTimeout(() => {
+                        switchTab(initialTab);
+                    }, 300);
+                }
+            }
         }
 
         // 启动页面初始化
@@ -7660,6 +7705,11 @@
                 }
             };
             
+            // 获取tab参数信息
+            const initialTab = getInitialTabFromUrl();
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab') || urlParams.get('page') || urlParams.get('view') || '无';
+            
             // 在 Telegram 环境中显示调试信息
             if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
                 const message = `用户信息调试:\n\n` +
@@ -7667,7 +7717,9 @@
                     `URL参数: ${urlInfo ? '✅ 可用' : '❌ 不可用'}\n` +
                     `最终结果: ${finalInfo ? '✅ 获取成功' : '❌ 获取失败'}\n\n` +
                     `当前用户ID: ${finalInfo ? finalInfo.id : '无'}\n` +
-                    `用户名: ${finalInfo ? (finalInfo.first_name + ' ' + (finalInfo.last_name || '')) : '无'}`;
+                    `用户名: ${finalInfo ? (finalInfo.first_name + ' ' + (finalInfo.last_name || '')) : '无'}\n\n` +
+                    `Tab参数: ${tabParam}\n` +
+                    `初始Tab: ${initialTab}`;
                 
                 Telegram.WebApp.showAlert(message);
             } else {
@@ -7677,7 +7729,9 @@
                     `URL参数: ${urlInfo ? '✅ 可用' : '❌ 不可用'}\n` +
                     `最终结果: ${finalInfo ? '✅ 获取成功' : '❌ 获取失败'}\n\n` +
                     `当前用户ID: ${finalInfo ? finalInfo.id : '无'}\n` +
-                    `用户名: ${finalInfo ? (finalInfo.first_name + ' ' + (finalInfo.last_name || '')) : '无'}`);
+                    `用户名: ${finalInfo ? (finalInfo.first_name + ' ' + (finalInfo.last_name || '')) : '无'}\n\n` +
+                    `Tab参数: ${tabParam}\n` +
+                    `初始Tab: ${initialTab}`);
             }
             
             return debugResult;

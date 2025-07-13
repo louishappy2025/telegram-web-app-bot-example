@@ -63,7 +63,18 @@
         
         <div class="info-box">
             <h3>🔗 示例URL</h3>
-            <pre id="example-url">test-url-user-info.html?user_id=1939818627&username=testuser&first_name=Test&last_name=User&language_code=zh&page=order</pre>
+            <h4>基本用户信息测试:</h4>
+            <pre>test-url-user-info.html?user_id=1939818627&username=testuser&first_name=Test&last_name=User&language_code=zh</pre>
+            
+            <h4>直接打开订单页面:</h4>
+            <pre>supermarket.html?user_id=1939818627&first_name=Test&last_name=User&tab=orders</pre>
+            
+            <h4>支持的tab参数值:</h4>
+            <ul>
+                <li><code>tab=products</code> 或 <code>page=order</code> - 商品页面</li>
+                <li><code>tab=cart</code> 或 <code>page=shopping_cart</code> - 购物车页面</li>
+                <li><code>tab=orders</code> 或 <code>page=my_orders</code> - 订单页面</li>
+            </ul>
         </div>
         
         <div class="info-box">
@@ -90,6 +101,15 @@
             <button class="button" onclick="refreshInfo()">🔄 刷新信息</button>
             <button class="button" onclick="testWithSampleData()">📝 使用示例数据测试</button>
             <button class="button" onclick="clearUrl()">🗑️ 清空URL参数</button>
+        </div>
+        
+        <div class="info-box">
+            <h3>🧪 快速测试链接</h3>
+            <div>
+                <button class="button" onclick="testOrdersTab()">📋 测试订单页面</button>
+                <button class="button" onclick="testCartTab()">🛒 测试购物车页面</button>
+                <button class="button" onclick="testProductsTab()">🛍️ 测试商品页面</button>
+            </div>
         </div>
     </div>
     
@@ -227,6 +247,33 @@
          */
         function clearUrl() {
             window.location.href = window.location.pathname;
+        }
+        
+        /**
+         * 测试订单页面
+         */
+        function testOrdersTab() {
+            const params = 'user_id=1939818627&first_name=Test&last_name=User&tab=orders';
+            const newUrl = '../supermarket.html?' + params;
+            window.open(newUrl, '_blank');
+        }
+        
+        /**
+         * 测试购物车页面
+         */
+        function testCartTab() {
+            const params = 'user_id=1939818627&first_name=Test&last_name=User&tab=cart';
+            const newUrl = '../supermarket.html?' + params;
+            window.open(newUrl, '_blank');
+        }
+        
+        /**
+         * 测试商品页面
+         */
+        function testProductsTab() {
+            const params = 'user_id=1939818627&first_name=Test&last_name=User&tab=products';
+            const newUrl = '../supermarket.html?' + params;
+            window.open(newUrl, '_blank');
         }
         
         // 页面加载时初始化
