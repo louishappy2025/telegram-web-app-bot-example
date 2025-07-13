@@ -2823,8 +2823,8 @@
 
     <script>
         // API基础URL配置
-        const API_BASE_URL = 'https://dhcs.cc';
-        // const API_BASE_URL = 'https://www.supermarket.com/sapi';
+        // const API_BASE_URL = 'https://dhcs.cc';
+        const API_BASE_URL = 'https://www.supermarket.com/sapi';
         console.log('📋 [SCRIPT] API URL:', API_BASE_URL);
         
         // 获取Telegram用户信息
@@ -4887,8 +4887,8 @@
                         </button>
                     </div>` : '';
 
-                // 为可取消的订单添加取消按钮（只有正在备货状态可以取消）
-                const cancelButton = (o.orderStatus === 1) ? 
+                // 为可取消的订单添加取消按钮（只有下单成功状态可以取消）
+                const cancelButton = (o.orderStatus === 0) ? 
                     `<div style='margin-top:12px;text-align:center;'>
                         <button onclick="cancelOrder(${o.id})" style='
                             padding:8px 16px;
@@ -5110,8 +5110,8 @@
                 
                 // 显示错误提示
                 let errorMessage = '❌ 取消订单失败，请重试！';
-                if (error.message.includes('只有在接单状态下才可以取消')) {
-                    errorMessage = '❌ 只有在接单状态下才可以取消订单！';
+                if (error.message.includes('只有在未接单状态下才可以取消')) {
+                    errorMessage = '❌ 只有在未接单状态下才可以取消订单！';
                 } else if (error.message.includes('400')) {
                     errorMessage = '❌ 订单状态不允许取消！';
                 } else if (error.message.includes('404')) {
