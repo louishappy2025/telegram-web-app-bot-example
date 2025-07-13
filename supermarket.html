@@ -210,6 +210,10 @@
             max-height: calc(100vh - 140px);
             /* 确保独立的触摸滚动行为 */
             touch-action: pan-y;
+            /* 强制创建独立的滚动上下文 */
+            contain: layout style paint;
+            /* 优化滚动性能 */
+            will-change: scroll-position;
         }
 
         .sidebar-section {
@@ -226,6 +230,10 @@
             padding-top: 16px;
             /* 允许垂直滚动和下拉刷新 */
             touch-action: pan-y;
+            /* 创建独立的滚动上下文 */
+            contain: layout style paint;
+            /* 隔离触摸事件 */
+            isolation: isolate;
         }
 
         /* 热销商品筛选按钮样式 - 侧边栏版本 */
@@ -3943,20 +3951,46 @@
         function initCategoriesSidebar() {
             const categoriesSidebar = document.querySelector('.categories-sidebar');
             if (categoriesSidebar) {
-                // 确保左侧分类栏的滚动行为完全独立
+                // 创建一个完全独立的触摸处理系统
+                let isScrolling = false;
+                let scrollTimeout;
+                
                 categoriesSidebar.addEventListener('touchstart', (e) => {
-                    // 不阻止任何默认行为，让原生滚动正常工作
+                    isScrolling = true;
+                    clearTimeout(scrollTimeout);
+                    e.stopPropagation(); // 阻止事件冒泡到父级
                 }, { passive: true });
                 
                 categoriesSidebar.addEventListener('touchmove', (e) => {
-                    // 不阻止任何默认行为，让原生滚动正常工作
+                    if (isScrolling) {
+                        e.stopPropagation(); // 阻止事件冒泡到父级
+                    }
                 }, { passive: true });
                 
                 categoriesSidebar.addEventListener('touchend', (e) => {
-                    // 不阻止任何默认行为，让原生滚动正常工作
+                    e.stopPropagation(); // 阻止事件冒泡到父级
+                    // 设置延迟，在惯性滚动结束后才重置状态
+                    scrollTimeout = setTimeout(() => {
+                        isScrolling = false;
+                    }, 300);
                 }, { passive: true });
                 
-                console.log('✅ [initCategoriesSidebar] 左侧分类栏滚动已初始化');
+                // 监听滚动事件，在滚动期间保持独立状态
+                categoriesSidebar.addEventListener('scroll', (e) => {
+                    isScrolling = true;
+                    clearTimeout(scrollTimeout);
+                    e.stopPropagation(); // 阻止滚动事件冒泡
+                    
+                    // 重新设置超时
+                    scrollTimeout = setTimeout(() => {
+                        isScrolling = false;
+                    }, 150);
+                }, { passive: true });
+                
+                // 暴露状态检查函数（用于调试）
+                categoriesSidebar._isScrolling = () => isScrolling;
+                
+                console.log('✅ [initCategoriesSidebar] 左侧分类栏滚动已初始化（完全独立模式）');
             }
         }
 
@@ -3972,23 +4006,27 @@
             };
             
             console.log('🔧 [initPullRefresh] 所有订单相关元素检查:', allOrdersElements);
-            // 商品页面下拉刷新 - 只在右侧商品区域监听
+            // 商品页面下拉刷新 - 直接在下拉刷新容器上监听
             const productsContainer = document.getElementById('pull-refresh-container');
-            const productsMain = document.querySelector('.products-main');
-            if (productsContainer && productsMain) {
+            if (productsContainer) {
                 let productsStartY = 0;
                 let productsCurrentY = 0;
                 let productsPulling = false;
                 let productsRefreshing = false;
                 
-                productsMain.addEventListener('touchstart', (e) => {
-                    if (getCurrentTab() !== 'products' || window.scrollY > 0 || productsRefreshing) return;
+                productsContainer.addEventListener('touchstart', (e) => {
+                    if (getCurrentTab() !== 'products' || productsRefreshing) return;
+                    // 只有在页面顶部时才启用下拉刷新
+                    if (window.scrollY > 5) return; // 允许5px的容差
+                    
                     productsStartY = e.touches[0].clientY;
                     productsPulling = false;
                 }, { passive: true });
                 
-                productsMain.addEventListener('touchmove', (e) => {
-                    if (getCurrentTab() !== 'products' || window.scrollY > 0 || productsRefreshing) return;
+                productsContainer.addEventListener('touchmove', (e) => {
+                    if (getCurrentTab() !== 'products' || productsRefreshing) return;
+                    // 只有在页面顶部时才处理下拉刷新
+                    if (window.scrollY > 5) return; // 允许5px的容差
                     
                     productsCurrentY = e.touches[0].clientY;
                     const diff = productsCurrentY - productsStartY;
@@ -4012,7 +4050,7 @@
                     }
                 });
                 
-                productsMain.addEventListener('touchend', async (e) => {
+                productsContainer.addEventListener('touchend', async (e) => {
                     if (!productsPulling || productsRefreshing) return;
                     
                     const diff = productsCurrentY - productsStartY;
