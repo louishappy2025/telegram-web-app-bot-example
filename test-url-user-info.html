@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL用户信息测试</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 20px;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .info-box {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        .button {
+            background: var(--tg-theme-button-color, #007bff);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 URL用户信息测试</h1>
+        
+        <div class="info-box">
+            <h3>📋 测试说明</h3>
+            <p>此页面用于测试从URL参数获取用户信息的功能。</p>
+            <p>请在URL中添加以下参数：</p>
+            <ul>
+                <li><code>user_id</code> - 用户ID（必需）</li>
+                <li><code>username</code> - 用户名（可选）</li>
+                <li><code>first_name</code> - 名字（必需）</li>
+                <li><code>last_name</code> - 姓氏（可选）</li>
+                <li><code>language_code</code> - 语言代码（可选）</li>
+                <li><code>page</code> - 页面类型（可选）</li>
+            </ul>
+        </div>
+        
+        <div class="info-box">
+            <h3>🔗 示例URL</h3>
+            <pre id="example-url">test-url-user-info.html?user_id=1939818627&username=testuser&first_name=Test&last_name=User&language_code=zh&page=order</pre>
+        </div>
+        
+        <div class="info-box">
+            <h3>🌐 当前URL</h3>
+            <pre id="current-url"></pre>
+        </div>
+        
+        <div class="info-box">
+            <h3>📱 Telegram API 信息</h3>
+            <pre id="telegram-info"></pre>
+        </div>
+        
+        <div class="info-box">
+            <h3>🔗 URL参数信息</h3>
+            <pre id="url-info"></pre>
+        </div>
+        
+        <div class="info-box">
+            <h3>✅ 最终用户信息</h3>
+            <pre id="final-info"></pre>
+        </div>
+        
+        <div>
+            <button class="button" onclick="refreshInfo()">🔄 刷新信息</button>
+            <button class="button" onclick="testWithSampleData()">📝 使用示例数据测试</button>
+            <button class="button" onclick="clearUrl()">🗑️ 清空URL参数</button>
+        </div>
+    </div>
+    
+    <script>
+        // 复制supermarket.html中的用户信息获取函数
+        
+        /**
+         * 验证用户信息的完整性
+         */
+        function validateUserInfo(userInfo) {
+            if (!userInfo) {
+                return false;
+            }
+            
+            // 基本验证
+            if (!userInfo.id || !userInfo.first_name) {
+                return false;
+            }
+            
+            // 验证ID是否为有效数字
+            if (isNaN(userInfo.id) || userInfo.id <= 0) {
+                return false;
+            }
+            
+            // 验证名字长度
+            if (userInfo.first_name.length === 0 || userInfo.first_name.length > 64) {
+                return false;
+            }
+            
+            return true;
+        }
+
+        /**
+         * 从URL参数获取用户信息
+         */
+        function getUserInfoFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            const userInfo = {
+                id: urlParams.get('user_id'),
+                username: urlParams.get('username'),
+                first_name: urlParams.get('first_name') ? decodeURIComponent(urlParams.get('first_name')) : '',
+                last_name: urlParams.get('last_name') ? decodeURIComponent(urlParams.get('last_name')) : '',
+                language_code: urlParams.get('language_code') || '',
+                page: urlParams.get('page') || 'order'
+            };
+            
+            // 验证必要信息
+            if (!userInfo.id) {
+                return null;
+            }
+            
+            // 转换ID为数字类型
+            userInfo.id = parseInt(userInfo.id);
+            
+            // 验证用户信息完整性
+            if (!validateUserInfo(userInfo)) {
+                console.warn('⚠️ [getUserInfoFromUrl] URL参数中的用户信息不完整或无效:', userInfo);
+                return null;
+            }
+            
+            console.log('🔗 [getUserInfoFromUrl] 从URL获取到用户信息:', userInfo);
+            return userInfo;
+        }
+
+        /**
+         * 从 Telegram API 获取用户信息
+         */
+        function getTelegramUserInfo() {
+            // 首先尝试从 Telegram API 获取用户信息
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+                const user = Telegram.WebApp.initDataUnsafe.user;
+                const userInfo = {
+                    id: user.id,
+                    username: user.username,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    language_code: user.language_code,
+                    is_premium: user.is_premium,
+                    allows_write_to_pm: user.allows_write_to_pm
+                };
+                console.log('📱 [getTelegramUserInfo] 从Telegram API获取到用户信息:', userInfo);
+                return userInfo;
+            }
+            
+            // 如果无法从 Telegram API 获取，尝试从URL参数获取
+            const urlUserInfo = getUserInfoFromUrl();
+            if (urlUserInfo) {
+                console.log('🔗 [getTelegramUserInfo] 回退到URL参数获取用户信息:', urlUserInfo);
+                return urlUserInfo;
+            }
+            
+            console.log('❌ [getTelegramUserInfo] 无法获取用户信息');
+            return null;
+        }
+        
+        /**
+         * 刷新信息显示
+         */
+        function refreshInfo() {
+            // 当前URL
+            document.getElementById('current-url').textContent = window.location.href;
+            
+            // Telegram API 信息
+            const telegramInfo = (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) 
+                ? Telegram.WebApp.initDataUnsafe.user : null;
+            document.getElementById('telegram-info').innerHTML = telegramInfo 
+                ? `<span class="success">✅ 可用</span>\n${JSON.stringify(telegramInfo, null, 2)}`
+                : `<span class="error">❌ 不可用</span>`;
+            
+            // URL参数信息
+            const urlInfo = getUserInfoFromUrl();
+            document.getElementById('url-info').innerHTML = urlInfo 
+                ? `<span class="success">✅ 可用</span>\n${JSON.stringify(urlInfo, null, 2)}`
+                : `<span class="error">❌ 不可用</span>`;
+            
+            // 最终用户信息
+            const finalInfo = getTelegramUserInfo();
+            document.getElementById('final-info').innerHTML = finalInfo 
+                ? `<span class="success">✅ 获取成功</span>\n${JSON.stringify(finalInfo, null, 2)}`
+                : `<span class="error">❌ 获取失败</span>`;
+        }
+        
+        /**
+         * 使用示例数据测试
+         */
+        function testWithSampleData() {
+            const sampleParams = 'user_id=1939818627&username=testuser&first_name=Test&last_name=User&language_code=zh&page=order';
+            const newUrl = window.location.pathname + '?' + sampleParams;
+            window.location.href = newUrl;
+        }
+        
+        /**
+         * 清空URL参数
+         */
+        function clearUrl() {
+            window.location.href = window.location.pathname;
+        }
+        
+        // 页面加载时初始化
+        window.addEventListener('load', function() {
+            // 确保 Telegram WebApp 完全加载
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+            }
+            
+            // 刷新信息显示
+            refreshInfo();
+        });
+    </script>
+</body>
+</html> 

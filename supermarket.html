@@ -2819,6 +2819,11 @@
     <!-- 返回顶部按钮 -->
     <button id="back-to-top" class="back-to-top"></button>
     
+    <!-- 调试用户信息按钮（仅在开发环境显示） -->
+    <button id="debug-user-info" style="position: fixed; bottom: 80px; right: 20px; z-index: 9999; background: #007bff; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; display: none;" onclick="debugUserInfo()">
+        调试用户信息
+    </button>
+    
 
 
     <script>
@@ -2827,11 +2832,71 @@
         const API_BASE_URL = 'https://www.supermarket.com/sapi';
         console.log('📋 [SCRIPT] API URL:', API_BASE_URL);
         
+        /**
+         * 验证用户信息的完整性
+         */
+        function validateUserInfo(userInfo) {
+            if (!userInfo) {
+                return false;
+            }
+            
+            // 基本验证
+            if (!userInfo.id || !userInfo.first_name) {
+                return false;
+            }
+            
+            // 验证ID是否为有效数字
+            if (isNaN(userInfo.id) || userInfo.id <= 0) {
+                return false;
+            }
+            
+            // 验证名字长度
+            if (userInfo.first_name.length === 0 || userInfo.first_name.length > 64) {
+                return false;
+            }
+            
+            return true;
+        }
+
+        /**
+         * 从URL参数获取用户信息
+         */
+        function getUserInfoFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            const userInfo = {
+                id: urlParams.get('user_id'),
+                username: urlParams.get('username'),
+                first_name: urlParams.get('first_name') ? decodeURIComponent(urlParams.get('first_name')) : '',
+                last_name: urlParams.get('last_name') ? decodeURIComponent(urlParams.get('last_name')) : '',
+                language_code: urlParams.get('language_code') || '',
+                page: urlParams.get('page') || 'order'
+            };
+            
+            // 验证必要信息
+            if (!userInfo.id) {
+                return null;
+            }
+            
+            // 转换ID为数字类型
+            userInfo.id = parseInt(userInfo.id);
+            
+            // 验证用户信息完整性
+            if (!validateUserInfo(userInfo)) {
+                console.warn('⚠️ [getUserInfoFromUrl] URL参数中的用户信息不完整或无效:', userInfo);
+                return null;
+            }
+            
+            console.log('🔗 [getUserInfoFromUrl] 从URL获取到用户信息:', userInfo);
+            return userInfo;
+        }
+
         // 获取Telegram用户信息
         function getTelegramUserInfo() {
+            // 首先尝试从 Telegram API 获取用户信息
             if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
                 const user = Telegram.WebApp.initDataUnsafe.user;
-                return {
+                const userInfo = {
                     id: user.id,
                     username: user.username,
                     first_name: user.first_name,
@@ -2840,7 +2905,18 @@
                     is_premium: user.is_premium,
                     allows_write_to_pm: user.allows_write_to_pm
                 };
+                console.log('📱 [getTelegramUserInfo] 从Telegram API获取到用户信息:', userInfo);
+                return userInfo;
             }
+            
+            // 如果无法从 Telegram API 获取，尝试从URL参数获取
+            const urlUserInfo = getUserInfoFromUrl();
+            if (urlUserInfo) {
+                console.log('🔗 [getTelegramUserInfo] 回退到URL参数获取用户信息:', urlUserInfo);
+                return urlUserInfo;
+            }
+            
+            console.log('❌ [getTelegramUserInfo] 无法获取用户信息');
             return null;
         }
 
@@ -5168,9 +5244,8 @@
             }
             
             // 获取Telegram用户信息
-            let telegramUser = null;
-            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
-                telegramUser = Telegram.WebApp.initDataUnsafe.user;
+            const telegramUser = getTelegramUserInfo();
+            if (telegramUser) {
                 console.log('📱 [Telegram用户信息]', {
                     id: telegramUser.id,
                     username: telegramUser.username,
@@ -5178,11 +5253,11 @@
                     last_name: telegramUser.last_name,
                     language_code: telegramUser.language_code,
                     is_premium: telegramUser.is_premium,
-                    added_to_attachment_menu: telegramUser.added_to_attachment_menu,
-                    allows_write_to_pm: telegramUser.allows_write_to_pm
+                    allows_write_to_pm: telegramUser.allows_write_to_pm,
+                    source: telegramUser.page ? 'URL参数' : 'Telegram API'
                 });
-                } else {
-                console.log('📱 [Telegram用户信息] 无法获取用户信息，可能不在Telegram环境中');
+            } else {
+                console.log('📱 [Telegram用户信息] 无法获取用户信息，可能不在Telegram环境中且URL中没有用户参数');
             }
             
             try {
@@ -5591,6 +5666,18 @@
             console.log('🌐 [initPage] fetch API 可用:', isFetchAvailable());
             console.log('💡 [initPage] 注意：PC端和移动端现在使用统一的触摸事件处理');
             
+            // 用户信息验证
+            const userInfo = getTelegramUserInfo();
+            if (!userInfo) {
+                console.warn('⚠️ [initPage] 无法获取用户信息，某些功能可能无法正常使用');
+                // 可以在这里显示一个提示给用户
+                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
+                    Telegram.WebApp.showAlert('⚠️ 无法获取用户信息，请通过机器人重新打开小程序');
+                }
+            } else {
+                console.log('✅ [initPage] 用户信息验证通过:', userInfo);
+            }
+            
             // 先获取分类数据
             try {
                 await fetchCategories();
@@ -5689,6 +5776,15 @@
                 };
                 
                 console.log('🔧 [调试工具] 购物车调试函数已暴露到 window.debugCart');
+                
+                // 在开发环境显示调试按钮
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.search.includes('debug=true')) {
+                    const debugButton = document.getElementById('debug-user-info');
+                    if (debugButton) {
+                        debugButton.style.display = 'block';
+                        console.log('🔧 [调试工具] 用户信息调试按钮已显示');
+                    }
+                }
             }
         }
 
@@ -7535,6 +7631,58 @@
             };
         }
 
+        /**
+         * 调试用户信息获取
+         */
+        function debugUserInfo() {
+            const telegramInfo = (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) 
+                ? Telegram.WebApp.initDataUnsafe.user : null;
+            const urlInfo = getUserInfoFromUrl();
+            const finalInfo = getTelegramUserInfo();
+            
+            console.log('🔍 [debugUserInfo] 用户信息调试:');
+            console.log('📱 Telegram API信息:', telegramInfo);
+            console.log('🔗 URL参数信息:', urlInfo);
+            console.log('✅ 最终使用信息:', finalInfo);
+            console.log('🌐 当前URL:', window.location.href);
+            console.log('📋 URL参数:', window.location.search);
+            
+            // 显示用户友好的调试信息
+            const debugResult = {
+                telegramInfo,
+                urlInfo,
+                finalInfo,
+                hasValidUser: !!finalInfo,
+                environment: {
+                    isTelegramMiniApp: isTelegramMiniApp(),
+                    currentUrl: window.location.href,
+                    urlParams: window.location.search
+                }
+            };
+            
+            // 在 Telegram 环境中显示调试信息
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.showAlert) {
+                const message = `用户信息调试:\n\n` +
+                    `Telegram API: ${telegramInfo ? '✅ 可用' : '❌ 不可用'}\n` +
+                    `URL参数: ${urlInfo ? '✅ 可用' : '❌ 不可用'}\n` +
+                    `最终结果: ${finalInfo ? '✅ 获取成功' : '❌ 获取失败'}\n\n` +
+                    `当前用户ID: ${finalInfo ? finalInfo.id : '无'}\n` +
+                    `用户名: ${finalInfo ? (finalInfo.first_name + ' ' + (finalInfo.last_name || '')) : '无'}`;
+                
+                Telegram.WebApp.showAlert(message);
+            } else {
+                // 在浏览器环境中显示调试信息
+                alert(`用户信息调试:\n\n` +
+                    `Telegram API: ${telegramInfo ? '✅ 可用' : '❌ 不可用'}\n` +
+                    `URL参数: ${urlInfo ? '✅ 可用' : '❌ 不可用'}\n` +
+                    `最终结果: ${finalInfo ? '✅ 获取成功' : '❌ 获取失败'}\n\n` +
+                    `当前用户ID: ${finalInfo ? finalInfo.id : '无'}\n` +
+                    `用户名: ${finalInfo ? (finalInfo.first_name + ' ' + (finalInfo.last_name || '')) : '无'}`);
+            }
+            
+            return debugResult;
+        }
+
         // 将函数暴露到全局作用域
         if (typeof window !== 'undefined') {
             // 测试函数
@@ -7561,6 +7709,7 @@
             // 调试函数
             window.debugProductsPagination = debugProductsPagination;
             window.resetProductsPagination = resetProductsPagination;
+            window.debugUserInfo = debugUserInfo;
         }
 
         // 获取订单详情
