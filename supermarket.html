@@ -205,15 +205,15 @@
             overflow-y: auto;
             scrollbar-width: thin;
             scrollbar-color: #ccc transparent;
-            -webkit-overflow-scrolling: touch;
-            z-index: 100;
+            /* 优化滚动行为 - 减少惯性滚动 */
+            -webkit-overflow-scrolling: auto; /* 关闭iOS的惯性滚动 */
+            overscroll-behavior: contain; /* 防止滚动传播 */
+            z-index: 101;
             max-height: calc(100vh - 140px);
-            /* 确保独立的触摸滚动行为 */
+            /* 只允许垂直滚动 */
             touch-action: pan-y;
-            /* 强制创建独立的滚动上下文 */
+            /* 创建独立的滚动上下文 */
             contain: layout style paint;
-            /* 优化滚动性能 */
-            will-change: scroll-position;
         }
 
         .sidebar-section {
@@ -232,8 +232,11 @@
             touch-action: pan-y;
             /* 创建独立的滚动上下文 */
             contain: layout style paint;
-            /* 隔离触摸事件 */
-            isolation: isolate;
+            /* 防止滚动传播 */
+            overscroll-behavior: contain;
+            /* 确保在正确的层级 */
+            position: relative;
+            z-index: 100;
         }
 
         /* 热销商品筛选按钮样式 - 侧边栏版本 */
@@ -3951,46 +3954,23 @@
         function initCategoriesSidebar() {
             const categoriesSidebar = document.querySelector('.categories-sidebar');
             if (categoriesSidebar) {
-                // 创建一个完全独立的触摸处理系统
-                let isScrolling = false;
-                let scrollTimeout;
-                
+                // 简化的独立滚动处理
                 categoriesSidebar.addEventListener('touchstart', (e) => {
-                    isScrolling = true;
-                    clearTimeout(scrollTimeout);
-                    e.stopPropagation(); // 阻止事件冒泡到父级
+                    // 阻止事件冒泡，确保独立处理
+                    e.stopPropagation();
                 }, { passive: true });
                 
                 categoriesSidebar.addEventListener('touchmove', (e) => {
-                    if (isScrolling) {
-                        e.stopPropagation(); // 阻止事件冒泡到父级
-                    }
+                    // 阻止事件冒泡，确保独立处理
+                    e.stopPropagation();
                 }, { passive: true });
                 
                 categoriesSidebar.addEventListener('touchend', (e) => {
-                    e.stopPropagation(); // 阻止事件冒泡到父级
-                    // 设置延迟，在惯性滚动结束后才重置状态
-                    scrollTimeout = setTimeout(() => {
-                        isScrolling = false;
-                    }, 300);
+                    // 阻止事件冒泡，确保独立处理
+                    e.stopPropagation();
                 }, { passive: true });
                 
-                // 监听滚动事件，在滚动期间保持独立状态
-                categoriesSidebar.addEventListener('scroll', (e) => {
-                    isScrolling = true;
-                    clearTimeout(scrollTimeout);
-                    e.stopPropagation(); // 阻止滚动事件冒泡
-                    
-                    // 重新设置超时
-                    scrollTimeout = setTimeout(() => {
-                        isScrolling = false;
-                    }, 150);
-                }, { passive: true });
-                
-                // 暴露状态检查函数（用于调试）
-                categoriesSidebar._isScrolling = () => isScrolling;
-                
-                console.log('✅ [initCategoriesSidebar] 左侧分类栏滚动已初始化（完全独立模式）');
+                console.log('✅ [initCategoriesSidebar] 左侧分类栏滚动已初始化（简化独立模式）');
             }
         }
 
